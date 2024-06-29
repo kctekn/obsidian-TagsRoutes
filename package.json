@@ -13,6 +13,7 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
+		"@types/three": "^0.166.0",
 		"@typescript-eslint/eslint-plugin": "5.29.0",
 		"@typescript-eslint/parser": "5.29.0",
 		"builtin-modules": "3.3.0",
@@ -22,6 +23,7 @@
 		"typescript": "4.7.4"
 	},
 	"dependencies": {
-		"3d-force-graph": "^1.70.12"
+		"3d-force-graph": "^1.70.12",
+		"three": "^0.157.0"
 	}
 }
