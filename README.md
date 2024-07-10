@@ -15,7 +15,7 @@ https://github.com/kctekn/obsidian-TagsRoutes/assets/32674595/759e9cba-c729-4b3e
 
 This plugin provides a comprehensive graph view to visualize the relationships between files, file-tag connections, and inter-tag connections within Obsidian. **It is particularly useful for users who manage extensive thoughts and ideas with numerous tags in Obsidian.**
 
-### Features: 
+# Features: 
  
 - **Node and Link Visualization** :
   - Display all files and their links.
@@ -34,7 +34,7 @@ This plugin provides a comprehensive graph view to visualize the relationships b
 
 This approach helps you identify the most significant parts of your vault at a glance.
 
-### Additional Functionalities: 
+# Additional Functionalities: 
  
 - **Orphan File Linking** : 
   - Connect all orphan files, making them easier to review. Note that orphan files are not necessarily useless but are:
@@ -45,13 +45,16 @@ This approach helps you identify the most significant parts of your vault at a g
 - **Orphan Excalidraw File Linking** :
   - Connect all orphan Excalidraw files that are not linked by any markdown files, simplifying their review.
 
-### Interactive Features: 
+# Interactive Features: 
  
 - **Node Interaction** :
   - Click on a file node to open it in the editor, regardless of its file type.
  
   - Click on a tag node to generate a query result for that tag, displayed in a file in the editor.
-    - Requires the Dataview plugin.
+    - Note that this feature requires the Dataview plugin.
+    	- 	The setting shows as the picture: to enable the javascript queries.
+     	-   ![dataviewSetting](https://github.com/kctekn/obsidian-TagsRoutes/assets/32674595/b02e562d-1a92-4891-a743-5c628ee93ffa)
+
 
     - Provides a clear view of the tag's content by capturing the surrounding lines until a blank line is encountered, showing the entire paragraph containing the tag.
  
@@ -66,7 +69,7 @@ This allows you to clearly understand the status of files and tags through:
 
 - The tags contained within the file
 
-### Adjustable Settings: 
+# Adjustable Settings: 
 
 - Focus distance on a node
 
