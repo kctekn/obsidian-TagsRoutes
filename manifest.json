@@ -1,11 +1,10 @@
 {
 	"id": "TagsRoutes",
 	"name": "Tags Routes",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
-	"description": "Virtualize files and tags as nodes in 3D graph",
+	"description": "For showing the routes of TAGs.",
 	"author": "Ken",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"authorUrl": "https://github.com/kctekn",
 	"isDesktopOnly": false
 }

@@ -7,7 +7,6 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "views/settings"
 import TagsRoutes from 'main';
-import {queryTags, fileContent} from '../util/query'
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
 
 interface GraphData {
@@ -145,36 +144,26 @@ export class TagRoutesView extends ItemView {
     }
     updateHighlight() {
         // trigger update of highlighted objects in scene
-        //console.log("high light links: ", this.highlightLinks.size);
         this.Graph
-            //.nodeColor(this.Graph.nodeColor())
             .linkWidth(this.Graph.linkWidth())
             .linkDirectionalParticles(this.Graph.linkDirectionalParticles());
         // Highlight nodes logic
         if (this.highlightNodes.size !== 0) {
-            //	console.log("hover start")
             this.highlightNodes.forEach(node => {
-                // Access __threeObj to get the Mesh object
                 const mesh = (node as any).__threeObj as THREE.Mesh;
                 if (mesh && mesh.material) {
-                    //	console.log("the node: ", node);
                     if (node === this.selectedNode || node === this.hoverNode)
                         (mesh.material as any).color.set('#FF3333');
                     else
                         (mesh.material as any).color.set('#3333ff');
                 } else {
-                    //	console.warn('Node or its material is not defined', node);
                 }
             });
         } else {
-            //console.log("hover finished/or reset highlight")
-
             this.resetNodeColor()
-
         }
     }
     focusGraphNodeById(filePath: string) {
-        console.log("focus graph node called");
         // 获取 Graph 中的相应节点，并将视图聚焦到该节点
         const node = this.gData.nodes.find((node: ExtendedNodeObject) => node.id === filePath);
         if (node && node.x && node.y && node.z) {
@@ -228,16 +217,12 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.link_particle_color = value;
     }
     onText(value: string) {
-        //this.plugin.settings.
     }
     onNodeSize(value: number) {
-        //this.Graph.nodeRelSize(value)
         this.Graph.nodeThreeObject((node: ExtendedNodeObject) => {
             let nodeSize = (node.connections || 1)
             if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
             nodeSize = Math.log2(nodeSize) * value;
-            //if (nodeSize > 28) nodeSize = 28;
-            //if (nodeSize < 3) nodeSize = 3;
 
             const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
             let color = this.getColorByType(node);
@@ -249,9 +234,9 @@ export class TagRoutesView extends ItemView {
     onNodeRepulsion(value: number) {
         this.Graph.d3Force('charge').strength(-30 - value * 300);
         this.Graph
-            .d3Force("x", d3.forceX(0).strength(0.19))//1 - value / 2500))// + 0.001))
-            .d3Force("y", d3.forceY(0).strength(0.19))//1 - value / 2500))// + 0.001))
-            .d3Force("z", d3.forceZ(0).strength(0.19))//1 - value / 2500))// + 0.001));        
+            .d3Force("x", d3.forceX(0).strength(0.19))
+            .d3Force("y", d3.forceY(0).strength(0.19))
+            .d3Force("z", d3.forceZ(0).strength(0.19))
         this.Graph.d3ReheatSimulation();
         this.plugin.settings.node_repulsion = value;
         return;
@@ -356,7 +341,6 @@ export class TagRoutesView extends ItemView {
     // 恢复 broken 节点的方法
     resetBrokenNodes() {
         // 移除所有连接到 broken 节点的链接
-        // let gd:GraphData= structuredClone(this.gData);
         let links: LinkObject[] = [];
         let nodes: ExtendedNodeObject[] = [];
         if (0) {
@@ -365,43 +349,18 @@ export class TagRoutesView extends ItemView {
             links = this.gData.links.filter((link: LinkObject) => (link.source as any).type !== 'broken');
         }
         // 移除 broken 节点
-        //console.log("before filter num:", this.gData.nodes.length)
 
         nodes = this.gData.nodes.filter(node => node.id !== 'broken');
-        //console.log("1after fileter num:", nodes1.length, " this gdata num:", this.gData.nodes.length)
         //统计connections数量 
         // 计算每个节点的连接数
         nodes.forEach((node: ExtendedNodeObject) => {
             node.connections = links.filter(link => link.sourceId === node.id || link.targetId === node.id).length;
         });
         // 重新计算连接数
-        // this.calculateConnections();
-        //   nodes.forEach((node: ExtendedNodeObject) => {
-        //       node.connections = links.filter(link => link.source === node.id || link.target === node.id).length;
-        //   })
         // 更新图表数据
         this.gData = { nodes: (nodes as any), links: links }
         this.Graph.graphData(this.gData);
         //console.log("2after fileter num:", nodes1.length, " this gdata num:", this.gData.nodes.length)
-    }
-
-    // 连接所有 broken 节点的方法  - 弃用
-    disconnectBrokenNodes() {
-
-        console.log("links number: ", this.gData.links.length)
-        console.log("link 100 is:", this.gData.links[100])
-        this.gData.links = this.gData.links.filter(link => {
-            const sourceNode = this.gData.nodes.find(node => node.id === link.sourceId);
-            const targetNode = this.gData.nodes.find(node => node.id === link.targetId);
-            //return !(sourceNode?sourceNode.type === 'broken' || targetNode?sourceNode.type === 'broken');
-			/* 			if (((sourceNode ? sourceNode.type === 'broken' : false) || (targetNode ? targetNode.type === 'broken' : false)) {
-							console.log("found a broken link")
-						} */
-            return !(sourceNode ?.type === 'broken' || targetNode ?.type === 'broken');
-        });
-        console.log("links number after: ", this.gData.links.length)
-        this.gData.nodes = this.gData.nodes.filter(node => node.id != 'broken')
-        this.Graph.graphData(this.gData);
     }
 
     // 计算连接数的方法
@@ -424,18 +383,6 @@ export class TagRoutesView extends ItemView {
                 filesDataMap.set(file.path, cache);
             });
         //  console.log("all resolved links: ", this.app.metadataCache.resolvedLinks);
-
-
-
-        /*
-                实际上我们需要的tags的information包括：
-                1. 名称
-                2. 位置：即行，列的位置
-                3. 时间： 创建的时间，如果有
-                4. 文件： 此时，这个tag位于哪个文件中
-                5. 从属： 它是不是其它tag的子级
-        */
-
     }
     getColorByType(node: Node) {
         let color;
@@ -490,7 +437,6 @@ export class TagRoutesView extends ItemView {
         }
         fileNodeNum = nodes.length;
         FileLinkNum = links.length;
-        //console.log(`File parse completed => nodes: ${nodes.length}, links: ${links.length}`)
         this.debugLogToFile("", true)
         this.debugLogToFile(`|File parse completed=>|| markdown and linked files nodes:| ${nodes.length}| total file links:| ${links.length}|`)
 
@@ -501,23 +447,16 @@ export class TagRoutesView extends ItemView {
             if (!nodes.some(node => node.id == filePath)) {
                 nodes.push({ id: filePath, type: 'broken' });
             }
-
             /* 文件只与根标签联接 */
             const rootTags = new Set<string>();
             fileTags.forEach(tag => {
                 const tagParts = tag.tag.split('/');
                 rootTags.add(tagParts[0]);
-
                 // 更新标签计数，包括所有父标签
                 tagParts.forEach((_, i) => {
                     const tagPart = tagParts.slice(0, i + 1).join('/');
-                    //        tagCount[tagPart] = (tagCount[tagPart] || 0) + 1;
                     tagCount.set(tagPart, (tagCount.get(tagPart) || 0) + 1);
                 });
-
-
-
-
             });
 
             rootTags.forEach(rootTag => {
@@ -564,8 +503,6 @@ export class TagRoutesView extends ItemView {
             }
         }
         this.debugLogToFile(`|After filtered pathes=>|| filtered nodes: |${TagNodeNum + fileNodeNum +brokennum- nodes.length}|  links:| ${links.length}|`)
-
-
         // 计算每个节点的连接数
         nodes.forEach((node: ExtendedNodeObject) => {
             //    node.connections = links.filter(link => link.source === node.id || link.target === node.id).length;
@@ -588,17 +525,8 @@ export class TagRoutesView extends ItemView {
 
 
 
-		/*
-//fordebug
-		const debugNode= this.gData.nodes.find(node=>node.id==="药品/挑选/挑鱼油.md")
-		console.log("before node:", debugNode.id, "links: ", debugNode.links)
-*/
         // cross-link node objects
         links.forEach(link => {
-			/*
-			if (link.sourceId=="药品/挑选/挑鱼油.md") {
-				console.log("debuglink:", link.targetId);
-			}*/
             const a = nodes.find(node => node.id === link.sourceId) as ExtendedNodeObject;
             const b = nodes.find(node => node.id === link.targetId) as ExtendedNodeObject;
             !a.neighbors && (a.neighbors = []);
@@ -611,10 +539,6 @@ export class TagRoutesView extends ItemView {
             a.links.push(link);
             b.links.push(link);
         });
-		/*
-		console.log("after node:", debugNode.id, "links: ", debugNode.links)
-*/
-        
         this.debugLogToFile(`|Tags parse completed=>||  tag nodes: |${TagNodeNum}| tag links:| ${TagLinkNum}|`)
         this.debugLogToFile("|tags num:| " +  (TagNodeNum)  + "| broken files: |" + brokennum + "| tag links:| " + (links.length - FileLinkNum + "|"))
         if (this.plugin.settings.enableShow)
@@ -625,15 +549,10 @@ export class TagRoutesView extends ItemView {
 
         return { nodes: nodes, links: links };
     }
-    //refreshGraph()
-    //{
-    //  this.Graph.graphData(this.buildGdata);
-    //}
     distanceFactor: number = 2;
     createGraph(container: HTMLElement) {
 
         // 打印结果
-      //  console.log("got the gdata is: ", this.gData);
         container.addClass("tags-routes")
         const graphContainer = container.createEl('div', { cls: 'graph-container' });
         this.Graph = ForceGraph3D()
@@ -642,28 +561,19 @@ export class TagRoutesView extends ItemView {
             .backgroundColor("#000003")
             .d3Force('link', d3.forceLink().distance((link: any) => {
                 const distance = Math.max(link.source.connections, link.target.connections, link.source.instanceNum || 2, link.target.instanceNum || 2);
-                //return  distance <10?20:distance*2
                 return distance < 10 ? 20 : distance * this.distanceFactor;
             }))
             (graphContainer)
-            //  .graphData(this.gData)
-            //below not work for nodethreeobject
-            //.nodeColor((node : any) => this.highlightNodes.has(node) ? node === this.hoverNode ? 'rgb(255,0,0,1)' : 'rgba(255,160,0,0.8)' : 'rgba(0,255,255,0.6)')
             .linkWidth((link: any) => this.highlightLinks.has(link) ? 2 : 1)
             .linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? 4 : 2)
             .linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? 3 : 0.5)
             .linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? '#ff00ff' : '#ffffff')
-            //            .nodeLabel('${node.id} ( ${node.connections})')
             .nodeLabel((node: any) => node.type == 'tag' ? `${node.id} (${node.instanceNum})` : `${node.id} (${node.connections})`)
             .nodeOpacity(0.9)
-            // .linkDirectionalParticles(2)
             .nodeThreeObject((node: ExtendedNodeObject) => {
                 let nodeSize = (node.connections || 1)
                 if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
                 nodeSize = Math.log2(nodeSize) * 5;
-                //if (nodeSize > 28) nodeSize = 28;
-                //if (nodeSize < 3) nodeSize = 3;
-
                 const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
                 let color = this.getColorByType(node);
                 const material = new THREE.MeshBasicMaterial({ color });
@@ -678,7 +588,7 @@ export class TagRoutesView extends ItemView {
 
                 this.Graph.cameraPosition(
                     newPos, // new position
-                    { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0}, //	node, // lookAt ({ x, y, z })
+                    { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0}, 
                     3000  // ms transition duration
                 );
 
@@ -787,13 +697,12 @@ await dv.view("scripts/tag-report", "${node.id}")
         // 检查文件是否已经存在
         if (!vault.getAbstractFileByPath(logFilePath)) {
             await vault.create(logFilePath, content);
-            console.log("create log file.")
+//            console.log("create log file.")
         }  {
             // 如果文件已经存在，可以选择覆盖内容或者追加内容
             const file = vault.getAbstractFileByPath(logFilePath);
         //    console.log("using existing log file")
             if (file instanceof TFile) {
-                //await vault.modify(file, content); // 这里是覆盖内容
                 if (!head) {
                     await vault.append(file, "|[" + moment(new Date()).format('YYYY-MM-DD HH:mm:ss') + "] " + content + "\n"); // 这里是追加内容
                 } else {
@@ -837,38 +746,5 @@ await dv.view("scripts/tag-report", "${node.id}")
     // view 的close 事件
     async onClose() {
         // Nothing to clean up.
-    }
-  async   scrollToEnd() {
-
-        // setTimeout(() =>
-        {
-         //   this.app.workspace.get
-            const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownView;
-            if (markdownView) {
-                console.log("This a markdown view, go to get editor")
-                const editor = markdownView.editor;
-                if (editor) {
-                    console.log("editor found")
-                    const lastLine = editor.lineCount() - 1;
-                    editor.setCursor({ line: lastLine, ch: 0 });
-              await       editor.scrollIntoView({ from: { line: lastLine, ch: 0 }, to: { line: lastLine, ch: 0 } }, true);
-                        
-                }
-            await     markdownView.containerEl.scrollTo({ top: markdownView.containerEl.scrollHeight, behavior: 'smooth' });
-            } else {
-                console.log("Not a markdown view")
-                const previewView = this.app.workspace.getActiveViewOfType(MarkdownPreviewView);
-                    
-                if (previewView) {
-                    console.log("it is a preview")
-              await       previewView.containerEl.scrollTo({ top: previewView.containerEl.scrollHeight, behavior: 'smooth' });
-                } else {
-                    console.log("it is NOT a preview")
-
-                }
-                
-            }
-        }
-        //, 10); // 延迟时间，确保编辑器加载完毕
     }
 }
