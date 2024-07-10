@@ -20,7 +20,7 @@ jobs:
       - name: Build plugin
         run: |
           npm install
-          npm run build
+          npm run dev
 
       - name: Create release
         env:
