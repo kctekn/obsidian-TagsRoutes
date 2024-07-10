@@ -18,7 +18,16 @@ export const setViewType = (view: View, mode: "source" | "preview" | "live") => 
 		}
 	}
 }
-
+export function createFolderIfNotExists(folderPath: string) {
+	const folder = this.app.vault.getAbstractFileByPath(folderPath);
+	if (!folder) {
+	   this.app.vault.createFolder(folderPath);
+	   console.log(`Folder created: ${folderPath}`);
+	} else {
+	   console.log(`Folder already exists: ${folderPath}`);
+	}
+ }
+ 
 // 函数：获取所有标签
 export const getTags = (cache: CachedMetadata | null): TagCache[] => {
 	if (!cache || !cache.tags) return [];
@@ -77,33 +86,23 @@ export const shouldRemove = (path: string, filterList: string[]) => {
 
 export async function showFile(filePath: string) {
 	const { vault } = this.app;
-	const file = vault.getAbstractFileByPath(filePath)
+	let file = vault.getAbstractFileByPath(filePath)
+	while (!(file && file instanceof TFile)) {
+		await delay(100)
+		console.log("wait for file ready")
+		file = vault.getAbstractFileByPath(filePath)
+	}
 	if (file && file instanceof TFile) {
 		const leaf = this.app.workspace.getLeaf(false);
 		await leaf.openFile(file)
+		console.log("log file is ready for show")
 		setViewType(leaf.view, "preview")
+	} else {
+		console.log("log file is not ready for show")
 	}
+}
+export function delay(ms: number) {
+	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export async function createAndWriteToFile(filePath: string, content: string,open : boolean = true) {
-	const { vault } = this.app;
-	// 检查文件是否已经存在
-	if (!vault.getAbstractFileByPath(filePath)) {
-		await vault.create(filePath, content);
-		console.log("create query file.")
-	} else {
-		// 如果文件已经存在，可以选择覆盖内容或者追加内容
-		const file = vault.getAbstractFileByPath(filePath);
-		if (file instanceof TFile) {
-			await vault.modify(file, content); // 这里是覆盖内容
-		}
-	}
-	// 打开新创建的文件
-	if (true) {
-		const file = vault.getAbstractFileByPath(filePath)
-		if (file && file instanceof TFile) {
-			const leaf = this.app.workspace.getLeaf(false);
-			await leaf.openFile(file)
-		}
-	}
-}
+

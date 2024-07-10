@@ -1,7 +1,7 @@
-import { App, Editor, moment, ExtraButtonComponent, MarkdownView, MarkdownPreviewView,Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache } from 'obsidian';
+import { App, Editor, moment, ExtraButtonComponent, MarkdownView, TAbstractFile,MarkdownPreviewView,Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
-import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove,setViewType,showFile } from "../util/util"
+import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove,setViewType,showFile,delay} from "../util/util"
 import ForceGraph3D from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
@@ -83,10 +83,8 @@ export class TagRoutesView extends ItemView {
             // Access __threeObj to get the Mesh object
             const mesh = (node as any).__threeObj as THREE.Mesh;
             if (mesh && mesh.material) {
-                //	console.log("the node: ", node);
                 (mesh.material as any).color.set(this.getColorByType(node));
             } else {
-                //	console.warn('Node or its material is not defined', node);
             }
         })
         this.previousHighlightLinks.forEach(link => {
@@ -107,8 +105,6 @@ export class TagRoutesView extends ItemView {
         this.highlightNodes.clear();
         this.highlightLinks.clear();
         if (node) {
-            //     console.log("hover node:", node.id)
-            //     console.log("hover node links:", node.links)
             this.highlightNodes.add(node);
             this.previousHighlightNodes.add(node);
             if (node.neighbors) {
@@ -121,7 +117,6 @@ export class TagRoutesView extends ItemView {
                 node.links.forEach(link => {
                     this.highlightLinks.add(link)
                     this.previousHighlightLinks.add(link)
-                    //  console.log ("add link in node hover:", link)
                 });
             }
         }
@@ -292,7 +287,7 @@ export class TagRoutesView extends ItemView {
         let nodes: ExtendedNodeObject[] = this.gData.nodes;
 
         if (nodes.filter(node => node.id === 'broken').length != 0) {
-            console.log(" has broken node, return.")
+            console.log(" has had broken node, return.")
             return;
         }
         // 创建一个新的 broken 节点
@@ -360,7 +355,6 @@ export class TagRoutesView extends ItemView {
         // 更新图表数据
         this.gData = { nodes: (nodes as any), links: links }
         this.Graph.graphData(this.gData);
-        //console.log("2after fileter num:", nodes1.length, " this gdata num:", this.gData.nodes.length)
     }
 
     // 计算连接数的方法
@@ -382,7 +376,6 @@ export class TagRoutesView extends ItemView {
                 const cache = this.app.metadataCache.getCache(file.path);
                 filesDataMap.set(file.path, cache);
             });
-        //  console.log("all resolved links: ", this.app.metadataCache.resolvedLinks);
     }
     getColorByType(node: Node) {
         let color;
@@ -437,8 +430,8 @@ export class TagRoutesView extends ItemView {
         }
         fileNodeNum = nodes.length;
         FileLinkNum = links.length;
-        this.debugLogToFile("", true)
-        this.debugLogToFile(`|File parse completed=>|| markdown and linked files nodes:| ${nodes.length}| total file links:| ${links.length}|`)
+        this.debugLogToFileM("", true)
+        this.debugLogToFileM(`|File parse completed=>|| markdown and linked files nodes:| ${nodes.length}| total file links:| ${links.length}|`)
 
         filesDataMap.forEach((cache, filePath) => {
             const fileTags = getTags(cache);
@@ -485,7 +478,7 @@ export class TagRoutesView extends ItemView {
         });
         //markdwon + orphan + tags
         const brokennum = nodes.filter(node => node.type == 'broken').length;
-        this.debugLogToFile(`|add tags and other files=>||  total nodes: |${nodes.length}|  total links:| ${links.length}|`)
+        this.debugLogToFileM(`|add tags and other files=>||  total nodes: |${nodes.length}|  total links:| ${links.length}|`)
         TagNodeNum = nodes.length - fileNodeNum - brokennum;
         TagLinkNum = links.length - FileLinkNum;
         // 过滤节点和链接
@@ -502,7 +495,7 @@ export class TagRoutesView extends ItemView {
                 links.splice(i, 1);
             }
         }
-        this.debugLogToFile(`|After filtered pathes=>|| filtered nodes: |${TagNodeNum + fileNodeNum +brokennum- nodes.length}|  links:| ${links.length}|`)
+        this.debugLogToFileM(`|After filtered pathes=>|| filtered nodes: |${TagNodeNum + fileNodeNum +brokennum- nodes.length}|  links:| ${links.length}|`)
         // 计算每个节点的连接数
         nodes.forEach((node: ExtendedNodeObject) => {
             //    node.connections = links.filter(link => link.source === node.id || link.target === node.id).length;
@@ -539,8 +532,9 @@ export class TagRoutesView extends ItemView {
             a.links.push(link);
             b.links.push(link);
         });
-        this.debugLogToFile(`|Tags parse completed=>||  tag nodes: |${TagNodeNum}| tag links:| ${TagLinkNum}|`)
-        this.debugLogToFile("|tags num:| " +  (TagNodeNum)  + "| broken files: |" + brokennum + "| tag links:| " + (links.length - FileLinkNum + "|"))
+        this.debugLogToFileM(`|Tags parse completed=>||  tag nodes: |${TagNodeNum}| tag links:| ${TagLinkNum}|`)
+        this.debugLogToFileM("|tags num:| " + (TagNodeNum) + "| broken files: |" + brokennum + "| tag links:| " + (links.length - FileLinkNum + "|"))
+        this.debugWriteToFile();
         if (this.plugin.settings.enableShow)
         {
             showFile(logFilePath);
@@ -673,7 +667,7 @@ await dv.view("scripts/tag-report", "${node.id}")
         // 检查文件是否已经存在
         if (!vault.getAbstractFileByPath(filePath)) {
             await vault.create(filePath, content);
-            console.log("create query file.")
+        //    console.log("create query file.")
         } else {
             // 如果文件已经存在，可以选择覆盖内容或者追加内容
             const file = vault.getAbstractFileByPath(filePath);
@@ -689,29 +683,39 @@ await dv.view("scripts/tag-report", "${node.id}")
             setViewType(leaf.view,"preview")
         }
     }
-    async debugLogToFile(content: string, head: boolean = false) {
+    createdFile = false;
+    logMessages: string[] = [];
+    debugLogToFileM(content: string, head: boolean = false) {
+
+        if (!head) {
+            this.logMessages.push("|[" + moment(new Date()).format('YYYY-MM-DD HH:mm:ss') + "] " + content + "\n");
+        } else {
+            this.logMessages.push("\n\n||||||||\n|-:|-:|-:|-:|-:|-:|-:|\n");
+        }
+    }
+    debugWriteToFile() {
         if (!this.plugin.settings.enableSave) return;
         const { vault } = this.app;
+        const content = this.logMessages;
 
-        
         // 检查文件是否已经存在
         if (!vault.getAbstractFileByPath(logFilePath)) {
-            await vault.create(logFilePath, content);
-//            console.log("create log file.")
-        }  {
+            if (!this.createdFile) {
+                this.createdFile = true;
+                vault.create(logFilePath, content.join(""));
+                console.log("create log file.")
+            }
+        } else {
             // 如果文件已经存在，可以选择覆盖内容或者追加内容
             const file = vault.getAbstractFileByPath(logFilePath);
-        //    console.log("using existing log file")
+            console.log("using existing log file")
             if (file instanceof TFile) {
-                if (!head) {
-                    await vault.append(file, "|[" + moment(new Date()).format('YYYY-MM-DD HH:mm:ss') + "] " + content + "\n"); // 这里是追加内容
-                } else {
-                    await vault.append(file, "\n\n||||||||\n|-:|-:|-:|-:|-:|-:|-:|\n"); // 这里是追加内容
-                }
+                vault.append(file, content.join(""))
+            } else {
+                console.log("file is not ready, passed out")
             }
         }
-
-
+        this.logMessages.length = 0;
     }
     async handleNodeClick(node: ExtendedNodeObject) {
         const filePath = node.id;
@@ -735,6 +739,7 @@ await dv.view("scripts/tag-report", "${node.id}")
     }
     // view的open 事件
     async onOpen() {
+        console.log("On open tag routes view")
         const container = this.containerEl.children[1];
         container.empty();
         //	container.createEl("h4", { text: "This is for tags routes." });

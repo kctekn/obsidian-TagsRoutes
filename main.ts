@@ -1,7 +1,7 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, ToggleComponent } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
-import { createAndWriteToFile } from "./util/util"
+import { createFolderIfNotExists, delay} from "./util/util"
 import { fileContent } from "./util/query"
 
 interface TagRoutesSettings {
@@ -85,9 +85,9 @@ export default class TagsRoutes extends Plugin {
 	}
 	async initializePlugin() {
 
-		console.log(" on load started initizlize the plugin")
+		createFolderIfNotExists('scripts')
+		createFolderIfNotExists('TagsRoutes')
 		await this.loadSettings();
-
 		this.registerView(
 			VIEW_TYPE_TAGS_ROUTES,
 			(leaf) => new TagRoutesView(leaf, this)
@@ -123,7 +123,6 @@ export default class TagsRoutes extends Plugin {
 			const target = e.target as HTMLElement;
 			if (target && target.hasClass('tag')) {
 				const tag = target.innerText; // 获取标签内容
-				console.log("clicked a tag name is:", tag)
 				// 传递文件路径给 Graph 并聚焦到相应的节点
 				for (let leaf of app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
 					if (leaf.view instanceof TagRoutesView) {
@@ -136,7 +135,12 @@ export default class TagsRoutes extends Plugin {
 
 		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
 		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-		createAndWriteToFile("scripts/tag-report.js", fileContent, false);
+		const { vault } = this.app;
+
+        // 检查文件是否已经存在
+        if (!vault.getAbstractFileByPath("scripts/tag-report.js")) {
+            await vault.create("scripts/tag-report.js", fileContent);
+        }
 	}
 
 	onunload() {

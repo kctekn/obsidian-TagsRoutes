@@ -3,7 +3,6 @@ export const fileContent =
 
 var term = "#empty"
 function getarg(...args) {
-    console.log("arg 0 is ", args[0])
     term = args[0]
 }
 getarg(input)
