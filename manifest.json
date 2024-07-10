@@ -1,10 +1,10 @@
 {
-	"id": "测试插件",
-	"name": "测插",
+	"id": "TAGSROUTES",
+	"name": "Tags Routes",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
+	"description": "Virtualize files and tags as nodes in 3D graph",
+	"author": "Ken",
 	"authorUrl": "https://obsidian.md",
 	"fundingUrl": "https://obsidian.md/pricing",
 	"isDesktopOnly": false
