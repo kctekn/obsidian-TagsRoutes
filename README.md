@@ -1,17 +1,19 @@
-# obsidian-TagsRoutes
-This is a plugin for obsidian, to visualize files and tags as nodes in 3D graph.
+# Obsidian plugin: TagsRoutes
+This is a plugin for obsidian, to visualize files and tags as nodes in 3D graphic.
+
+# How to operate:
+https://github.com/kctekn/obsidian-TagsRoutes/assets/32674595/2c37676c-f307-4a74-9dae-0679067cbae7
+
+
+
+https://github.com/kctekn/obsidian-TagsRoutes/assets/32674595/759e9cba-c729-4b3e-a0c4-bb4c4f1b5dd1
 
 
 
 
-<img src="https://github.com/kctekn/obsidian-TagsRoutes/assets/32674595/b2c78905-3b8c-4a44-a5a4-7577d4f0d869">
 
 
-<source src="https://github.com/kctekn/obsidian-TagsRoutes/assets/32674595/b2c78905-3b8c-4a44-a5a4-7577d4f0d869" type="video/mp4">
-
-<img src="https://github.com/kctekn/obsidian-TagsRoutes/assets/32674595/a4d3845d-13f7-4d6b-8555-7a37cb5a7ade" width="100" height="100">
-
-This plugin provides a comprehensive graph view to visualize the relationships between files, file-tag connections, and inter-tag connections within Obsidian. It is particularly useful for users who manage extensive thoughts and ideas with numerous tags in Obsidian.
+This plugin provides a comprehensive graph view to visualize the relationships between files, file-tag connections, and inter-tag connections within Obsidian. **It is particularly useful for users who manage extensive thoughts and ideas with numerous tags in Obsidian.**
 
 ### Features: 
  
@@ -74,7 +76,17 @@ This allows you to clearly understand the status of files and tags through:
  
 - Display styles:
   - Link distance and width
-
   - Link particle size, number, and color
-
   - Node size and repulsion
+
+
+# Install
+- Download the release file, and extract to your obsidian's: valut/.obsidian/plugin/tags-routes.
+- Enable it in obsidian settings tab.
+
+# Acknowledgements
+
+I would like to extend my sincere gratitude to the following projects, which provided invaluable resources and inspiration for this plugin:
+
+- [obsidian-3d-graph](https://github.com/AlexW00/obsidian-3d-graph/tree/master) by AlexW00
+- [3d-force-graph](https://github.com/vasturiano/3d-force-graph) by vasturiano
