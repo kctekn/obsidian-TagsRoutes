@@ -3,6 +3,10 @@ This is a plugin for obsidian, to visualize files and tags as nodes in 3D graph.
 
 
 
+
+[https://github.com/kctekn/obsidian-TagsRoutes/assets/32674595/b2c78905-3b8c-4a44-a5a4-7577d4f0d869]
+
+
 <img src="https://github.com/kctekn/obsidian-TagsRoutes/assets/32674595/a4d3845d-13f7-4d6b-8555-7a37cb5a7ade" width="100" height="100">
 
 This plugin provides a comprehensive graph view to visualize the relationships between files, file-tag connections, and inter-tag connections within Obsidian. It is particularly useful for users who manage extensive thoughts and ideas with numerous tags in Obsidian.
