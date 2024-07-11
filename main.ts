@@ -133,10 +133,7 @@ export default class TagsRoutes extends Plugin {
 			}
 		});
 
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 		const { vault } = this.app;
-
         // 检查文件是否已经存在
         if (!vault.getAbstractFileByPath("scripts/tag-report.js")) {
             await vault.create("scripts/tag-report.js", fileContent);
@@ -179,23 +176,6 @@ export default class TagsRoutes extends Plugin {
 		}
 	}
 }
-
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		const { contentEl } = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-}
-
 class TagsroutesSettingsTab extends PluginSettingTab {
 	plugin: TagsRoutes;
 	toggleEnableSave: ToggleComponent;

@@ -7,6 +7,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "views/settings"
 import TagsRoutes from 'main';
+import { Vector2 } from 'three';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
 
 interface GraphData {
@@ -22,6 +23,9 @@ interface LinkObject {
     targetId: string;  // 添加目标ID字段
 }
 
+interface nodeThreeObject extends ExtendedNodeObject  {
+    __threeObj? :THREE.Mesh
+}
 interface ExtendedNodeObject extends Node {
     type: 'md' | 'tag' | 'attachment' | 'broken' | 'excalidraw';
     x?: number;
@@ -81,9 +85,9 @@ export class TagRoutesView extends ItemView {
     resetNodeColor() {
         this.previousHighlightNodes.forEach((node: ExtendedNodeObject) => {
             // Access __threeObj to get the Mesh object
-            const mesh = (node as any).__threeObj as THREE.Mesh;
+            const mesh = (node as nodeThreeObject).__threeObj as THREE.Mesh;
             if (mesh && mesh.material) {
-                (mesh.material as any).color.set(this.getColorByType(node));
+                (mesh.material as THREE.MeshBasicMaterial).color.set(this.getColorByType(node));
             } else {
             }
         })
@@ -145,12 +149,12 @@ export class TagRoutesView extends ItemView {
         // Highlight nodes logic
         if (this.highlightNodes.size !== 0) {
             this.highlightNodes.forEach(node => {
-                const mesh = (node as any).__threeObj as THREE.Mesh;
+                const mesh = (node as nodeThreeObject).__threeObj as THREE.Mesh;
                 if (mesh && mesh.material) {
                     if (node === this.selectedNode || node === this.hoverNode)
-                        (mesh.material as any).color.set('#FF3333');
+                        (mesh.material as THREE.MeshBasicMaterial).color.set('#FF3333');
                     else
-                        (mesh.material as any).color.set('#3333ff');
+                        (mesh.material as THREE.MeshBasicMaterial).color.set('#3333ff');
                 } else {
                 }
             });
@@ -287,7 +291,7 @@ export class TagRoutesView extends ItemView {
         let nodes: ExtendedNodeObject[] = this.gData.nodes;
 
         if (nodes.filter(node => node.id === 'broken').length != 0) {
-            console.log(" has had broken node, return.")
+        //    console.log(" has had broken node, return.")
             return;
         }
         // 创建一个新的 broken 节点
@@ -302,7 +306,7 @@ export class TagRoutesView extends ItemView {
         if (linkStar) {
             // 找到所有 type 为 broken 的节点
             const brokenNodes = this.gData.nodes.filter(node => node.type === 'broken');
-            console.log("broken nodes number: ", brokenNodes.length)
+      //      console.log("broken nodes number: ", brokenNodes.length)
             // 将所有 broken 节点连接到新创建的 broken 节点上
             brokenNodes.forEach(node => {
                 links.push({ source: brokenNode.id, target: node.id, sourceId: brokenNode.id, targetId: node.id });
@@ -311,7 +315,7 @@ export class TagRoutesView extends ItemView {
 
             // 将所有 broken 节点以一条线连接起来
             const brokenNodes = this.gData.nodes.filter(node => node.type === 'broken');
-            console.log("broken nodes number: ", brokenNodes.length)
+        //    console.log("broken nodes number: ", brokenNodes.length)
             for (let i = 0; i < brokenNodes.length - 1; i++) {
                 links.push({ source: brokenNodes[i].id, target: brokenNodes[i + 1].id, sourceId: brokenNodes[i].id, targetId: brokenNodes[i + 1].id });
             }
@@ -341,7 +345,7 @@ export class TagRoutesView extends ItemView {
         if (0) {
             this.gData.links = this.gData.links.filter(link => link.sourceId !== 'broken' && link.targetId !== 'broken');
         } else {
-            links = this.gData.links.filter((link: LinkObject) => (link.source as any).type !== 'broken');
+            links = this.gData.links.filter((link: LinkObject) => (link.source as ExtendedNodeObject).type !== 'broken');
         }
         // 移除 broken 节点
 
@@ -353,7 +357,7 @@ export class TagRoutesView extends ItemView {
         });
         // 重新计算连接数
         // 更新图表数据
-        this.gData = { nodes: (nodes as any), links: links }
+        this.gData = { nodes: nodes , links: links }
         this.Graph.graphData(this.gData);
     }
 
@@ -604,10 +608,7 @@ export class TagRoutesView extends ItemView {
             .onLinkHover((link: any) => this.onLinkHover(link))
             .cooldownTicks(10000)
         //Graph.onEngineStop(()=>Graph.zoomToFit(4000))  //自动复位
-        const bloomPass = new (UnrealBloomPass as any)(container.clientWidth, container.clientHeight)
-        bloomPass.strength = 2.0;
-        bloomPass.radius = 1;
-        bloomPass.threshold = 0;
+        const bloomPass = new (UnrealBloomPass)(({ x:container.clientWidth, y:container.clientHeight } as Vector2),2.0,1,0)
         this.Graph.postProcessingComposer().addPass(bloomPass);
 
         // 使用 MutationObserver 监听容器大小变化
@@ -703,16 +704,16 @@ await dv.view("scripts/tag-report", "${node.id}")
             if (!this.createdFile) {
                 this.createdFile = true;
                 vault.create(logFilePath, content.join(""));
-                console.log("create log file.")
+    //            console.log("create log file.")
             }
         } else {
             // 如果文件已经存在，可以选择覆盖内容或者追加内容
             const file = vault.getAbstractFileByPath(logFilePath);
-            console.log("using existing log file")
+    //        console.log("using existing log file")
             if (file instanceof TFile) {
                 vault.append(file, content.join(""))
             } else {
-                console.log("file is not ready, passed out")
+     //           console.log("file is not ready, passed out")
             }
         }
         this.logMessages.length = 0;
@@ -725,7 +726,7 @@ await dv.view("scripts/tag-report", "${node.id}")
             const file = vault.getAbstractFileByPath(filePath);
 
             if (!file || !(file instanceof TFile)) {
-                console.log("file not found ", filePath)
+    //            console.log("file not found ", filePath)
                 return;
             }
             const leaf: WorkspaceLeaf = workspace.getLeaf(false);
@@ -739,7 +740,7 @@ await dv.view("scripts/tag-report", "${node.id}")
     }
     // view的open 事件
     async onOpen() {
-        console.log("On open tag routes view")
+    //    console.log("On open tag routes view")
         const container = this.containerEl.children[1];
         container.empty();
         //	container.createEl("h4", { text: "This is for tags routes." });

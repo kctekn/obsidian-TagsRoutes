@@ -1,5 +1,5 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, View, Vault } from 'obsidian';
-import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
+import { CachedMetadata, TagCache, View } from 'obsidian';
+import { TFile } from "obsidian";
 
 
 
@@ -22,9 +22,9 @@ export function createFolderIfNotExists(folderPath: string) {
 	const folder = this.app.vault.getAbstractFileByPath(folderPath);
 	if (!folder) {
 	   this.app.vault.createFolder(folderPath);
-	   console.log(`Folder created: ${folderPath}`);
+	 //  console.log(`Folder created: ${folderPath}`);
 	} else {
-	   console.log(`Folder already exists: ${folderPath}`);
+	 //  console.log(`Folder already exists: ${folderPath}`);
 	}
  }
  
@@ -89,16 +89,16 @@ export async function showFile(filePath: string) {
 	let file = vault.getAbstractFileByPath(filePath)
 	while (!(file && file instanceof TFile)) {
 		await delay(100)
-		console.log("wait for file ready")
+	//	console.log("wait for file ready")
 		file = vault.getAbstractFileByPath(filePath)
 	}
 	if (file && file instanceof TFile) {
 		const leaf = this.app.workspace.getLeaf(false);
 		await leaf.openFile(file)
-		console.log("log file is ready for show")
+	//	console.log("log file is ready for show")
 		setViewType(leaf.view, "preview")
 	} else {
-		console.log("log file is not ready for show")
+	//	console.log("log file is not ready for show")
 	}
 }
 export function delay(ms: number) {

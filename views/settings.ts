@@ -105,12 +105,7 @@ export class settingGroup {
             }
         });
     }
-    /*
-    public hideAll() {
-        (Array.from(this.rootContainer.getElementsByClassName('tag-router-holder')) as HTMLElement[])
-            .forEach((element as HTMLElement) => { element.style.display = 'none' })
 
-    }*/
     public show() {
         this.holdContainer.style.display = 'block'
         return this
