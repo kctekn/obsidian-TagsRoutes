@@ -3,7 +3,7 @@
 	"name": "Tags Routes",
 	"version": "1.0.2",
 	"minAppVersion": "0.15.0",
-	"description": "For showing the routes of TAGs.",
+	"description": "For showing the routes of tags.",
 	"author": "Ken",
 	"authorUrl": "https://github.com/kctekn",
 	"isDesktopOnly": false

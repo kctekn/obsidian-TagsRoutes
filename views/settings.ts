@@ -22,16 +22,16 @@ export class settingGroup {
 
         //head.textContent = name;
         this.holdContainer = this.rootContainer.createDiv('div')
-        this.holdContainer.addClass('tag-router-holder')
+        this.holdContainer.addClass('group-holder')
 
 
         if (!isRoot) {
-            this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('span', { cls: 'group-bar-item' }))
+            this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('span', { cls: 'group-bar-button' }))
                 .setIcon("chevron-down")
                 .setTooltip("Close " + name)
                 .onClick(() => {
-                    if (this.holdContainer.style.display === 'none') {
-                        this.holdContainer.style.display = 'inline';
+                        if (this.holdContainer.style.display === 'none') {
+                            this.holdContainer.style.display = 'inline';
                         //this.settingButton.extraSettingsEl.addClass = 'flex-end';
                         //  this.settingButton.extraSettingsEl.style.justifyContent = 'flex-end';
                         this.handleButton.setTooltip("Close " + name);
@@ -45,7 +45,7 @@ export class settingGroup {
                 });
             //  this.handleButton.extraSettingsEl.style.justifyContent = 'flex-end';
             //this.settingsButton.extraSettingsEl.addClasses(["clickable-icon"])
-            this.headContainer.createEl('span', { cls: 'group-bar-item' }).textContent = name;
+            this.headContainer.createEl('span', { cls: 'group-bar-text' }).textContent = name;
         } else {
             // use a solid style for root container
             this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('div', { cls: 'root-title-bar' }))
@@ -98,7 +98,7 @@ export class settingGroup {
     }
     
     public hideAll() {
-        const subholders = Array.from(this.rootContainer.getElementsByClassName('tag-router-holder'));
+        const subholders = Array.from(this.rootContainer.getElementsByClassName('group-holder'));
         subholders.forEach(element => {
             if (element instanceof HTMLElement) {
                 (element as HTMLElement).style.display = 'none';

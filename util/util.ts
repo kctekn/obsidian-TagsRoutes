@@ -87,22 +87,25 @@ export const shouldRemove = (path: string, filterList: string[]) => {
 export async function showFile(filePath: string) {
 	const { vault } = this.app;
 	let file = vault.getAbstractFileByPath(filePath)
-	while (!(file && file instanceof TFile)) {
-		await delay(100)
-	//	console.log("wait for file ready")
+	let waitFlag = true;
+	const timeout = setTimeout(() => {
+		waitFlag = false;
+	}, 3000);
+	while (!(file && file instanceof TFile) && waitFlag) {
+		await sleep(100)
+		//	console.log("wait for file ready")
 		file = vault.getAbstractFileByPath(filePath)
 	}
+	clearTimeout(timeout);
 	if (file && file instanceof TFile) {
 		const leaf = this.app.workspace.getLeaf(false);
 		await leaf.openFile(file)
-	//	console.log("log file is ready for show")
+		//	console.log("log file is ready for show")
 		setViewType(leaf.view, "preview")
 	} else {
-	//	console.log("log file is not ready for show")
+		//	console.log("log file is not ready for show")
 	}
 }
-export function delay(ms: number) {
-	return new Promise(resolve => setTimeout(resolve, ms));
-}
+
 
 

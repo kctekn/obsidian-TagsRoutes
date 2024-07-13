@@ -1,11 +1,10 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, ToggleComponent } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
-import { createFolderIfNotExists, delay} from "./util/util"
+import { createFolderIfNotExists} from "./util/util"
 import { fileContent } from "./util/query"
 
 interface TagRoutesSettings {
-	mySetting: string;
 	broken_file_link_center: string;
 	broken_file_link_line: string;
 	md_color: string;
@@ -25,7 +24,6 @@ interface TagRoutesSettings {
 }
 
 const DEFAULT_SETTINGS: TagRoutesSettings = {
-	mySetting: 'default',
 	broken_file_link_center: 'true',
 	broken_file_link_line: 'false',
 	md_color: 'green',
@@ -50,7 +48,7 @@ export default class TagsRoutes extends Plugin {
 	public settings: TagRoutesSettings;
 	onFileClick(filePath: string) {
 		// 传递文件路径给 Graph 并聚焦到相应的节点
-		for (let leaf of app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
+		for (let leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
 			if (leaf.view instanceof TagRoutesView) {
 				leaf.view.focusGraphNodeById(filePath)
 			}
@@ -58,11 +56,11 @@ export default class TagsRoutes extends Plugin {
 	}
 	async  onDoubleWait() {
 		if (this.app.metadataCache.resolvedLinks !== undefined) {
-			console.log("cache is already ready")
+			//	console.log("cache is already ready")
 			await this.initializePlugin();
 		} else {
 			this.app.metadataCache.on("resolved", async () => {
-				console.log("cache is not ready, wait for it")
+			//	console.log("cache is not ready, wait for it")
 				await this.initializePlugin();
 			});
 		}
@@ -107,7 +105,7 @@ export default class TagsRoutes extends Plugin {
 				});
 		*/
 		//添加按钮1
-		this.addRibbonIcon("footprints", "Tags Routes", () => {
+		this.addRibbonIcon("footprints", "Open tags routes", () => {
 			this.activateView();
 		});
 
@@ -124,7 +122,7 @@ export default class TagsRoutes extends Plugin {
 			if (target && target.hasClass('tag')) {
 				const tag = target.innerText; // 获取标签内容
 				// 传递文件路径给 Graph 并聚焦到相应的节点
-				for (let leaf of app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
+				for (let leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
 					if (leaf.view instanceof TagRoutesView) {
 						leaf.view.focusGraphTag(tag)
 					}
@@ -191,8 +189,8 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Log nodes/links number')
-			.setDesc('Enable or disable log nodes/links number on graph loading')
+			.setName('Log Node/Link Count')
+			.setDesc('Enable or disable logging the number of nodes and links when the graph loads')
 			.addToggle((toggle: ToggleComponent) => {
 				toggle
 					.onChange(async (value) => {
@@ -207,8 +205,8 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 			}
 			)
 		new Setting(containerEl)
-			.setName('Turn to log file after start')
-			.setDesc('Show the log above automaticly after graph loaded')
+			.setName('Show Log File on Startup')
+			.setDesc('Automatically display the log file after the graph loads')
 			.addToggle((toggle: ToggleComponent) => {
 				toggle
 					.onChange(async (value) => {

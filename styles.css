@@ -28,11 +28,14 @@ If your plugin does not need CSS, delete this file.
     margin-right: 5px;
 }
 
+.tags-routes .group-holder {
+    text-align: center;
+}
 .tags-routes .graph-button {
     top: 15px;
     right: 10px;
     z-index: 10;
-    padding: 1px 20px;
+    padding: 1px 10px;
     margin: 4px;
     font-size: 14px;
     /*background-color: #008CBA;*/
@@ -43,6 +46,7 @@ If your plugin does not need CSS, delete this file.
     cursor: pointer;
     /*	width: 150px;*/
     height: 25px;
+    text-align: center;
 }
 
 .tags-routes .graph-button:hover {
@@ -54,14 +58,22 @@ If your plugin does not need CSS, delete this file.
 
 .tags-routes .title-bar {
     display: block;
-  /*  border-bottom: 1px dotted;*/
+    text-align: left;
+    /*border-bottom: 1px dotted;*/
 }
 
-.tags-routes .group-bar-item {
+.tags-routes .group-bar-button {
     display: inline-block;
     margin-top: 5px;
     margin-bottom: 5px;
     margin-left: 5px;
+    margin-right: 5px;
+}
+.tags-routes .group-bar-text {
+    display: inline-block;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding-right: 45px;
     margin-right: 5px;
 }
 

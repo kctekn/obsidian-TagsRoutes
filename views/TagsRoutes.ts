@@ -1,7 +1,7 @@
 import { App, Editor, moment, ExtraButtonComponent, MarkdownView, TAbstractFile,MarkdownPreviewView,Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
-import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove,setViewType,showFile,delay} from "../util/util"
+import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove,setViewType,showFile} from "../util/util"
 import ForceGraph3D from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
@@ -623,11 +623,11 @@ export class TagRoutesView extends ItemView {
         new settingGroup("Tags' route settings", "Tags' route settings", true).hide()
             .add({
                 arg: (new settingGroup("commands", "Node commands"))
-                    .addButton("Link borken as star", "graph-button", () => { this.connectBrokenNodes(true) })
-                    .addButton("Link borken as line", "graph-button", () => { this.connectBrokenNodes(false) })
+                    .addButton("Link broken as star", "graph-button", () => { this.connectBrokenNodes(true) })
+                    .addButton("Link broken as line", "graph-button", () => { this.connectBrokenNodes(false) })
                     .addButton("Unlink borken", "graph-button", () => { this.resetBrokenNodes() })
-                    .addButton("Link excalidraw", "graph-button", () => { this.connectExcalidrawNodes() })
-                    .addButton("Unlink excalidraw", "graph-button", () => { this.resetUnlinkedExcalidrawNodes() })
+                    .addButton("Link Excalidraw orphans", "graph-button", () => { this.connectExcalidrawNodes() })
+                    .addButton("Unlink Excalidraw orphans", "graph-button", () => { this.resetUnlinkedExcalidrawNodes() })
                     .addButton("Reset graph", "graph-button", () => { this.Graph.graphData(this.gData = this.buildGdata()) })
             })
             .add({
@@ -694,7 +694,7 @@ await dv.view("scripts/tag-report", "${node.id}")
             this.logMessages.push("\n\n||||||||\n|-:|-:|-:|-:|-:|-:|-:|\n");
         }
     }
-    debugWriteToFile() {
+    async debugWriteToFile() {
         if (!this.plugin.settings.enableSave) return;
         const { vault } = this.app;
         const content = this.logMessages;
@@ -703,17 +703,20 @@ await dv.view("scripts/tag-report", "${node.id}")
         if (!vault.getAbstractFileByPath(logFilePath)) {
             if (!this.createdFile) {
                 this.createdFile = true;
-                vault.create(logFilePath, content.join(""));
-    //            console.log("create log file.")
+                await vault.create(logFilePath, content.join(""));
+            // console.log("create log file.")
             }
         } else {
             // 如果文件已经存在，可以选择覆盖内容或者追加内容
             const file = vault.getAbstractFileByPath(logFilePath);
-    //        console.log("using existing log file")
+            //        console.log("using existing log file")
             if (file instanceof TFile) {
-                vault.append(file, content.join(""))
+                //    vault.append(file, content.join(""))
+                await vault.process(file, (data) => {
+                    return data + '\n' + content.join(""); 
+                });
             } else {
-     //           console.log("file is not ready, passed out")
+                //    console.log("file is not ready, passed out")
             }
         }
         this.logMessages.length = 0;
