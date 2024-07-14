@@ -100,34 +100,51 @@ export class codeBlockProcessor {
             markdownText.push("## " + (i + 1) + "\n" + `${noteArr[noteArr.length - 1 - i]}`)
         }
         const markDownSource = markdownText.filter(line => line.trim() !== "").join("\n")
-        el.createEl('pre', {text: markDownSource})
-        MarkdownRenderer.render(this.plugin.app,
-            markDownSource,
-            el.createEl('div'), ctx.sourcePath, this.plugin.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownView
-        )
+        console.log("markdown source is:",markDownSource)
+   //     el.createEl('pre', {text: markDownSource})
+   //     MarkdownRenderer.render(this.plugin.app,
+  //          markDownSource,
+   //         el.createEl('div'), ctx.sourcePath, this.plugin.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownView
+  //      )
+        /*
         const currentCache = this.plugin.app.metadataCache.getCache(ctx.sourcePath) || null;
         if (!currentCache) return;
 
         const heading = this.parseMarkdownToHeadings(markDownSource);
 
 
-    //    if (currentCache && Array.isArray(currentCache.headings)) {
-    //        currentCache.headings.push(...heading);
-    //    } else {
-    //        currentCache.headings = [...heading];
-    //    }
-        currentCache.headings = heading;
+        if (currentCache && Array.isArray(currentCache.headings)) {
+            currentCache.headings.push(...heading);
+        } else {
+            currentCache.headings = [...heading];
+        }*/
+       // currentCache.headings = heading;
 
+       const fileContent1 = `---\ntags:\n  - tag-report\n---\n
+\`\`\`tagsroutes
+           ${term}
+\`\`\`
+*This file is generated automatically, will be override.*
+*Don't edit this file in case your work will be lost.*
+`
+        const { vault } = this.plugin.app;
+       const file = vault.getAbstractFileByPath(ctx.sourcePath);
+       //        console.log("using existing log file")
+       if (file instanceof TFile) {
+               vault.modify(file, fileContent1 + markDownSource)
+       //    await vault.process(file, (data) => {
+       //        return data + '\n' + markDownSource; 
+           }//);
+        
 
-
-
-        console.log("the heading is ", heading);
+/*
+        console.log("the heading is ",  currentCache.headings);
         const outlineView = this.plugin.app.workspace.getLeavesOfType('outline')[0] ?.view;
         if (!outlineView) { return false; } else { console.log("found the outlineview") }
         let hh = outlineView.constructor.prototype.createItemDom.call(this.plugin, currentCache.headings)
         console.log("hh is :", hh);
         (outlineView as any).update();
-
+*/
     }
 
 }
