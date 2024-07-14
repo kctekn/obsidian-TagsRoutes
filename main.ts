@@ -134,11 +134,11 @@ export default class TagsRoutes extends Plugin {
 			}
 		});
 
-		const { vault } = this.app;
-        // 检查文件是否已经存在
-        if (!vault.getAbstractFileByPath("scripts/tag-report.js")) {
-            await vault.create("scripts/tag-report.js", fileContent);
-        }
+	//	const { vault } = this.app;
+    //    // 检查文件是否已经存在
+    //    if (!vault.getAbstractFileByPath("scripts/tag-report.js")) {
+    //        await vault.create("scripts/tag-report.js", fileContent);
+    //    }
 	}
 
 	onunload() {
