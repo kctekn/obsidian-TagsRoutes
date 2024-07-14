@@ -659,10 +659,10 @@ export class TagRoutesView extends ItemView {
             const sanitizedId = node.id.replace(/\//g, '__');
             const newFilePath = `TagsRoutes/TagReport_${sanitizedId}.md`; // 新文件的路径和名称
             const fileContent1 = `---\ntags:\n  - tag-report\n---\n
-\`\`\`dataviewjs
-await dv.view("scripts/tag-report", "${node.id}")
+\`\`\`tagsroutes
+    ${node.id}
 \`\`\`
-			`; // 要写入的新内容
+`; // 要写入的新内容
 
             this.createAndWriteToFile(newFilePath, fileContent1);
         }

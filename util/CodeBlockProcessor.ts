@@ -48,83 +48,85 @@ export class codeBlockProcessor {
         )
         return arr;
     }
+     calculateOffset(lines: string[], lineNum: number, col: number): number {
+        let offset = 0;
+        for (let i = 0; i < lineNum; i++) {
+            offset += lines[i].length + 1; // +1 for the newline character
+        }
+        return offset + col;
+    }
+    
+     parseMarkdownToHeadings(markdown: string): HeadingCache[] {
+        const headings: HeadingCache[] = [];
+        const lines = markdown.split('\n');
+    
+        for (let lineNum = 0; lineNum < lines.length; lineNum++) {
+            const line = lines[lineNum];
+            const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
+    
+            if (headingMatch) {
+                const [_, level, heading] = headingMatch;
+                const startOffset = this.calculateOffset(lines, lineNum, 0);
+                const endOffset = startOffset + line.length;
+    
+                const headingCache: HeadingCache = {
+                    heading: heading.trim(),
+                    level: level.length,
+                    position: {
+                        start: { line: lineNum, col: 0, offset: startOffset },
+                        end: { line: lineNum, col: line.length, offset: endOffset },
+                    },
+                };
+                headings.push(headingCache);
+            }
+        }
+    
+        return headings;
+    }
     async codeBlockProcessor(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
-        let regstr = '(#[\\w\/_\u4e00-\u9fa5]*)'
-        let regex = new RegExp(regstr, 'g')
-        //let match = regex.exec(source)
+        console.log("code block called");
+        const regstr = '(#[\\w\/_\u4e00-\u9fa5]*)'
+        const regex = new RegExp(regstr, 'g')
         let match = source.match(regex)
-        if (match) {
-            for (let i = 0; i < match.length; i++) {
-                console.log("find the matchA: ", match[i])
-               // console.log("souce is :", source )
-            }
-        } else {
-            console.log("not found tag(s)")
+        let term = match ?.[0] || "#empty"
+        let con = this.getTagContent(term)
+        let markdownText: string[] = [];
+        let values = await Promise.all(con);
+        //    Promise.all(con).then((values) => {
+        let noteArr = (values).flat();
+        noteArr.sort((a, b) => getLineTime(a) - getLineTime(b))
+        markdownText.push("# Tag\ [" + term + "\] total: `" + noteArr.length + "` records.")
+        for (let i = 0; i < noteArr.length; i++) {
+            markdownText.push("## " + (i + 1) + "\n" + `${noteArr[noteArr.length - 1 - i]}`)
         }
-        
-        //const theTag = source.
-        const rows = source.split("\n").filter((row) => row.length > 0);
-        el.createEl('h1', { text: "Tags reportAA" });
-        const table = el.createEl("table");
-        const body = table.createEl("tbody");
+        const markDownSource = markdownText.filter(line => line.trim() !== "").join("\n")
+        el.createEl('pre', {text: markDownSource})
+        MarkdownRenderer.render(this.plugin.app,
+            markDownSource,
+            el.createEl('div'), ctx.sourcePath, this.plugin.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownView
+        )
+        const currentCache = this.plugin.app.metadataCache.getCache(ctx.sourcePath) || null;
+        if (!currentCache) return;
 
-        for (let i = 0; i < rows.length; i++) {
-            const cols = rows[i].split(",");
+        const heading = this.parseMarkdownToHeadings(markDownSource);
 
-            const row = body.createEl("tr");
 
-            for (let j = 0; j < cols.length; j++) {
-                row.createEl("td", { text: cols[j] });
-            }
-        }
-        let term = "#empty"
-        if (match) term = match[0]
-        let con =   this.getTagContent(term)   
-        console.log("got string is : ", (con))
-       
-        Promise.all(con).then((values) => {
-            let noteArr = (values).flat() ;
-            noteArr.sort((a, b) => getLineTime(a) - getLineTime(b))
-            el.createEl('h3', { text: "Tag\ [" + term + "\] total: `" + noteArr.length + "` records." })
-            for (let i = 0; i < noteArr.length; i++) {
-            //    el.createEl('div', { text: "## " + (i + 1) + "\n" + `${noteArr[noteArr.length - 1 - i]}`.replace("\n", "<br>") })
-                let tmpContainer = el.createEl('div');
-                MarkdownRenderer.render(this.plugin.app,
-                    "## " + (i + 1) + "\n" + `${noteArr[noteArr.length - 1 - i]}`,
-                    tmpContainer, ctx.sourcePath, this.plugin.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownView
-                )
-                /* 					el.createEl('div', { text: "## " + (i + 1) + "\n" });
-                                const lines = (noteArr as string)[noteArr.length - 1 - i].split('\n')
-                                lines.array.forEach(element => {
-                                    el.createEl('div',{text:element})
-                                }); */
+    //    if (currentCache && Array.isArray(currentCache.headings)) {
+    //        currentCache.headings.push(...heading);
+    //    } else {
+    //        currentCache.headings = [...heading];
+    //    }
+        currentCache.headings = heading;
 
-            }
-            let h = (this ?.plugin.app.metadataCache.getCache(ctx.sourcePath).headings as HeadingCache);//[0].heading;
-            h.push({
-                heading: "abc", level: 0,
-                position: {
-                    end: { line: 14, col: 3 },
-                    start: { line: 14, col: 0 }
-                
-            }});
-            h.push({
-                heading: "def", level: 1,
-                position: {
-                    end: { line: 15, col: 3 },
-                    start: { line: 15, col: 0 }
-                
-            }});
-            console.log("the heading is ", h);
-            const outlineView = this.plugin.app.workspace.getLeavesOfType('outline')[0]?.view;
-            if (!outlineView) { return false; } else { console.log("found the outlineview") }
-            let hh = outlineView.constructor.prototype.createItemDom.call(this.plugin,h)
-            console.log("hh is :", hh)
-            outlineView.update();
-            
-        }
 
-       )
+
+
+        console.log("the heading is ", heading);
+        const outlineView = this.plugin.app.workspace.getLeavesOfType('outline')[0] ?.view;
+        if (!outlineView) { return false; } else { console.log("found the outlineview") }
+        let hh = outlineView.constructor.prototype.createItemDom.call(this.plugin, currentCache.headings)
+        console.log("hh is :", hh);
+        (outlineView as any).update();
 
     }
 
