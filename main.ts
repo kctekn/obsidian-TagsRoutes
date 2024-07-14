@@ -1,8 +1,9 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, ToggleComponent } from 'obsidian';
+import { App, Editor, MarkdownView, Modal,MarkdownRenderer, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, ToggleComponent } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
 import { createFolderIfNotExists} from "./util/util"
 import { fileContent } from "./util/query"
+import { codeBlockProcessor } from './util/CodeBlockProcessor';
 
 interface TagRoutesSettings {
 	broken_file_link_center: string;
@@ -91,7 +92,8 @@ export default class TagsRoutes extends Plugin {
 			VIEW_TYPE_TAGS_ROUTES,
 			(leaf) =>  this.view = new TagRoutesView(leaf, this)
 		);
-
+		const codeProcess = new codeBlockProcessor(this);
+		this.registerMarkdownCodeBlockProcessor("tagsroutes", codeProcess.codeBlockProcessor);
 		this.registerEvent(
 			this.app.workspace.on('file-open', (file) => {
 				if (file)

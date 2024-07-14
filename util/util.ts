@@ -1,4 +1,4 @@
-import { CachedMetadata, TagCache, View } from 'obsidian';
+import { App, CachedMetadata, TagCache, View,moment } from 'obsidian';
 import { TFile } from "obsidian";
 
 
@@ -107,5 +107,15 @@ export async function showFile(filePath: string) {
 	}
 }
 
+
+export function getLineTime(line:string) {
+	let regstr = 'Time: +(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})'
+	let regex = new RegExp(regstr, 'g')
+	let match = regex.exec(line)
+	if (match) {
+			return (new Date(match[1])).getTime()
+	} else
+			return 0
+}
 
 
