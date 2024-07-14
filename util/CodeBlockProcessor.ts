@@ -38,7 +38,6 @@ export class codeBlockProcessor {
                                 file.name.split(".")[0] + "]], *" + mmtime + "*\]\n"
                         }
                     )
-                  //  let abc = this.plugin.app.metadataCache.getCache(file.path).headings;
                     return retArr
                 } else {
                     return []
@@ -48,27 +47,27 @@ export class codeBlockProcessor {
         )
         return arr;
     }
-     calculateOffset(lines: string[], lineNum: number, col: number): number {
+    calculateOffset(lines: string[], lineNum: number, col: number): number {
         let offset = 0;
         for (let i = 0; i < lineNum; i++) {
             offset += lines[i].length + 1; // +1 for the newline character
         }
         return offset + col;
     }
-    
-     parseMarkdownToHeadings(markdown: string): HeadingCache[] {
+
+    parseMarkdownToHeadings(markdown: string): HeadingCache[] {
         const headings: HeadingCache[] = [];
         const lines = markdown.split('\n');
-    
+
         for (let lineNum = 0; lineNum < lines.length; lineNum++) {
             const line = lines[lineNum];
             const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
-    
+
             if (headingMatch) {
                 const [_, level, heading] = headingMatch;
                 const startOffset = this.calculateOffset(lines, lineNum, 0);
                 const endOffset = startOffset + line.length;
-    
+
                 const headingCache: HeadingCache = {
                     heading: heading.trim(),
                     level: level.length,
@@ -80,47 +79,29 @@ export class codeBlockProcessor {
                 headings.push(headingCache);
             }
         }
-    
+
         return headings;
     }
     async codeBlockProcessor(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
         console.log("code block called");
         const regstr = '(#[\\w\/_\u4e00-\u9fa5]*)'
         const regex = new RegExp(regstr, 'g')
-        let match = source.match(regex)
-        let term = match ?.[0] || "#empty"
-        let con = this.getTagContent(term)
-        let markdownText: string[] = [];
-        let values = await Promise.all(con);
+        const match = source.match(regex)
+        const term = match ?.[0] || "#empty"
+        const con = this.getTagContent(term)
+        const markdownText: string[] = [];
+        const values = await Promise.all(con);
         //    Promise.all(con).then((values) => {
-        let noteArr = (values).flat();
+        const noteArr = (values).flat();
         noteArr.sort((a, b) => getLineTime(a) - getLineTime(b))
         markdownText.push("# Tag\ [" + term + "\] total: `" + noteArr.length + "` records.")
         for (let i = 0; i < noteArr.length; i++) {
+            noteArr[noteArr.length - 1 - i] = noteArr[noteArr.length - 1 - i].replace(/^#/g,"###").replace(/\n#/g,"\n###")
             markdownText.push("## " + (i + 1) + "\n" + `${noteArr[noteArr.length - 1 - i]}`)
         }
         const markDownSource = markdownText.filter(line => line.trim() !== "").join("\n")
-        console.log("markdown source is:",markDownSource)
-   //     el.createEl('pre', {text: markDownSource})
-   //     MarkdownRenderer.render(this.plugin.app,
-  //          markDownSource,
-   //         el.createEl('div'), ctx.sourcePath, this.plugin.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownView
-  //      )
-        /*
-        const currentCache = this.plugin.app.metadataCache.getCache(ctx.sourcePath) || null;
-        if (!currentCache) return;
-
-        const heading = this.parseMarkdownToHeadings(markDownSource);
-
-
-        if (currentCache && Array.isArray(currentCache.headings)) {
-            currentCache.headings.push(...heading);
-        } else {
-            currentCache.headings = [...heading];
-        }*/
-       // currentCache.headings = heading;
-
-       const fileContent1 = `---\ntags:\n  - tag-report\n---\n
+        //console.log("markdown source is:", markDownSource)
+        const fileContent = `---\ntags:\n  - tag-report\n---\n
 \`\`\`tagsroutes
            ${term}
 \`\`\`
@@ -128,23 +109,9 @@ export class codeBlockProcessor {
 *Don't edit this file in case your work will be lost.*
 `
         const { vault } = this.plugin.app;
-       const file = vault.getAbstractFileByPath(ctx.sourcePath);
-       //        console.log("using existing log file")
-       if (file instanceof TFile) {
-               vault.modify(file, fileContent1 + markDownSource)
-       //    await vault.process(file, (data) => {
-       //        return data + '\n' + markDownSource; 
-           }//);
-        
-
-/*
-        console.log("the heading is ",  currentCache.headings);
-        const outlineView = this.plugin.app.workspace.getLeavesOfType('outline')[0] ?.view;
-        if (!outlineView) { return false; } else { console.log("found the outlineview") }
-        let hh = outlineView.constructor.prototype.createItemDom.call(this.plugin, currentCache.headings)
-        console.log("hh is :", hh);
-        (outlineView as any).update();
-*/
+        const file = vault.getAbstractFileByPath(ctx.sourcePath);
+        if (file instanceof TFile) {
+            vault.modify(file, fileContent + markDownSource)
+        }
     }
-
 }
