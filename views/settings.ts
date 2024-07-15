@@ -125,9 +125,9 @@ export class settingGroup {
             .setClass("mod-slider")
             .addSlider(slider =>
                 _slider = slider
-                .setLimits(min, max, step)
-                .setValue(defaultNum)
-                .setDynamicTooltip()
+                    .setLimits(min, max, step)
+                    .setValue(defaultNum)
+                    .setDynamicTooltip()
                     .onChange(async value => cb(value)))
         slider.setClass("setting-item-block")
         if (_slider!==undefined)

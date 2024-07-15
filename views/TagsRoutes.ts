@@ -222,6 +222,7 @@ export class TagRoutesView extends ItemView {
     onText(value: string) {
     }
     onNodeSize(value: number) {
+        console.log(" no nodesize called ")
         this.Graph.nodeThreeObject((node: ExtendedNodeObject) => {
             let nodeSize = (node.connections || 1)
             if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
