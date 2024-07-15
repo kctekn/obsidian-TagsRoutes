@@ -1,4 +1,5 @@
-import { Setting, ExtraButtonComponent } from 'obsidian';
+import { Setting, ExtraButtonComponent, ColorComponent } from 'obsidian';
+import TagsRoutes from 'main';
 
 export class settingGroup {
     public readonly id: string;
@@ -6,6 +7,7 @@ export class settingGroup {
     private headContainer: HTMLElement;
     private holdContainer: HTMLElement;
     private handleButton: ExtraButtonComponent;
+    plugin: TagsRoutes;
 
     /*
        This constructor will create:
@@ -14,11 +16,12 @@ export class settingGroup {
         - and a hold container ready to add sub components
         - with in the given comtainer
     */
-    constructor(id: string, name: string, isRoot: boolean = false) {
+    constructor(plugin:TagsRoutes, id: string, name: string, isRoot: boolean = false) {
+        this.plugin = plugin
         this.rootContainer = document.createElement('div')
         this.rootContainer.id = id;
         this.headContainer = this.rootContainer.createEl('div', { cls: 'title-bar' })
-
+        this.addColorPicker = this.addColorPicker.bind(this)
 
         //head.textContent = name;
         this.holdContainer = this.rootContainer.createDiv('div')
@@ -130,13 +133,15 @@ export class settingGroup {
     addColorPicker(name: string, cb: (v: string) => void) {
         const colorpicker = new Setting(this.holdContainer)
             .setName(name)
-            //  .setDesc(this.plugin.settings.link_particle_color || "#000000")
-            .addColorPicker(picker => picker
-                .onChange(async (value) => {
-                    cb(value)
-                    colorpicker.setDesc(value)
-                })
-            )
+            //.setDesc(this.plugin.settings.link_particle_color || "#000000")
+            .addColorPicker(picker => {
+                picker
+                    .onChange(async (value) => {
+                        cb(value)
+                        colorpicker.setDesc(value)
+                    })
+                    this.plugin.view.link_particle_color=picker
+            })
         colorpicker.setClass("setting-item-inline")
         return this;
     }

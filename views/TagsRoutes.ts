@@ -1,4 +1,4 @@
-import { App, Editor, moment, ExtraButtonComponent, MarkdownView, TAbstractFile,MarkdownPreviewView,Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache } from 'obsidian';
+import { App, Editor, moment, ExtraButtonComponent, MarkdownView, TAbstractFile,MarkdownPreviewView,Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, ColorComponent } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
 import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove,setViewType,showFile} from "../util/util"
@@ -6,7 +6,7 @@ import ForceGraph3D from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "views/settings"
-import TagsRoutes from 'main';
+import TagsRoutes  from 'main';
 import { Vector2 } from 'three';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
 
@@ -56,6 +56,7 @@ export class TagRoutesView extends ItemView {
         nodes: [],
         links: []
     };
+    link_particle_color: ColorComponent;
     constructor(leaf: WorkspaceLeaf, plugin: TagsRoutes) {
         super(leaf);
         this.plugin = plugin;
@@ -197,23 +198,28 @@ export class TagRoutesView extends ItemView {
         this.Graph.d3Force('link').distance(value * 10);
         this.Graph.d3ReheatSimulation();
         this.plugin.settings.link_distance = value
+        this.plugin.saveSettings();
     }
     onLinkWidth(value: number) {
         this.Graph.linkWidth((link: any) => this.highlightLinks.has(link) ? 2 * value : value)
         this.plugin.settings.link_width = value
+        this.plugin.saveSettings();
     }
     onLinkParticleNumber(value: number) {
         this.Graph.linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
         this.plugin.settings.link_particle_number = value
+        this.plugin.saveSettings();
     }
     onLinkParticleSize(value: number) {
         this.Graph.linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
 
         this.plugin.settings.link_particle_size = value
+        this.plugin.saveSettings();
     }
     onLinkParticleColor(value: string) {
         this.Graph.linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? '#ff00ff' : value)
         this.plugin.settings.link_particle_color = value;
+        this.plugin.saveSettings();
     }
     onText(value: string) {
     }
@@ -226,18 +232,21 @@ export class TagRoutesView extends ItemView {
             const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
             let color = this.getColorByType(node);
             const material = new THREE.MeshBasicMaterial({ color });
+            this.plugin.settings.node_size = value;
+            this.plugin.saveSettings();
             return new THREE.Mesh(geometry, material);
         })
-        this.plugin.settings.node_repulsion = value;
     }
     onNodeRepulsion(value: number) {
+        this.plugin.settings.node_repulsion = value;
+        this.plugin.saveSettings();
+        if (value === 0) return;
         this.Graph.d3Force('charge').strength(-30 - value * 300);
         this.Graph
             .d3Force("x", d3.forceX(0).strength(0.19))
             .d3Force("y", d3.forceY(0).strength(0.19))
             .d3Force("z", d3.forceZ(0).strength(0.19))
         this.Graph.d3ReheatSimulation();
-        this.plugin.settings.node_repulsion = value;
         return;
     }
 
@@ -620,9 +629,9 @@ export class TagRoutesView extends ItemView {
         observer.observe(container, { attributes: true, childList: true, subtree: true });
         // 清理 observer
         this.register(() => observer.disconnect());
-        new settingGroup("Tags' route settings", "Tags' route settings", true).hide()
+        new settingGroup(this.plugin, "Tags' route settings", "Tags' route settings", true).hide()
             .add({
-                arg: (new settingGroup("commands", "Node commands"))
+                arg: (new settingGroup(this.plugin, "commands", "Node commands"))
                     .addButton("Link broken as star", "graph-button", () => { this.connectBrokenNodes(true) })
                     .addButton("Link broken as line", "graph-button", () => { this.connectBrokenNodes(false) })
                     .addButton("Unlink borken", "graph-button", () => { this.resetBrokenNodes() })
@@ -631,13 +640,13 @@ export class TagRoutesView extends ItemView {
                     .addButton("Reset graph", "graph-button", () => { this.Graph.graphData(this.gData = this.buildGdata()) })
             })
             .add({
-                arg: (new settingGroup("control sliders", "Display control"))
-                    .addSlider("Node size", 1, 10, 1, 5, this.onNodeSize)
+                arg: (new settingGroup(this.plugin, "control sliders", "Display control"))
+                    .addSlider("Node size", 1, 10, 1, this.plugin.settings.node_size, this.onNodeSize)
                     .addSlider("Node repulsion", 0, 10, 1, 0, this.onNodeRepulsion)
-                    .addSlider("Link distance", 1, 25, 1, 5, this.onLinkDistance)
-                    .addSlider("Link Width", 1, 5, 1, 1, this.onLinkWidth)
-                    .addSlider("Link Particle size", 1, 5, 1, 2, this.onLinkParticleSize)
-                    .addSlider("Link Particle number", 1, 5, 1, 2, this.onLinkParticleNumber)
+                    .addSlider("Link distance", 1, 25, 1, this.plugin.settings.link_distance, this.onLinkDistance)
+                    .addSlider("Link Width", 1, 5, 1, this.plugin.settings.link_width, this.onLinkWidth)
+                    .addSlider("Link Particle size", 1, 5, 1, this.plugin.settings.link_particle_size, this.onLinkParticleSize)
+                    .addSlider("Link Particle number", 1, 5, 1, this.plugin.settings.link_particle_number, this.onLinkParticleNumber)
                     .addColorPicker("Link Particle color", this.onLinkParticleColor)
             })
          //   .add({
@@ -646,6 +655,16 @@ export class TagRoutesView extends ItemView {
          //   })
             .attachEl(graphContainer.createEl('div', { cls: 'settings-container' }))
             .hideAll();
+        //load saved settings
+        this.onNodeSize(this.plugin.settings.node_size)
+        this.onNodeRepulsion(this.plugin.settings.node_repulsion)
+        this.onLinkDistance(this.plugin.settings.link_distance)
+        this.onLinkWidth(this.plugin.settings.link_width)
+        this.onLinkParticleSize(this.plugin.settings.link_particle_size)
+        this.onLinkParticleNumber(this.plugin.settings.link_particle_number)
+      //  this.onLinkParticleColor(this.plugin.settings.link_particle_color)
+        this.link_particle_color.setValue(this.plugin.settings.link_particle_color)
+        
     }
     // 点击节点后的处理函数
     handleTagClick(node: ExtendedNodeObject) {

@@ -33,11 +33,11 @@ const DEFAULT_SETTINGS: TagRoutesSettings = {
 	tag_color: '#ff00ff',
 	link_particle_color: '#ffffff',
 	node_size: 5,
-	node_repulsion: 5,
+	node_repulsion: 0,
 	link_distance: 5,
-	link_width: 5,
-	link_particle_size: 5,
-	link_particle_number: 5,
+	link_width: 1,
+	link_particle_size: 2,
+	link_particle_number: 2,
 	enableSave: true,
 	enableShow: true
 }
@@ -46,6 +46,7 @@ const DEFAULT_SETTINGS: TagRoutesSettings = {
 export default class TagsRoutes extends Plugin {
 
 	public settings: TagRoutesSettings;
+	public view: TagRoutesView;
 	onFileClick(filePath: string) {
 		// 传递文件路径给 Graph 并聚焦到相应的节点
 		for (let leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
@@ -88,7 +89,7 @@ export default class TagsRoutes extends Plugin {
 		await this.loadSettings();
 		this.registerView(
 			VIEW_TYPE_TAGS_ROUTES,
-			(leaf) => new TagRoutesView(leaf, this)
+			(leaf) =>  this.view = new TagRoutesView(leaf, this)
 		);
 
 		this.registerEvent(
