@@ -56,7 +56,6 @@ export class TagRoutesView extends ItemView {
         nodes: [],
         links: []
     };
-    link_particle_color: ColorComponent;
     constructor(leaf: WorkspaceLeaf, plugin: TagsRoutes) {
         super(leaf);
         this.plugin = plugin;
@@ -224,6 +223,7 @@ export class TagRoutesView extends ItemView {
     onText(value: string) {
     }
     onNodeSize(value: number) {
+        console.log(" no nodesize called ")
         this.Graph.nodeThreeObject((node: ExtendedNodeObject) => {
             let nodeSize = (node.connections || 1)
             if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
@@ -642,12 +642,12 @@ export class TagRoutesView extends ItemView {
             .add({
                 arg: (new settingGroup(this.plugin, "control sliders", "Display control"))
                     .addSlider("Node size", 1, 10, 1, this.plugin.settings.node_size, this.onNodeSize)
-                    .addSlider("Node repulsion", 0, 10, 1, 0, this.onNodeRepulsion)
+                    .addSlider("Node repulsion", 0, 10, 1, this.plugin.settings.node_repulsion, this.onNodeRepulsion)
                     .addSlider("Link distance", 1, 25, 1, this.plugin.settings.link_distance, this.onLinkDistance)
                     .addSlider("Link Width", 1, 5, 1, this.plugin.settings.link_width, this.onLinkWidth)
                     .addSlider("Link Particle size", 1, 5, 1, this.plugin.settings.link_particle_size, this.onLinkParticleSize)
                     .addSlider("Link Particle number", 1, 5, 1, this.plugin.settings.link_particle_number, this.onLinkParticleNumber)
-                    .addColorPicker("Link Particle color", this.onLinkParticleColor)
+                    .addColorPicker("Link Particle color",this.plugin.settings.link_particle_color, this.onLinkParticleColor)
             })
          //   .add({
          //       arg: (new settingGroup("file filter", "File filter"))
@@ -655,16 +655,6 @@ export class TagRoutesView extends ItemView {
          //   })
             .attachEl(graphContainer.createEl('div', { cls: 'settings-container' }))
             .hideAll();
-        //load saved settings
-        this.onNodeSize(this.plugin.settings.node_size)
-        this.onNodeRepulsion(this.plugin.settings.node_repulsion)
-        this.onLinkDistance(this.plugin.settings.link_distance)
-        this.onLinkWidth(this.plugin.settings.link_width)
-        this.onLinkParticleSize(this.plugin.settings.link_particle_size)
-        this.onLinkParticleNumber(this.plugin.settings.link_particle_number)
-      //  this.onLinkParticleColor(this.plugin.settings.link_particle_color)
-        this.link_particle_color.setValue(this.plugin.settings.link_particle_color)
-        
     }
     // 点击节点后的处理函数
     handleTagClick(node: ExtendedNodeObject) {

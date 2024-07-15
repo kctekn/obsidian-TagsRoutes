@@ -1,4 +1,4 @@
-import { Setting, ExtraButtonComponent, ColorComponent } from 'obsidian';
+import { Setting, ExtraButtonComponent, ColorComponent, SliderComponent } from 'obsidian';
 import TagsRoutes from 'main';
 
 export class settingGroup {
@@ -119,28 +119,33 @@ export class settingGroup {
         return this;
     }
     addSlider(name: string, min: number, max: number, step: number, defaultNum: number, cb: (v: number) => void) {
+        let _slider: SliderComponent| undefined;
         const slider = new Setting(this.holdContainer)
             .setName(name)
             .setClass("mod-slider")
-            .addSlider(slider => slider
+            .addSlider(slider =>
+                _slider = slider
                 .setLimits(min, max, step)
                 .setValue(defaultNum)
                 .setDynamicTooltip()
-                .onChange(async (value) => { cb(value) }))
+                    .onChange(async value => cb(value)))
         slider.setClass("setting-item-block")
+        if (_slider!==undefined)
+        _slider.setValue(defaultNum)
         return this;
     }
-    addColorPicker(name: string, cb: (v: string) => void) {
+    addColorPicker(name: string, defaultColor: string, cb: (v: string) => void) {
         const colorpicker = new Setting(this.holdContainer)
             .setName(name)
-            //.setDesc(this.plugin.settings.link_particle_color || "#000000")
+            .setDesc(defaultColor || "#000000")
             .addColorPicker(picker => {
                 picker
                     .onChange(async (value) => {
                         cb(value)
-                        colorpicker.setDesc(value)
+                        setTimeout(() => colorpicker.setDesc(value), 0);
                     })
-                    this.plugin.view.link_particle_color=picker
+                    .setValue(defaultColor)
+
             })
         colorpicker.setClass("setting-item-inline")
         return this;
