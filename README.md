@@ -1,5 +1,6 @@
 # Obsidian plugin: TagsRoutes
 This is a plugin for obsidian, to visualize files and tags as nodes in 3D graphic.
+![GIF-nearest](https://github.com/user-attachments/assets/27d000e5-fc97-4b53-ac6f-a5ed9a14aea0)
 
 # How to operate:
 https://github.com/kctekn/obsidian-TagsRoutes/assets/32674595/2c37676c-f307-4a74-9dae-0679067cbae7
