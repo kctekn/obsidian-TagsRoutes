@@ -1,4 +1,4 @@
-import { Setting, ExtraButtonComponent, ColorComponent, SliderComponent } from 'obsidian';
+import { Setting, ExtraButtonComponent, ColorComponent, SliderComponent, ValueComponent, BaseComponent } from 'obsidian';
 import TagsRoutes from 'main';
 
 export class settingGroup {
@@ -8,6 +8,7 @@ export class settingGroup {
     private holdContainer: HTMLElement;
     private handleButton: ExtraButtonComponent;
     plugin: TagsRoutes;
+
 
     /*
        This constructor will create:
@@ -138,8 +139,10 @@ export class settingGroup {
                     .setDynamicTooltip()
                     .onChange(async value => cb(value)))
         slider.setClass(cls)
-        if (_slider!==undefined)
-        _slider.setValue(defaultNum)
+        if (_slider !== undefined) {
+            _slider.setValue(defaultNum)
+            this.plugin.view._controls.push({id: name, control:_slider });
+        }
         return this;
     }
     addColorPicker(name: string, defaultColor: string, cb: (v: string) => void) {
@@ -153,6 +156,7 @@ export class settingGroup {
                         setTimeout(() => colorpicker.setDesc(value), 0);
                     })
                     .setValue(defaultColor)
+                this.plugin.view._controls.push({id: name, control: picker})
 
             })
         colorpicker.setClass("setting-item-inline")

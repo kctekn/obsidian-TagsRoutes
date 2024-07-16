@@ -1,4 +1,4 @@
-import { App, Editor, moment, ExtraButtonComponent, MarkdownView, TAbstractFile,MarkdownPreviewView,Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, ColorComponent } from 'obsidian';
+import { App, Editor, moment, ExtraButtonComponent, MarkdownView, TAbstractFile,MarkdownPreviewView,Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, ColorComponent, ValueComponent } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
 import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove,setViewType,showFile} from "../util/util"
@@ -6,7 +6,7 @@ import ForceGraph3D from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "views/settings"
-import TagsRoutes  from 'main';
+import TagsRoutes, { DEFAULT_DISPLAY_SETTINGS, TagRoutesSettings }  from 'main';
 import { Vector2 } from 'three';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
 
@@ -14,7 +14,10 @@ interface GraphData {
     nodes: ExtendedNodeObject[];
     links: LinkObject[];
 }
-
+interface Control {
+    id: string;
+    control: ValueComponent<any>;
+}
 // 自定义 LinkObject 类型
 interface LinkObject {
     source: string | ExtendedNodeObject;
@@ -56,6 +59,8 @@ export class TagRoutesView extends ItemView {
         nodes: [],
         links: []
     };
+    _controls: Control[] = [];
+    private currentSlot: number;
     constructor(leaf: WorkspaceLeaf, plugin: TagsRoutes) {
         super(leaf);
         this.plugin = plugin;
@@ -66,7 +71,7 @@ export class TagRoutesView extends ItemView {
         this.onLinkParticleNumber = this.onLinkParticleNumber.bind(this);
         this.onLinkParticleSize = this.onLinkParticleSize.bind(this);
         this.onLinkParticleColor = this.onLinkParticleColor.bind(this);
-        this.onSaveSlot = this.onSaveSlot.bind(this)
+        this.onSlotSliderChange = this.onSlotSliderChange.bind(this)
     }
 
     getViewType() {
@@ -102,7 +107,7 @@ export class TagRoutesView extends ItemView {
                 node.neighbors.forEach(neighbor => {
                     this.selectedNodes.add(neighbor)
                 });
-            }
+    }
             if (node.links) {
                 node.links.forEach(link => {
                     this.selectedNodesLinks.add(link)
@@ -164,7 +169,7 @@ export class TagRoutesView extends ItemView {
         this.Graph
             .linkWidth(this.Graph.linkWidth())
             .linkDirectionalParticles(this.Graph.linkDirectionalParticles())
-        }
+                }
     focusGraphNodeById(filePath: string) {
         // 获取 Graph 中的相应节点，并将视图聚焦到该节点
         const node = this.gData.nodes.find((node: ExtendedNodeObject) => node.id === filePath);
@@ -196,34 +201,33 @@ export class TagRoutesView extends ItemView {
     onLinkDistance(value: number) {
         this.Graph.d3Force('link').distance(value * 10);
         this.Graph.d3ReheatSimulation();
-        this.plugin.settings.link_distance = value
+        this.plugin.settings.customSlot[0].link_distance = value
         this.plugin.saveSettings();
     }
     onLinkWidth(value: number) {
         this.Graph.linkWidth((link: any) => this.hoveredNodesLinks.has(link) ? 2 * value : value)
-        this.plugin.settings.link_width = value
+        this.plugin.settings.customSlot[0].link_width = value
         this.plugin.saveSettings();
     }
     onLinkParticleNumber(value: number) {
         this.Graph.linkDirectionalParticles((link: any) => this.hoveredNodesLinks.has(link) ? value * 2 : value)
-        this.plugin.settings.link_particle_number = value
+        this.plugin.settings.customSlot[0].link_particle_number = value
         this.plugin.saveSettings();
     }
     onLinkParticleSize(value: number) {
         this.Graph.linkDirectionalParticleWidth((link: any) => this.hoveredNodesLinks.has(link) ? value * 2 : value)
 
-        this.plugin.settings.link_particle_size = value
+        this.plugin.settings.customSlot[0].link_particle_size = value
         this.plugin.saveSettings();
     }
     onLinkParticleColor(value: string) {
         this.Graph.linkDirectionalParticleColor((link: any) => this.hoveredNodesLinks.has(link) ? '#ff00ff' : value)
-        this.plugin.settings.link_particle_color = value;
+        this.plugin.settings.customSlot[0].link_particle_color = value;
         this.plugin.saveSettings();
     }
     onText(value: string) {
     }
     onNodeSize(value: number) {
-        console.log(" no nodesize called ")
         this.Graph.nodeThreeObject((node: ExtendedNodeObject) => {
             let nodeSize = (node.connections || 1)
             if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
@@ -232,13 +236,13 @@ export class TagRoutesView extends ItemView {
             const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
             let color = this.getColorByType(node);
             const material = new THREE.MeshBasicMaterial({ color });
-            this.plugin.settings.node_size = value;
+            this.plugin.settings.customSlot[0].node_size = value;
             this.plugin.saveSettings();
             return new THREE.Mesh(geometry, material);
         })
     }
     onNodeRepulsion(value: number) {
-        this.plugin.settings.node_repulsion = value;
+        this.plugin.settings.customSlot[0].node_repulsion = value;
         this.plugin.saveSettings();
         if (value === 0) return;
         this.Graph.d3Force('charge').strength(-30 - value * 300);
@@ -294,34 +298,112 @@ export class TagRoutesView extends ItemView {
         // 更新图表数据
         this.Graph.graphData(this.gData);
     }
-    onSaveSlot(value:number) {
+    deepEqual(obj1: any, obj2: any): boolean {
+        if (obj1 === obj2) return true;
+    
+        if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null) {
+            return false;
+        }
+    
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+    
+        if (keys1.length !== keys2.length) return false;
+    
+        for (const key of keys1) {
+            if (!keys2.includes(key) || !this.deepEqual(obj1[key], obj2[key])) {
+                return false;
+            }
+        }
+    
+        return true;
+    }
+    onSlotSliderChange(value:number) {
       //  console.log("saveing slot: ", value, " : ", this ?.plugin ?.settingsSlots[value]);
         
-        console.log("slot entries: ", this.plugin.settingSlots.settingGroup.length)
-        this.plugin.settingSlots.settingGroup.push(this.plugin.settings)
-        this.plugin.settingSlots.settingGroup.push(this.plugin.settings)
-        console.log("slot entries: ", this.plugin.settingSlots.settingGroup.length)
-        console.log("slot entries: ", this.plugin.settingSlots.settingGroup)
-        this.plugin.saveData(this.plugin.settingSlots)
-        console.log("slot entries: ", this.plugin.settingSlots.settingGroup)
-        return;
-            console.log(" save slot has value ", this.plugin.settingsSlots[value])
-            this.plugin.settingsSlots[value] = this.plugin.settings
-            //this.plugin.saveSettings();
-            this.plugin.saveData(this.plugin.settingsSlots)
+        this.currentSlot = value;
+        console.log("set current slot: ", this.currentSlot)    
+     //   console.log(" slot 0", this.plugin.settings.customSlot[0]);
+     //   console.log(" slot ", this.plugin.settings.currentSlot, ":", this.plugin.settings.customSlot[this.plugin.settings.currentSlot])
+        if (!this.deepEqual(this.plugin.settings.customSlot[0], this.plugin.settings.customSlot[this.plugin.settings.currentSlot]))
+        {
+            // not load, just return
+            console.log("           setting changed, wait for save")
+            return;
+        } else {
+            console.log("it is the same, go to load effects")
+        }
 
-        
+        console.log("load from slot: ", this.currentSlot)
+        this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlot]);
+        this.plugin.settings.currentSlot = this.currentSlot;
+        this.plugin.saveData(this.plugin.settings);
+     //   console.log("_control num: ", this._controls.length);
+     //   console.log("_controls: ", this._controls);
 
-        console.log("current settings: ", this.plugin.settings)
+        // 使用辅助函数
+        this.setControlValue("Node size", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "node_size");
+        this.setControlValue("Node repulsion", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "node_repulsion");
+        this.setControlValue("Link distance", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "link_distance");
+        this.setControlValue("Link Width", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "link_width");
+        this.setControlValue("Link Particle size", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "link_particle_size");
+        this.setControlValue("Link Particle number", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "link_particle_number");
+        this.setControlValue("Link Particle color", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "link_particle_color");        
+
+
     }
     onSave() {
-        
+        this.plugin.settings.customSlot[this.currentSlot] = structuredClone(this.plugin.settings.customSlot[0]);
+        this.plugin.settings.currentSlot = this.currentSlot;
+        this.plugin.saveData(this.plugin.settings);
+        console.log("save to slot: ", this.currentSlot)
     }
+    setControlValue<K extends keyof TagRoutesSettings>(
+        controlId: string,
+        controlArray: { id: string; control: ValueComponent<any> }[],
+        settings: TagRoutesSettings,
+        settingKey: K
+    ): void {
+        const controlEntry = controlArray.find(v => v.id === controlId);
+        if (controlEntry) {
+            controlEntry.control.setValue(settings[settingKey]);
+        }
+    }
+    
+    
     onLoad() {
+        console.log("load from slot: ", this.currentSlot)
+        this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlot]);
+        this.plugin.settings.currentSlot = this.currentSlot;
+        this.plugin.saveData(this.plugin.settings);
+      //  console.log("_control num: ", this._controls.length);
+      //  console.log("_controls: ", this._controls);
 
+        // 使用辅助函数
+        this.setControlValue("Node size", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "node_size");
+        this.setControlValue("Node repulsion", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "node_repulsion");
+        this.setControlValue("Link distance", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "link_distance");
+        this.setControlValue("Link Width", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "link_width");
+        this.setControlValue("Link Particle size", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "link_particle_size");
+        this.setControlValue("Link Particle number", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "link_particle_number");
+        this.setControlValue("Link Particle color", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "link_particle_color");
     }
     onReset() {
-
+        this.plugin.settings.customSlot[0] = DEFAULT_DISPLAY_SETTINGS;
     }
 
     // 连接所有 broken 节点的方法
@@ -670,17 +752,17 @@ export class TagRoutesView extends ItemView {
             })
             .add({
                 arg: (new settingGroup(this.plugin, "control sliders", "Display control"))
-                    .addSlider("Node size", 1, 10, 1, this.plugin.settings.node_size, this.onNodeSize)
-                    .addSlider("Node repulsion", 0, 10, 1, this.plugin.settings.node_repulsion, this.onNodeRepulsion)
-                    .addSlider("Link distance", 1, 25, 1, this.plugin.settings.link_distance, this.onLinkDistance)
-                    .addSlider("Link width", 1, 5, 1, this.plugin.settings.link_width, this.onLinkWidth)
-                    .addSlider("Link particle size", 1, 5, 1, this.plugin.settings.link_particle_size, this.onLinkParticleSize)
-                    .addSlider("Link particle number", 1, 5, 1, this.plugin.settings.link_particle_number, this.onLinkParticleNumber)
-                    .addColorPicker("Link particle color",this.plugin.settings.link_particle_color, this.onLinkParticleColor)
+                    .addSlider("Node size", 1, 10, 1, this.plugin.settings.customSlot[0].node_size, this.onNodeSize)
+                    .addSlider("Node repulsion", 0, 10, 1, this.plugin.settings.customSlot[0].node_repulsion, this.onNodeRepulsion)
+                    .addSlider("Link distance", 1, 25, 1, this.plugin.settings.customSlot[0].link_distance, this.onLinkDistance)
+                    .addSlider("Link Width", 1, 5, 1, this.plugin.settings.customSlot[0].link_width, this.onLinkWidth)
+                    .addSlider("Link Particle size", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_size, this.onLinkParticleSize)
+                    .addSlider("Link Particle number", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_number, this.onLinkParticleNumber)
+                    .addColorPicker("Link Particle color", this.plugin.settings.customSlot[0].link_particle_color, this.onLinkParticleColor)
             })
             .add({
                 arg: (new settingGroup(this.plugin, "save-load", "Save and load"))
-                    .addSlider("Save slot", 1, 5, 1, this.plugin.settings.node_size, this.onSaveSlot)
+                    .addSlider("Slot #:", 1, 5, 1, this.plugin.settings.currentSlot, this.onSlotSliderChange)
                     .add({
                         arg: (new settingGroup(this.plugin, "button-box", "button-box", "flex-box")
                             .addButton("Save", "graph-button", () => { this.onSave() })

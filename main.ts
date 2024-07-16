@@ -1,11 +1,11 @@
-import { App, Editor, MarkdownView, Modal,MarkdownRenderer, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, ToggleComponent } from 'obsidian';
+import { App, Editor, MarkdownView, Modal,MarkdownRenderer, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, ToggleComponent, ValueComponent } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
 import { createFolderIfNotExists} from "./util/util"
 import { fileContent } from "./util/query"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
 
-interface TagRoutesSettings {
+export interface TagRoutesSettings {
 	broken_file_link_center: string;
 	broken_file_link_line: string;
 	md_color: string;
@@ -20,14 +20,15 @@ interface TagRoutesSettings {
 	link_particle_size: number;
 	link_particle_number: number;
 	link_particle_color: string;
-	enableSave: boolean;
-	enableShow: boolean;
 }
 interface Settings {
-	settingGroup: TagRoutesSettings[]
+	enableSave: boolean;
+	enableShow: boolean;
+	currentSlot: number;
+	customSlot: [TagRoutesSettings,TagRoutesSettings,TagRoutesSettings,TagRoutesSettings,TagRoutesSettings,TagRoutesSettings]
 }
 
-const DEFAULT_SETTINGS: TagRoutesSettings = {
+export const DEFAULT_DISPLAY_SETTINGS: TagRoutesSettings = {
 	broken_file_link_center: 'true',
 	broken_file_link_line: 'false',
 	md_color: 'green',
@@ -42,17 +43,20 @@ const DEFAULT_SETTINGS: TagRoutesSettings = {
 	link_width: 1,
 	link_particle_size: 2,
 	link_particle_number: 2,
+}
+
+const DEFAULT_SETTINGS: Settings = {
 	enableSave: true,
-	enableShow: true
+	enableShow: true,
+	currentSlot: 1,
+	customSlot:[DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS]
 }
 
 // plugin 主体
 export default class TagsRoutes extends Plugin {
 
-	public settings: TagRoutesSettings;
-	public  settingSlots: Settings = {
-		settingGroup:[]
-	}
+//	public settings_old: TagRoutesSettings;
+	public settings: Settings;
 //	public settingsSlots: TagRoutesSettings[] = [];
 	public view: TagRoutesView;
 	onFileClick(filePath: string) {
@@ -154,6 +158,8 @@ export default class TagsRoutes extends Plugin {
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings.customSlot[0] =structuredClone( 
+			this.settings.customSlot[this.settings.currentSlot]);
 	}
 
 	async saveSettings() {
