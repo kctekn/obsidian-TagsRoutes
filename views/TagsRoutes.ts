@@ -296,15 +296,21 @@ export class TagRoutesView extends ItemView {
     }
     onSaveSlot(value:number) {
       //  console.log("saveing slot: ", value, " : ", this ?.plugin ?.settingsSlots[value]);
-        if (this.plugin.settingsSlots[value]??false) {
-            console.log("slot has value")
-        } else {
+        
+        console.log("slot entries: ", this.plugin.settingSlots.settingGroup.length)
+        this.plugin.settingSlots.settingGroup.push(this.plugin.settings)
+        this.plugin.settingSlots.settingGroup.push(this.plugin.settings)
+        console.log("slot entries: ", this.plugin.settingSlots.settingGroup.length)
+        console.log("slot entries: ", this.plugin.settingSlots.settingGroup)
+        this.plugin.saveData(this.plugin.settingSlots)
+        console.log("slot entries: ", this.plugin.settingSlots.settingGroup)
+        return;
             console.log(" save slot has value ", this.plugin.settingsSlots[value])
             this.plugin.settingsSlots[value] = this.plugin.settings
             //this.plugin.saveSettings();
             this.plugin.saveData(this.plugin.settingsSlots)
 
-        }
+        
 
         console.log("current settings: ", this.plugin.settings)
     }
