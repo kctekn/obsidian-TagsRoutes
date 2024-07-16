@@ -47,6 +47,7 @@ const DEFAULT_SETTINGS: TagRoutesSettings = {
 export default class TagsRoutes extends Plugin {
 
 	public settings: TagRoutesSettings;
+	public settingsSlots: TagRoutesSettings[];
 	public view: TagRoutesView;
 	onFileClick(filePath: string) {
 		// 传递文件路径给 Graph 并聚焦到相应的节点

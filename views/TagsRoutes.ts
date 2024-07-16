@@ -66,6 +66,7 @@ export class TagRoutesView extends ItemView {
         this.onLinkParticleNumber = this.onLinkParticleNumber.bind(this);
         this.onLinkParticleSize = this.onLinkParticleSize.bind(this);
         this.onLinkParticleColor = this.onLinkParticleColor.bind(this);
+        this.onSaveSlot = this.onSaveSlot.bind(this)
     }
 
     getViewType() {
@@ -293,6 +294,30 @@ export class TagRoutesView extends ItemView {
         // 更新图表数据
         this.Graph.graphData(this.gData);
     }
+    onSaveSlot(value:number) {
+      //  console.log("saveing slot: ", value, " : ", this ?.plugin ?.settingsSlots[value]);
+        if (this.plugin.settingsSlots[value]??false) {
+            console.log("slot has value")
+        } else {
+            console.log(" save slot has value ", this.plugin.settingsSlots[value])
+            this.plugin.settingsSlots[value] = this.plugin.settings
+            //this.plugin.saveSettings();
+            this.plugin.saveData(this.plugin.settingsSlots)
+
+        }
+
+        console.log("current settings: ", this.plugin.settings)
+    }
+    onSave() {
+        
+    }
+    onLoad() {
+
+    }
+    onReset() {
+
+    }
+
     // 连接所有 broken 节点的方法
     connectBrokenNodes(linkStar: boolean) {
         let links: LinkObject[] = this.gData.links;
@@ -627,7 +652,7 @@ export class TagRoutesView extends ItemView {
         observer.observe(container, { attributes: true, childList: true, subtree: true });
         // 清理 observer
         this.register(() => observer.disconnect());
-        new settingGroup(this.plugin, "Tags' route settings", "Tags' route settings", true).hide()
+        new settingGroup(this.plugin, "Tags' route settings", "Tags' route settings", "root").hide()
             .add({
                 arg: (new settingGroup(this.plugin, "commands", "Node commands"))
                     .addButton("Link broken as star", "graph-button", () => { this.connectBrokenNodes(true) })
@@ -646,6 +671,17 @@ export class TagRoutesView extends ItemView {
                     .addSlider("Link particle size", 1, 5, 1, this.plugin.settings.link_particle_size, this.onLinkParticleSize)
                     .addSlider("Link particle number", 1, 5, 1, this.plugin.settings.link_particle_number, this.onLinkParticleNumber)
                     .addColorPicker("Link particle color",this.plugin.settings.link_particle_color, this.onLinkParticleColor)
+            })
+            .add({
+                arg: (new settingGroup(this.plugin, "save-load", "Save and load"))
+                    .addSlider("Save slot", 1, 5, 1, this.plugin.settings.node_size, this.onSaveSlot)
+                    .add({
+                        arg: (new settingGroup(this.plugin, "button-box", "button-box", "flex-box")
+                            .addButton("Save", "graph-button", () => { this.onSave() })
+                            .addButton("Load", "graph-button", () => { this.onLoad() })
+                            .addButton("Reset", "graph-button", () => { this.onReset() })
+                        )
+                    })
             })
          //   .add({
          //       arg: (new settingGroup("file filter", "File filter"))

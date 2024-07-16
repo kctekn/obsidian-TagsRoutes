@@ -16,10 +16,18 @@ export class settingGroup {
         - and a hold container ready to add sub components
         - with in the given comtainer
     */
-    constructor(plugin:TagsRoutes, id: string, name: string, isRoot: boolean = false) {
+    constructor(plugin: TagsRoutes, id: string, name: string, type: "root"|"group"|"flex-box" = "group" ) {//isRoot: boolean = false) {
         this.plugin = plugin
         this.rootContainer = document.createElement('div')
         this.rootContainer.id = id;
+
+        if (type === "flex-box")
+        {
+        this.holdContainer = this.rootContainer.createDiv('div')
+            this.holdContainer.addClass('setting-flex-box')
+            return this;
+        }
+
         this.headContainer = this.rootContainer.createEl('div', { cls: 'title-bar' })
         this.addColorPicker = this.addColorPicker.bind(this)
 
@@ -28,7 +36,7 @@ export class settingGroup {
         this.holdContainer.addClass('group-holder')
 
 
-        if (!isRoot) {
+        if (type==="group") {
             this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('span', { cls: 'group-bar-button' }))
                 .setIcon("chevron-down")
                 .setTooltip("Close " + name)
@@ -49,7 +57,7 @@ export class settingGroup {
             //  this.handleButton.extraSettingsEl.style.justifyContent = 'flex-end';
             //this.settingsButton.extraSettingsEl.addClasses(["clickable-icon"])
             this.headContainer.createEl('span', { cls: 'group-bar-text' }).textContent = name;
-        } else {
+        } else if (type==="root") {
             // use a solid style for root container
             this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('div', { cls: 'root-title-bar' }))
                 //                .setIcon("x")
@@ -77,7 +85,7 @@ export class settingGroup {
             this.handleButton.extraSettingsEl.style.justifyContent = 'flex-end';
             //this.settingsButton.extraSettingsEl.addClasses(["clickable-icon"])
             // this.headContainer.createEl('span', { cls: 'title-bar' }).textContent = name;            
-        }
+        } 
         //  return;
 
         return this
@@ -118,7 +126,7 @@ export class settingGroup {
         button.addEventListener('click', buttonCallback);
         return this;
     }
-    addSlider(name: string, min: number, max: number, step: number, defaultNum: number, cb: (v: number) => void) {
+    addSlider(name: string, min: number, max: number, step: number, defaultNum: number, cb: (v: number) => void,cls:string = "setting-item-block") {
         let _slider: SliderComponent| undefined;
         const slider = new Setting(this.holdContainer)
             .setName(name)
@@ -129,7 +137,7 @@ export class settingGroup {
                     .setValue(defaultNum)
                     .setDynamicTooltip()
                     .onChange(async value => cb(value)))
-        slider.setClass("setting-item-block")
+        slider.setClass(cls)
         if (_slider!==undefined)
         _slider.setValue(defaultNum)
         return this;

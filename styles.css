@@ -83,7 +83,10 @@ If your plugin does not need CSS, delete this file.
     margin-left: 5px;
     margin-right: 5px;
 }
-
+.tags-routes .setting-flex-box {
+    display: flex;
+    justify-content: space-around;
+}
 .tags-routes .setting-item-inline {
     display: flex;
 }
