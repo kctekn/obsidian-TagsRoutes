@@ -112,7 +112,7 @@ If your plugin does not need CSS, delete this file.
     /* 确保滑动条的input元素也占据100%宽度 */
 }
 .notice-container {
-    display: none;
+  /*  display: none;*/
 }
 .tags-routes .scene-nav-info {
 	display: none;

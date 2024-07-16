@@ -323,13 +323,14 @@ export class TagRoutesView extends ItemView {
       //  console.log("saveing slot: ", value, " : ", this ?.plugin ?.settingsSlots[value]);
         
         this.currentSlot = value;
-        console.log("set current slot: ", this.currentSlot)    
+        console.log("Tags routes: set current slot: ", this.currentSlot)    
      //   console.log(" slot 0", this.plugin.settings.customSlot[0]);
      //   console.log(" slot ", this.plugin.settings.currentSlot, ":", this.plugin.settings.customSlot[this.plugin.settings.currentSlot])
         if (!this.deepEqual(this.plugin.settings.customSlot[0], this.plugin.settings.customSlot[this.plugin.settings.currentSlot]))
         {
             // not load, just return
             console.log("           setting changed, wait for save")
+            new Notice(`Tags routes: Settings changed, click 'Save' to save to slot ${this.currentSlot}`, 5000);
             return;
         } else {
             console.log("it is the same, go to load effects")
@@ -344,7 +345,7 @@ export class TagRoutesView extends ItemView {
 
         // 使用辅助函数
         this.applyChanges();   
-
+        new Notice(`Tags routes: Load slot ${this.currentSlot}`);
 
     }
     onSave() {
@@ -352,6 +353,7 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.currentSlot = this.currentSlot;
         this.plugin.saveData(this.plugin.settings);
         console.log("save to slot: ", this.currentSlot)
+        new Notice(`Tags routes: Graph save to slot ${this.currentSlot}`);
     }
     setControlValue<K extends keyof TagRoutesSettings>(
         controlId: string,
@@ -394,12 +396,18 @@ export class TagRoutesView extends ItemView {
 
         // 使用辅助函数
         this.applyChanges();
+        //new Notice('Graph load on slot ', this.currentSlot);
+        new Notice(`Tags routes: Graph load from slot ${this.currentSlot}`);
+
     }
     onReset() {
         this.plugin.settings.customSlot[0] = structuredClone(DEFAULT_DISPLAY_SETTINGS);
         this.plugin.settings.customSlot[this.currentSlot] = structuredClone(DEFAULT_DISPLAY_SETTINGS);
         this.plugin.saveData(this.plugin.settings);
         this.applyChanges();
+//        new Notice('Graph reset on slot ', this.currentSlot);
+        new Notice(`Graph reset on slot ${this.currentSlot}`);
+
     }
 
     // 连接所有 broken 节点的方法

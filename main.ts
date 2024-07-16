@@ -4,6 +4,8 @@ import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
 import { createFolderIfNotExists} from "./util/util"
 import { fileContent } from "./util/query"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
+const versionInfo = require('./version_info.txt');
+
 
 export interface TagRoutesSettings {
 	broken_file_link_center: string;
@@ -95,7 +97,8 @@ export default class TagsRoutes extends Plugin {
 		});
 	}
 	async initializePlugin() {
-
+		console.log(versionInfo);
+		new Notice(versionInfo, 0)
 		createFolderIfNotExists('scripts')
 		createFolderIfNotExists('TagsRoutes')
 		await this.loadSettings();
