@@ -72,6 +72,7 @@ export class TagRoutesView extends ItemView {
         this.onLinkParticleSize = this.onLinkParticleSize.bind(this);
         this.onLinkParticleColor = this.onLinkParticleColor.bind(this);
         this.onSlotSliderChange = this.onSlotSliderChange.bind(this)
+        this.currentSlot = this.plugin.settings.currentSlot;
     }
 
     getViewType() {
@@ -342,20 +343,7 @@ export class TagRoutesView extends ItemView {
      //   console.log("_controls: ", this._controls);
 
         // 使用辅助函数
-        this.setControlValue("Node size", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "node_size");
-        this.setControlValue("Node repulsion", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "node_repulsion");
-        this.setControlValue("Link distance", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "link_distance");
-        this.setControlValue("Link Width", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "link_width");
-        this.setControlValue("Link Particle size", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "link_particle_size");
-        this.setControlValue("Link Particle number", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "link_particle_number");
-        this.setControlValue("Link Particle color", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "link_particle_color");        
+        this.applyChanges();   
 
 
     }
@@ -378,15 +366,8 @@ export class TagRoutesView extends ItemView {
     }
     
     
-    onLoad() {
-        console.log("load from slot: ", this.currentSlot)
-        this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlot]);
-        this.plugin.settings.currentSlot = this.currentSlot;
-        this.plugin.saveData(this.plugin.settings);
-      //  console.log("_control num: ", this._controls.length);
-      //  console.log("_controls: ", this._controls);
-
-        // 使用辅助函数
+    applyChanges()
+    {
         this.setControlValue("Node size", this._controls,
             this.plugin.settings.customSlot[this.currentSlot], "node_size");
         this.setControlValue("Node repulsion", this._controls,
@@ -402,8 +383,23 @@ export class TagRoutesView extends ItemView {
         this.setControlValue("Link Particle color", this._controls,
             this.plugin.settings.customSlot[this.currentSlot], "link_particle_color");
     }
+
+    onLoad() {
+        console.log("load from slot: ", this.currentSlot)
+        this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlot]);
+        this.plugin.settings.currentSlot = this.currentSlot;
+        this.plugin.saveData(this.plugin.settings);
+      //  console.log("_control num: ", this._controls.length);
+      //  console.log("_controls: ", this._controls);
+
+        // 使用辅助函数
+        this.applyChanges();
+    }
     onReset() {
-        this.plugin.settings.customSlot[0] = DEFAULT_DISPLAY_SETTINGS;
+        this.plugin.settings.customSlot[0] = structuredClone(DEFAULT_DISPLAY_SETTINGS);
+        this.plugin.settings.customSlot[this.currentSlot] = structuredClone(DEFAULT_DISPLAY_SETTINGS);
+        this.plugin.saveData(this.plugin.settings);
+        this.applyChanges();
     }
 
     // 连接所有 broken 节点的方法
