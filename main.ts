@@ -3,6 +3,7 @@ import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
 import { createFolderIfNotExists} from "./util/util"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
 //const versionInfo = require('./version_info.txt');
+
 export interface TagRoutesSettings {
 	broken_file_link_center: string;
 	broken_file_link_line: string;
@@ -95,7 +96,7 @@ export default class TagsRoutes extends Plugin {
 		await this.loadSettings();
 		this.registerView(
 			VIEW_TYPE_TAGS_ROUTES,
-			(leaf) => this.view = new TagRoutesView(leaf, this)
+			(leaf) =>  this.view = new TagRoutesView(leaf, this)
 		);
 		const codeProcess = new codeBlockProcessor(this);
 		this.registerMarkdownCodeBlockProcessor("tagsroutes", codeProcess.codeBlockProcessor);
@@ -123,15 +124,15 @@ export default class TagsRoutes extends Plugin {
 					tag = '#'+target.innerText; // 获取标签内容
 				}
 				if (tag) {
-					// 传递文件路径给 Graph 并聚焦到相应的节点
-					for (let leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
-						if (leaf.view instanceof TagRoutesView) {
-							leaf.view.focusGraphTag(tag)
-						}
+				// 传递文件路径给 Graph 并聚焦到相应的节点
+				for (let leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
+					if (leaf.view instanceof TagRoutesView) {
+						leaf.view.focusGraphTag(tag)
 					}
 				}
-			//	this.focusGraphTag(tag); // 在图形中聚焦到对应的节点
-		}
+				}
+				//	this.focusGraphTag(tag); // 在图形中聚焦到对应的节点
+			}
 		});
 	}
 	onunload() {
