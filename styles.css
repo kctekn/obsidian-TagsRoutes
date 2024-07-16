@@ -79,6 +79,7 @@ If your plugin does not need CSS, delete this file.
 
 .tags-routes .setting-item-block {
     display: block;
+    text-align: left;
     margin-bottom: 5px;
     margin-left: 5px;
     margin-right: 5px;
@@ -89,6 +90,12 @@ If your plugin does not need CSS, delete this file.
 }
 .tags-routes .setting-item-inline {
     display: flex;
+    justify-content: space-between;
+}
+.tags-routes .setting-item-inline .setting-item-info {
+    flex: 0 1 auto;
+    padding-left: 5px;
+    justify-content: space-between;
 }
 .tags-routes .setting-item-name {
     margin-left: 2px;

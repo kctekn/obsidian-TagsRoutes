@@ -762,7 +762,7 @@ export class TagRoutesView extends ItemView {
             })
             .add({
                 arg: (new settingGroup(this.plugin, "save-load", "Save and load"))
-                    .addSlider("Slot #:", 1, 5, 1, this.plugin.settings.currentSlot, this.onSlotSliderChange)
+                    .addSlider("Slot #", 1, 5, 1, this.plugin.settings.currentSlot, this.onSlotSliderChange)
                     .add({
                         arg: (new settingGroup(this.plugin, "button-box", "button-box", "flex-box")
                             .addButton("Save", "graph-button", () => { this.onSave() })
