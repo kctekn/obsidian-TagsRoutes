@@ -53,7 +53,7 @@ export class settingGroup {
             // use a solid style for root container
             this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('div', { cls: 'root-title-bar' }))
                 //                .setIcon("x")
-                .setTooltip("Close " + name)
+                .setTooltip("Open " + name)
                 .onClick(() => {
                     if (this.holdContainer.style.display === 'none') {
                         this.holdContainer.style.display = 'block';
