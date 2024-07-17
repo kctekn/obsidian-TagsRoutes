@@ -1,12 +1,12 @@
-import { App, Editor, moment, ExtraButtonComponent, MarkdownView, TAbstractFile,MarkdownPreviewView,Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, ColorComponent, ValueComponent } from 'obsidian';
+import { App, Editor, moment, ExtraButtonComponent, MarkdownView, TAbstractFile, MarkdownPreviewView, Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, ColorComponent, ValueComponent } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
-import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove,setViewType,showFile} from "../util/util"
+import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile } from "../util/util"
 import ForceGraph3D from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "views/settings"
-import TagsRoutes, { DEFAULT_DISPLAY_SETTINGS, TagRoutesSettings }  from 'main';
+import TagsRoutes, { DEFAULT_DISPLAY_SETTINGS, TagRoutesSettings } from 'main';
 import { Vector2 } from 'three';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
 
@@ -26,8 +26,8 @@ interface LinkObject {
     targetId: string;  // 添加目标ID字段
 }
 
-interface nodeThreeObject extends ExtendedNodeObject  {
-    __threeObj? :THREE.Mesh
+interface nodeThreeObject extends ExtendedNodeObject {
+    __threeObj?: THREE.Mesh
 }
 interface ExtendedNodeObject extends Node {
     type: 'md' | 'tag' | 'attachment' | 'broken' | 'excalidraw';
@@ -87,31 +87,9 @@ export class TagRoutesView extends ItemView {
     private selectedNodes = new Set();
     private selectedNodesLinks = new Set();
     private highlightNodes = new Set();
-    private previousHighlightNodes = new Set();
-    private previousHighlightLinks = new Set();
-    private hoverNode: ExtendedNodeObject|null;
+    private hoverNode: ExtendedNodeObject | null;
     private selectedNode: ExtendedNodeObject | null;
 
-    resetNodeColor() {
-        this.previousHighlightNodes.forEach((node: ExtendedNodeObject) => {
-            // Access __threeObj to get the Mesh object
-            const mesh = (node as nodeThreeObject).__threeObj as THREE.Mesh;
-            if (mesh && mesh.material) {
-                (mesh.material as THREE.MeshBasicMaterial).color.set(this.getColorByType(node));
-            } else {
-            }
-        })
-        this.previousHighlightLinks.forEach(link => {
-
-        })
-        this.hoveredNodesLinks.clear();
-        this.Graph
-            //.nodeColor(this.Graph.nodeColor())
-            .linkWidth(this.Graph.linkWidth())
-            .linkDirectionalParticles(this.Graph.linkDirectionalParticles());
-        if (this.selectedNode) this.highlightOnNodeHover(this.selectedNode);
-
-    }
     /**
      * handle the highlight process of a clicked node
      * @param node | null
@@ -126,56 +104,45 @@ export class TagRoutesView extends ItemView {
         this.selectedNodesLinks.clear();
         if (node) {
             this.selectedNodes.add(node);
-         //   this.previousHighlightNodes.add(node);
             if (node.neighbors) {
                 node.neighbors.forEach(neighbor => {
                     this.selectedNodes.add(neighbor)
-                //    this.previousHighlightNodes.add(neighbor)
                 });
             }
             if (node.links) {
                 node.links.forEach(link => {
                     this.selectedNodesLinks.add(link)
-                 //   this.previousHighlightLinks.add(link)
                 });
             }
         }
         this.updateHighlight();
     }
     /**
-     * Node will be null when not hovered
+     * Node will be null when hover ended
      * @param node 
      * @returns 
      */
-    highlightOnNodeHover(node: ExtendedNodeObject|null) {
-        console.log("node hovered function entered: " , node)
+    highlightOnNodeHover(node: ExtendedNodeObject | null) {
         // no state change
         if ((!node && !this.hoveredNodes.size) || (node && this.hoverNode === node)) return;
         this.hoverNode = node;
-      
+
         this.hoveredNodes.clear();
         this.hoveredNodesLinks.clear();
         if (node) {
-            console.log("node hovered")
             this.hoveredNodes.add(node);
-          //  this.previousHighlightNodes.add(node);
             if (node.neighbors) {
                 node.neighbors.forEach(neighbor => {
                     this.hoveredNodes.add(neighbor)
-                   // this.previousHighlightNodes.add(neighbor)
                 });
             }
             if (node.links) {
                 node.links.forEach(link => {
                     this.hoveredNodesLinks.add(link)
-           //         this.previousHighlightLinks.add(link)
                 });
             }
         }
-        else {
-            console.log("node hover exited")
-        }
-        
+
         this.updateHighlight();
     }
     onLinkHover(link: LinkObject) {
@@ -186,33 +153,23 @@ export class TagRoutesView extends ItemView {
             this.hoveredNodesLinks.add(link);
             this.hoveredNodes.add(link.source);
             this.hoveredNodes.add(link.target);
-            this.previousHighlightNodes.add(link.source);
-            this.previousHighlightNodes.add(link.target);
         }
 
         this.updateHighlight();
     }
     updateHighlight() {
         // trigger update of highlighted objects in scene
+        this.highlightNodes = new Set([...this.selectedNodes, ...this.hoveredNodes])
+        this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
+            const obj = node.__threeObj; // 获取节点的 Three.js 对象
+            if(obj) {
+                (obj.material as THREE.MeshBasicMaterial).color.set(this.getColorByType(node));
+            }
+        });
+        // this.Graph.graphData(this.gData);
         this.Graph
             .linkWidth(this.Graph.linkWidth())
-            .linkDirectionalParticles(this.Graph.linkDirectionalParticles());
-        // Highlight nodes logic
-        this.highlightNodes = new Set([...this.selectedNodes, ...this.hoveredNodes])
-        if (this.highlightNodes.size !== 0) {
-            this.highlightNodes.forEach(node => {
-                const mesh = (node as nodeThreeObject).__threeObj as THREE.Mesh;
-                if (mesh && mesh.material) {
-                    if (node === this.selectedNode || node === this.hoverNode)
-                        (mesh.material as THREE.MeshBasicMaterial).color.set('#FF3333');
-                    else
-                        (mesh.material as THREE.MeshBasicMaterial).color.set('#3333ff');
-                } else {
-                }
-            });
-        } else {
-            this.resetNodeColor()
-        }
+            .linkDirectionalParticles(this.Graph.linkDirectionalParticles())
     }
     focusGraphNodeById(filePath: string) {
         // 获取 Graph 中的相应节点，并将视图聚焦到该节点
@@ -227,10 +184,7 @@ export class TagRoutesView extends ItemView {
             };
 
             this.Graph.cameraPosition(newPos, node, 3000);
-            this.selectedNode = null;
-            this.resetNodeColor();
-            this.selectedNode = node;
-            this.highlightOnNodeHover(node)
+            this.highlightOnNodeClick(node)
         }
     }
 
@@ -347,33 +301,32 @@ export class TagRoutesView extends ItemView {
     }
     deepEqual(obj1: any, obj2: any): boolean {
         if (obj1 === obj2) return true;
-    
+
         if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null) {
             return false;
         }
-    
+
         const keys1 = Object.keys(obj1);
         const keys2 = Object.keys(obj2);
-    
+
         if (keys1.length !== keys2.length) return false;
-    
+
         for (const key of keys1) {
             if (!keys2.includes(key) || !this.deepEqual(obj1[key], obj2[key])) {
                 return false;
             }
         }
-    
+
         return true;
     }
-    onSlotSliderChange(value:number) {
-      //  console.log("saveing slot: ", value, " : ", this ?.plugin ?.settingsSlots[value]);
-        
+    onSlotSliderChange(value: number) {
+        //  console.log("saveing slot: ", value, " : ", this ?.plugin ?.settingsSlots[value]);
+
         this.currentSlot = value;
-        console.log("Tags routes: set current slot: ", this.currentSlot)    
-     //   console.log(" slot 0", this.plugin.settings.customSlot[0]);
-     //   console.log(" slot ", this.plugin.settings.currentSlot, ":", this.plugin.settings.customSlot[this.plugin.settings.currentSlot])
-        if (!this.deepEqual(this.plugin.settings.customSlot[0], this.plugin.settings.customSlot[this.plugin.settings.currentSlot]))
-        {
+        console.log("Tags routes: set current slot: ", this.currentSlot)
+        //   console.log(" slot 0", this.plugin.settings.customSlot[0]);
+        //   console.log(" slot ", this.plugin.settings.currentSlot, ":", this.plugin.settings.customSlot[this.plugin.settings.currentSlot])
+        if (!this.deepEqual(this.plugin.settings.customSlot[0], this.plugin.settings.customSlot[this.plugin.settings.currentSlot])) {
             // not load, just return
             console.log("           setting changed, wait for save")
             new Notice(`Tags routes: Settings changed, click 'Save' to save to slot ${this.currentSlot}`, 5000);
@@ -386,11 +339,11 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlot]);
         this.plugin.settings.currentSlot = this.currentSlot;
         this.plugin.saveData(this.plugin.settings);
-     //   console.log("_control num: ", this._controls.length);
-     //   console.log("_controls: ", this._controls);
+        //   console.log("_control num: ", this._controls.length);
+        //   console.log("_controls: ", this._controls);
 
         // 使用辅助函数
-        this.applyChanges();   
+        this.applyChanges();
         new Notice(`Tags routes: Load slot ${this.currentSlot}`);
 
     }
@@ -412,10 +365,9 @@ export class TagRoutesView extends ItemView {
             controlEntry.control.setValue(settings[settingKey]);
         }
     }
-    
-    
-    applyChanges()
-    {
+
+
+    applyChanges() {
         this.setControlValue("Node size", this._controls,
             this.plugin.settings.customSlot[this.currentSlot], "node_size");
         this.setControlValue("Node repulsion", this._controls,
@@ -437,8 +389,6 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlot]);
         this.plugin.settings.currentSlot = this.currentSlot;
         this.plugin.saveData(this.plugin.settings);
-      //  console.log("_control num: ", this._controls.length);
-      //  console.log("_controls: ", this._controls);
 
         // 使用辅助函数
         this.applyChanges();
@@ -451,7 +401,6 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.customSlot[this.currentSlot] = structuredClone(DEFAULT_DISPLAY_SETTINGS);
         this.plugin.saveData(this.plugin.settings);
         this.applyChanges();
-//        new Notice('Graph reset on slot ', this.currentSlot);
         new Notice(`Graph reset on slot ${this.currentSlot}`);
 
     }
@@ -462,7 +411,7 @@ export class TagRoutesView extends ItemView {
         let nodes: ExtendedNodeObject[] = this.gData.nodes;
 
         if (nodes.filter(node => node.id === 'broken').length != 0) {
-        //    console.log(" has had broken node, return.")
+            //    console.log(" has had broken node, return.")
             return;
         }
         // 创建一个新的 broken 节点
@@ -477,7 +426,7 @@ export class TagRoutesView extends ItemView {
         if (linkStar) {
             // 找到所有 type 为 broken 的节点
             const brokenNodes = this.gData.nodes.filter(node => node.type === 'broken');
-      //      console.log("broken nodes number: ", brokenNodes.length)
+            //      console.log("broken nodes number: ", brokenNodes.length)
             // 将所有 broken 节点连接到新创建的 broken 节点上
             brokenNodes.forEach(node => {
                 links.push({ source: brokenNode.id, target: node.id, sourceId: brokenNode.id, targetId: node.id });
@@ -486,7 +435,7 @@ export class TagRoutesView extends ItemView {
 
             // 将所有 broken 节点以一条线连接起来
             const brokenNodes = this.gData.nodes.filter(node => node.type === 'broken');
-        //    console.log("broken nodes number: ", brokenNodes.length)
+            //    console.log("broken nodes number: ", brokenNodes.length)
             for (let i = 0; i < brokenNodes.length - 1; i++) {
                 links.push({ source: brokenNodes[i].id, target: brokenNodes[i + 1].id, sourceId: brokenNodes[i].id, targetId: brokenNodes[i + 1].id });
             }
@@ -528,7 +477,7 @@ export class TagRoutesView extends ItemView {
         });
         // 重新计算连接数
         // 更新图表数据
-        this.gData = { nodes: nodes , links: links }
+        this.gData = { nodes: nodes, links: links }
         this.Graph.graphData(this.gData);
     }
 
@@ -573,6 +522,9 @@ export class TagRoutesView extends ItemView {
             default:
                 color = '#ffffff'; // 默认颜色
         }
+        if (this.highlightNodes.has(node)) color = '#3333ff'
+        if (node === this.selectedNode || node === this.hoverNode)
+            color = '#FF3333'
         return color;
     }
     buildGdata(): GraphData {
@@ -670,7 +622,7 @@ export class TagRoutesView extends ItemView {
                 links.splice(i, 1);
             }
         }
-        this.debugLogToFileM(`|After filtered pathes=>|| filtered nodes: |${TagNodeNum + fileNodeNum +brokennum- nodes.length}|  links:| ${links.length}|`)
+        this.debugLogToFileM(`|After filtered pathes=>|| filtered nodes: |${TagNodeNum + fileNodeNum + brokennum - nodes.length}|  links:| ${links.length}|`)
         // 计算每个节点的连接数
         nodes.forEach((node: ExtendedNodeObject) => {
             //    node.connections = links.filter(link => link.source === node.id || link.target === node.id).length;
@@ -710,8 +662,7 @@ export class TagRoutesView extends ItemView {
         this.debugLogToFileM(`|Tags parse completed=>||  tag nodes: |${TagNodeNum}| tag links:| ${TagLinkNum}|`)
         this.debugLogToFileM("|tags num:| " + (TagNodeNum) + "| broken files: |" + brokennum + "| tag links:| " + (links.length - FileLinkNum + "|"))
         this.debugWriteToFile();
-        if (this.plugin.settings.enableShow)
-        {
+        if (this.plugin.settings.enableShow) {
             showFile(logFilePath);
         }
 
@@ -752,21 +703,19 @@ export class TagRoutesView extends ItemView {
                 const distance = 640;
                 const distRatio = 1 + distance / Math.hypot(node.x ?? 0, node.y ?? 0, node.z ?? 0);
                 const newPos = node.x || node.y || node.z
-                    ? { x: (node.x ?? 0 ) * distRatio, y: (node.y ?? 0) * distRatio, z: (node.z ?? 0) * distRatio }
+                    ? { x: (node.x ?? 0) * distRatio, y: (node.y ?? 0) * distRatio, z: (node.z ?? 0) * distRatio }
                     : { x: 0, y: 0, z: distance }; // special case if node is in (0,0,0)
 
                 this.Graph.cameraPosition(
                     newPos, // new position
-                    { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0}, 
+                    { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0 },
                     3000  // ms transition duration
                 );
 
                 this.handleNodeClick(node);
-//                this.resetNodeColor();
                 this.highlightOnNodeClick(node);
             })
             .onBackgroundClick(() => {
-//                this.resetNodeColor();
                 this.highlightOnNodeClick(null);
             })
             .onNodeDragEnd((node: any) => {
@@ -778,7 +727,7 @@ export class TagRoutesView extends ItemView {
             .onLinkHover((link: any) => this.onLinkHover(link))
             .cooldownTicks(10000)
         //Graph.onEngineStop(()=>Graph.zoomToFit(4000))  //自动复位
-        const bloomPass = new (UnrealBloomPass)(({ x:container.clientWidth, y:container.clientHeight } as Vector2),2.0,1,0)
+        const bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2), 2.0, 1, 0)
         this.Graph.postProcessingComposer().addPass(bloomPass);
 
         // 使用 MutationObserver 监听容器大小变化
@@ -821,10 +770,10 @@ export class TagRoutesView extends ItemView {
                         )
                     })
             })
-         //   .add({
-         //       arg: (new settingGroup("file filter", "File filter"))
-         //           .addText("Filter path1", this.onText)
-         //   })
+            //   .add({
+            //       arg: (new settingGroup("file filter", "File filter"))
+            //           .addText("Filter path1", this.onText)
+            //   })
             .attachEl(graphContainer.createEl('div', { cls: 'settings-container' }))
             .hideAll();
     }
@@ -849,7 +798,7 @@ export class TagRoutesView extends ItemView {
         // 检查文件是否已经存在
         if (!vault.getAbstractFileByPath(filePath)) {
             await vault.create(filePath, content);
-        //    console.log("create query file.")
+            //    console.log("create query file.")
         } else {
             // 如果文件已经存在，可以选择覆盖内容或者追加内容
             const file = vault.getAbstractFileByPath(filePath);
@@ -862,7 +811,7 @@ export class TagRoutesView extends ItemView {
         if (file && file instanceof TFile) {
             const leaf = this.app.workspace.getLeaf(false);
             await leaf.openFile(file)
-            setViewType(leaf.view,"preview")
+            setViewType(leaf.view, "preview")
         }
     }
     createdFile = false;
@@ -885,7 +834,7 @@ export class TagRoutesView extends ItemView {
             if (!this.createdFile) {
                 this.createdFile = true;
                 await vault.create(logFilePath, content.join(""));
-            // console.log("create log file.")
+                // console.log("create log file.")
             }
         } else {
             // 如果文件已经存在，可以选择覆盖内容或者追加内容
@@ -894,7 +843,7 @@ export class TagRoutesView extends ItemView {
             if (file instanceof TFile) {
                 //    vault.append(file, content.join(""))
                 await vault.process(file, (data) => {
-                    return data + '\n' + content.join(""); 
+                    return data + '\n' + content.join("");
                 });
             } else {
                 //    console.log("file is not ready, passed out")
@@ -914,7 +863,7 @@ export class TagRoutesView extends ItemView {
             const file = vault.getAbstractFileByPath(filePath);
 
             if (!file || !(file instanceof TFile)) {
-    //            console.log("file not found ", filePath)
+                //            console.log("file not found ", filePath)
                 return;
             }
             const leaf: WorkspaceLeaf = workspace.getLeaf(false);
@@ -928,7 +877,7 @@ export class TagRoutesView extends ItemView {
     }
     // view的open 事件
     async onOpen() {
-    //    console.log("On open tag routes view")
+        //    console.log("On open tag routes view")
         const container = this.containerEl.children[1];
         container.empty();
         //	container.createEl("h4", { text: "This is for tags routes." });
