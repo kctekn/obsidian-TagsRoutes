@@ -1,5 +1,5 @@
 # Obsidian plugin: TagsRoutes
-<div align="center">
+<div align="left">
 <img alt="GitHub Release" src="https://img.shields.io/github/downloads/kctekn/obsidian-TagsRoutes/total?logo=github&&color=%23a600ff">
 <img alt="GitHub Release" src="https://img.shields.io/github/v/release/kctekn/obsidian-TagsRoutes?color=%23a600ff">
 </div>
