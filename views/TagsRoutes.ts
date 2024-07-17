@@ -87,11 +87,33 @@ export class TagRoutesView extends ItemView {
     private selectedNodes = new Set();
     private selectedNodesLinks = new Set();
     private highlightNodes = new Set();
+    private previousHighlightNodes = new Set();
+    private previousHighlightLinks = new Set();
     private hoverNode: ExtendedNodeObject|null;
     private selectedNode: ExtendedNodeObject | null;
 
+    resetNodeColor() {
+        this.previousHighlightNodes.forEach((node: ExtendedNodeObject) => {
+            // Access __threeObj to get the Mesh object
+            const mesh = (node as nodeThreeObject).__threeObj as THREE.Mesh;
+            if (mesh && mesh.material) {
+                (mesh.material as THREE.MeshBasicMaterial).color.set(this.getColorByType(node));
+            } else {
+            }
+        })
+        this.previousHighlightLinks.forEach(link => {
+
+        })
+        this.hoveredNodesLinks.clear();
+        this.Graph
+            //.nodeColor(this.Graph.nodeColor())
+            .linkWidth(this.Graph.linkWidth())
+            .linkDirectionalParticles(this.Graph.linkDirectionalParticles());
+        if (this.selectedNode) this.highlightOnNodeHover(this.selectedNode);
+
+    }
     /**
-     * Handle the highlight data change of a clicked node
+     * handle the highlight process of a clicked node
      * @param node | null
      * 
      */
@@ -104,25 +126,29 @@ export class TagRoutesView extends ItemView {
         this.selectedNodesLinks.clear();
         if (node) {
             this.selectedNodes.add(node);
+         //   this.previousHighlightNodes.add(node);
             if (node.neighbors) {
                 node.neighbors.forEach(neighbor => {
                     this.selectedNodes.add(neighbor)
+                //    this.previousHighlightNodes.add(neighbor)
                 });
-    }
+            }
             if (node.links) {
                 node.links.forEach(link => {
                     this.selectedNodesLinks.add(link)
+                 //   this.previousHighlightLinks.add(link)
                 });
             }
         }
         this.updateHighlight();
     }
     /**
-     * Node will be null when hover ended
+     * Node will be null when not hovered
      * @param node 
      * @returns 
      */
     highlightOnNodeHover(node: ExtendedNodeObject|null) {
+        console.log("node hovered function entered: " , node)
         // no state change
         if ((!node && !this.hoveredNodes.size) || (node && this.hoverNode === node)) return;
         this.hoverNode = node;
@@ -130,17 +156,24 @@ export class TagRoutesView extends ItemView {
         this.hoveredNodes.clear();
         this.hoveredNodesLinks.clear();
         if (node) {
+            console.log("node hovered")
             this.hoveredNodes.add(node);
+          //  this.previousHighlightNodes.add(node);
             if (node.neighbors) {
                 node.neighbors.forEach(neighbor => {
                     this.hoveredNodes.add(neighbor)
+                   // this.previousHighlightNodes.add(neighbor)
                 });
             }
             if (node.links) {
                 node.links.forEach(link => {
                     this.hoveredNodesLinks.add(link)
+           //         this.previousHighlightLinks.add(link)
                 });
             }
+        }
+        else {
+            console.log("node hover exited")
         }
         
         this.updateHighlight();
@@ -153,24 +186,34 @@ export class TagRoutesView extends ItemView {
             this.hoveredNodesLinks.add(link);
             this.hoveredNodes.add(link.source);
             this.hoveredNodes.add(link.target);
+            this.previousHighlightNodes.add(link.source);
+            this.previousHighlightNodes.add(link.target);
         }
 
         this.updateHighlight();
     }
     updateHighlight() {
         // trigger update of highlighted objects in scene
-        this.highlightNodes = new Set([...this.selectedNodes, ...this.hoveredNodes])
-        this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
-            const obj = node.__threeObj; // 获取节点的 Three.js 对象
-            if(obj) {
-                (obj.material as THREE.MeshBasicMaterial).color.set(this.getColorByType(node));
-                }
-            });
-        // this.Graph.graphData(this.gData);
         this.Graph
             .linkWidth(this.Graph.linkWidth())
-            .linkDirectionalParticles(this.Graph.linkDirectionalParticles())
+            .linkDirectionalParticles(this.Graph.linkDirectionalParticles());
+        // Highlight nodes logic
+        this.highlightNodes = new Set([...this.selectedNodes, ...this.hoveredNodes])
+        if (this.highlightNodes.size !== 0) {
+            this.highlightNodes.forEach(node => {
+                const mesh = (node as nodeThreeObject).__threeObj as THREE.Mesh;
+                if (mesh && mesh.material) {
+                    if (node === this.selectedNode || node === this.hoverNode)
+                        (mesh.material as THREE.MeshBasicMaterial).color.set('#FF3333');
+                    else
+                        (mesh.material as THREE.MeshBasicMaterial).color.set('#3333ff');
+                } else {
                 }
+            });
+        } else {
+            this.resetNodeColor()
+        }
+    }
     focusGraphNodeById(filePath: string) {
         // 获取 Graph 中的相应节点，并将视图聚焦到该节点
         const node = this.gData.nodes.find((node: ExtendedNodeObject) => node.id === filePath);
@@ -184,7 +227,10 @@ export class TagRoutesView extends ItemView {
             };
 
             this.Graph.cameraPosition(newPos, node, 3000);
-            this.highlightOnNodeClick(node)
+            this.selectedNode = null;
+            this.resetNodeColor();
+            this.selectedNode = node;
+            this.highlightOnNodeHover(node)
         }
     }
 
@@ -527,9 +573,6 @@ export class TagRoutesView extends ItemView {
             default:
                 color = '#ffffff'; // 默认颜色
         }
-        if (this.highlightNodes.has(node)) color = '#3333ff'
-        if (node === this.selectedNode || node === this.hoverNode)
-            color = '#FF3333'
         return color;
     }
     buildGdata(): GraphData {
@@ -665,9 +708,10 @@ export class TagRoutesView extends ItemView {
             b.links.push(link);
         });
         this.debugLogToFileM(`|Tags parse completed=>||  tag nodes: |${TagNodeNum}| tag links:| ${TagLinkNum}|`)
-        this.debugLogToFileM("|tags num:| " + (TagNodeNum) + "| broken files: |" + brokennum + "| tag links:| " +TagLinkNum + "|")
+        this.debugLogToFileM("|tags num:| " + (TagNodeNum) + "| broken files: |" + brokennum + "| tag links:| " + (links.length - FileLinkNum + "|"))
         this.debugWriteToFile();
-        if (this.plugin.settings.enableShow) {
+        if (this.plugin.settings.enableShow)
+        {
             showFile(logFilePath);
         }
 
@@ -718,9 +762,11 @@ export class TagRoutesView extends ItemView {
                 );
 
                 this.handleNodeClick(node);
+//                this.resetNodeColor();
                 this.highlightOnNodeClick(node);
             })
             .onBackgroundClick(() => {
+//                this.resetNodeColor();
                 this.highlightOnNodeClick(null);
             })
             .onNodeDragEnd((node: any) => {
