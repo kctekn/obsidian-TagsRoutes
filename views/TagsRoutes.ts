@@ -91,7 +91,7 @@ export class TagRoutesView extends ItemView {
     private selectedNode: ExtendedNodeObject | null;
 
     /**
-     * handle the highlight process of a clicked node
+     * Handle the highlight data change of a clicked node
      * @param node | null
      * 
      */
