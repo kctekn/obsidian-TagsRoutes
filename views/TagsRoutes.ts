@@ -75,11 +75,14 @@ export class TagRoutesView extends ItemView {
     getDisplayText() {
         return "Tags' Routes";
     }
+    private hoveredNodes = new Set();
+    private hoveredNodesLinks = new Set();
+    private selectedNodes = new Set();
+    private selectedNodesLinks = new Set();
     private highlightNodes = new Set();
     private previousHighlightNodes = new Set();
     private previousHighlightLinks = new Set();
-    private highlightLinks = new Set();
-    private hoverNode: ExtendedNodeObject;
+    private hoverNode: ExtendedNodeObject|null;
     private selectedNode: ExtendedNodeObject | null;
 
     resetNodeColor() {
@@ -94,47 +97,88 @@ export class TagRoutesView extends ItemView {
         this.previousHighlightLinks.forEach(link => {
 
         })
-        this.highlightLinks.clear();
+        this.hoveredNodesLinks.clear();
         this.Graph
             //.nodeColor(this.Graph.nodeColor())
             .linkWidth(this.Graph.linkWidth())
             .linkDirectionalParticles(this.Graph.linkDirectionalParticles());
-        if (this.selectedNode) this.onNodeHover(this.selectedNode);
+        if (this.selectedNode) this.highlightOnNodeHover(this.selectedNode);
 
     }
-    onNodeHover(node: ExtendedNodeObject) {
+    /**
+     * handle the highlight process of a clicked node
+     * @param node | null
+     * 
+     */
+    highlightOnNodeClick(node: ExtendedNodeObject | null) {
         // no state change
-        if ((!node && !this.highlightNodes.size) || (node && this.hoverNode === node)) return;
+        if ((!node && !this.selectedNodes.size) || (node && this.selectedNode === node)) return;
+        this.selectedNode = node;
 
-        this.highlightNodes.clear();
-        this.highlightLinks.clear();
+        this.selectedNodes.clear();
+        this.selectedNodesLinks.clear();
         if (node) {
-            this.highlightNodes.add(node);
-            this.previousHighlightNodes.add(node);
+            this.selectedNodes.add(node);
+         //   this.previousHighlightNodes.add(node);
             if (node.neighbors) {
                 node.neighbors.forEach(neighbor => {
-                    this.highlightNodes.add(neighbor)
-                    this.previousHighlightNodes.add(neighbor)
+                    this.selectedNodes.add(neighbor)
+                //    this.previousHighlightNodes.add(neighbor)
                 });
             }
             if (node.links) {
                 node.links.forEach(link => {
-                    this.highlightLinks.add(link)
-                    this.previousHighlightLinks.add(link)
+                    this.selectedNodesLinks.add(link)
+                 //   this.previousHighlightLinks.add(link)
                 });
             }
         }
-        this.hoverNode = node || null;
+        this.updateHighlight();
+    }
+    /**
+     * Node will be null when not hovered
+     * @param node 
+     * @returns 
+     */
+    highlightOnNodeHover(node: ExtendedNodeObject|null) {
+        console.log("node hovered function entered: " , node)
+        // no state change
+        if ((!node && !this.hoveredNodes.size) || (node && this.hoverNode === node)) return;
+        this.hoverNode = node;
+      
+        this.hoveredNodes.clear();
+        this.hoveredNodesLinks.clear();
+        if (node) {
+            console.log("node hovered")
+            this.hoveredNodes.add(node);
+          //  this.previousHighlightNodes.add(node);
+            if (node.neighbors) {
+                node.neighbors.forEach(neighbor => {
+                    this.hoveredNodes.add(neighbor)
+                   // this.previousHighlightNodes.add(neighbor)
+                });
+            }
+            if (node.links) {
+                node.links.forEach(link => {
+                    this.hoveredNodesLinks.add(link)
+           //         this.previousHighlightLinks.add(link)
+                });
+            }
+        }
+        else {
+            console.log("node hover exited")
+        }
+        
         this.updateHighlight();
     }
     onLinkHover(link: LinkObject) {
-        this.highlightNodes.clear();
-        this.highlightLinks.clear();
+        this.hoveredNodes.clear();
+        this.hoveredNodesLinks.clear();
 
         if (link) {
-            this.highlightLinks.add(link);
-            this.highlightNodes.add(link.source);
-            this.highlightNodes.add(link.target);
+            this.hoveredNodesLinks.add(link);
+            this.hoveredNodes.add(link.source);
+            this.hoveredNodes.add(link.target);
             this.previousHighlightNodes.add(link.source);
             this.previousHighlightNodes.add(link.target);
         }
@@ -147,6 +191,7 @@ export class TagRoutesView extends ItemView {
             .linkWidth(this.Graph.linkWidth())
             .linkDirectionalParticles(this.Graph.linkDirectionalParticles());
         // Highlight nodes logic
+        this.highlightNodes = new Set([...this.selectedNodes, ...this.hoveredNodes])
         if (this.highlightNodes.size !== 0) {
             this.highlightNodes.forEach(node => {
                 const mesh = (node as nodeThreeObject).__threeObj as THREE.Mesh;
@@ -178,7 +223,7 @@ export class TagRoutesView extends ItemView {
             this.selectedNode = null;
             this.resetNodeColor();
             this.selectedNode = node;
-            this.onNodeHover(node)
+            this.highlightOnNodeHover(node)
         }
     }
 
@@ -200,23 +245,23 @@ export class TagRoutesView extends ItemView {
         this.plugin.saveSettings();
     }
     onLinkWidth(value: number) {
-        this.Graph.linkWidth((link: any) => this.highlightLinks.has(link) ? 2 * value : value)
+        this.Graph.linkWidth((link: any) => this.hoveredNodesLinks.has(link) ? 2 * value : value)
         this.plugin.settings.link_width = value
         this.plugin.saveSettings();
     }
     onLinkParticleNumber(value: number) {
-        this.Graph.linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
+        this.Graph.linkDirectionalParticles((link: any) => this.hoveredNodesLinks.has(link) ? value * 2 : value)
         this.plugin.settings.link_particle_number = value
         this.plugin.saveSettings();
     }
     onLinkParticleSize(value: number) {
-        this.Graph.linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
+        this.Graph.linkDirectionalParticleWidth((link: any) => this.hoveredNodesLinks.has(link) ? value * 2 : value)
 
         this.plugin.settings.link_particle_size = value
         this.plugin.saveSettings();
     }
     onLinkParticleColor(value: string) {
-        this.Graph.linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? '#ff00ff' : value)
+        this.Graph.linkDirectionalParticleColor((link: any) => this.hoveredNodesLinks.has(link) ? '#ff00ff' : value)
         this.plugin.settings.link_particle_color = value;
         this.plugin.saveSettings();
     }
@@ -571,10 +616,10 @@ export class TagRoutesView extends ItemView {
                 return distance < 10 ? 20 : distance * this.distanceFactor;
             }))
             (graphContainer)
-            .linkWidth((link: any) => this.highlightLinks.has(link) ? 2 : 1)
-            .linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? 4 : 2)
-            .linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? 3 : 0.5)
-            .linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? '#ff00ff' : '#ffffff')
+            .linkWidth((link: any) => this.hoveredNodesLinks.has(link) ? 2 : 1)
+            .linkDirectionalParticles((link: any) => this.hoveredNodesLinks.has(link) ? 4 : 2)
+            .linkDirectionalParticleWidth((link: any) => this.hoveredNodesLinks.has(link) ? 3 : 0.5)
+            .linkDirectionalParticleColor((link: any) => this.hoveredNodesLinks.has(link) ? '#ff00ff' : '#ffffff')
             .nodeLabel((node: any) => node.type == 'tag' ? `${node.id} (${node.instanceNum})` : `${node.id} (${node.connections})`)
             .nodeOpacity(0.9)
             .nodeThreeObject((node: ExtendedNodeObject) => {
@@ -600,20 +645,19 @@ export class TagRoutesView extends ItemView {
                 );
 
                 this.handleNodeClick(node);
-                this.resetNodeColor();
-                this.selectedNode = node;
-                this.onNodeHover(node);
+//                this.resetNodeColor();
+                this.highlightOnNodeClick(node);
             })
             .onBackgroundClick(() => {
-                this.selectedNode = null;
-                this.resetNodeColor();
+//                this.resetNodeColor();
+                this.highlightOnNodeClick(null);
             })
             .onNodeDragEnd((node: any) => {
                 node.fx = node.x;
                 node.fy = node.y;
                 node.fz = node.z;
             })
-            .onNodeHover((node: ExtendedNodeObject) => this.onNodeHover(node))
+            .onNodeHover((node: ExtendedNodeObject) => this.highlightOnNodeHover(node))
             .onLinkHover((link: any) => this.onLinkHover(link))
             .cooldownTicks(10000)
         //Graph.onEngineStop(()=>Graph.zoomToFit(4000))  //自动复位
@@ -730,6 +774,10 @@ await dv.view("scripts/tag-report", "${node.id}")
         }
         this.logMessages.length = 0;
     }
+    /** 
+     *   Process node operation
+     * 
+    */
     async handleNodeClick(node: ExtendedNodeObject) {
         const filePath = node.id;
         const { workspace, vault } = this.app
