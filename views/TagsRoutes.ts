@@ -222,7 +222,6 @@ export class TagRoutesView extends ItemView {
     onText(value: string) {
     }
     onNodeSize(value: number) {
-        console.log(" no nodesize called ")
         this.Graph.nodeThreeObject((node: ExtendedNodeObject) => {
             let nodeSize = (node.connections || 1)
             if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
@@ -548,7 +547,7 @@ export class TagRoutesView extends ItemView {
             b.links.push(link);
         });
         this.debugLogToFileM(`|Tags parse completed=>||  tag nodes: |${TagNodeNum}| tag links:| ${TagLinkNum}|`)
-        this.debugLogToFileM("|tags num:| " + (TagNodeNum) + "| broken files: |" + brokennum + "| tag links:| " + (links.length - FileLinkNum + "|"))
+        this.debugLogToFileM("|tags num:| " + (TagNodeNum) + "| broken files: |" + brokennum + "| tag links:| " +TagLinkNum + "|")
         this.debugWriteToFile();
         if (this.plugin.settings.enableShow) {
             showFile(logFilePath);
