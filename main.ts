@@ -62,11 +62,9 @@ export default class TagsRoutes extends Plugin {
 	}
 	async  onDoubleWait() {
 		if (this.app.metadataCache.resolvedLinks !== undefined) {
-			//	console.log("cache is already ready")
 			await this.initializePlugin();
 		} else {
 			this.app.metadataCache.on("resolved", async () => {
-			//	console.log("cache is not ready, wait for it")
 				await this.initializePlugin();
 			});
 		}
@@ -106,12 +104,12 @@ export default class TagsRoutes extends Plugin {
 					this.onFileClick(file.path);
 			})
 		);
-		//添加按钮1
 		this.addRibbonIcon("footprints", "Open tags routes", () => {
 			this.activateView();
 		});
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new TagsroutesSettingsTab(this.app, this));
+
 		// 在 Obsidian 插件的 onload 方法中注册事件
 		this.registerDomEvent(document, 'click', (e: MouseEvent) => {
 			const target = e.target as HTMLElement;

@@ -19,31 +19,31 @@ export class settingGroup {
         - and a hold container ready to add sub components
         - with in the given comtainer
     */
-    constructor(plugin: TagsRoutes, id: string, name: string, type: "root"|"group"|"flex-box" = "group" ) {//isRoot: boolean = false) {
+    constructor(plugin: TagsRoutes, id: string, name: string, type: "root" | "group" | "flex-box" = "group") {//isRoot: boolean = false) {
         this.plugin = plugin
         this.rootContainer = document.createElement('div')
         this.rootContainer.id = id;
 
-        if (type === "flex-box")
-        {
-        this.holdContainer = this.rootContainer.createDiv('div')
+        if (type === "flex-box") {
+            this.holdContainer = this.rootContainer.createDiv('div')
             this.holdContainer.addClass('setting-flex-box')
             return this;
         }
 
         this.headContainer = this.rootContainer.createEl('div', { cls: 'title-bar' })
         this.addColorPicker = this.addColorPicker.bind(this)
+
         this.holdContainer = this.rootContainer.createDiv('div')
         this.holdContainer.addClass('group-holder')
 
 
-        if (type==="group") {
+        if (type === "group") {
             this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('span', { cls: 'group-bar-button' }))
                 .setIcon("chevron-down")
                 .setTooltip("Close " + name)
                 .onClick(() => {
-                        if (this.holdContainer.style.display === 'none') {
-                            this.holdContainer.style.display = 'inline';
+                    if (this.holdContainer.style.display === 'none') {
+                        this.holdContainer.style.display = 'inline';
                         this.handleButton.setTooltip("Close " + name);
                         this.handleButton.setIcon("x")
 
@@ -54,7 +54,7 @@ export class settingGroup {
                     }
                 });
             this.headContainer.createEl('span', { cls: 'group-bar-text' }).textContent = name;
-        } else if (type==="root") {
+        } else if (type === "root") {
             // use a solid style for root container
             this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('div', { cls: 'root-title-bar' }))
                 .setTooltip("Open " + name)
@@ -94,7 +94,7 @@ export class settingGroup {
             }
 
             this.handleButton.extraSettingsEl.style.justifyContent = 'flex-end';
-        } 
+        }
         return this
     }
     /*
@@ -114,7 +114,7 @@ export class settingGroup {
         this.holdContainer.style.display = 'none'
         return this
     }
-    
+
     public hideAll() {
         const subholders = Array.from(this.rootContainer.getElementsByClassName('group-holder'));
         subholders.forEach(element => {
@@ -133,8 +133,8 @@ export class settingGroup {
         button.addEventListener('click', buttonCallback);
         return this;
     }
-    addSlider(name: string, min: number, max: number, step: number, defaultNum: number, cb: (v: number) => void,cls:string = "setting-item-block") {
-        let _slider: SliderComponent| undefined;
+    addSlider(name: string, min: number, max: number, step: number, defaultNum: number, cb: (v: number) => void, cls: string = "setting-item-block") {
+        let _slider: SliderComponent | undefined;
         const slider = new Setting(this.holdContainer)
             .setName(name)
             .setClass("mod-slider")
@@ -147,7 +147,7 @@ export class settingGroup {
         slider.setClass(cls)
         if (_slider !== undefined) {
             _slider.setValue(defaultNum)
-            this.plugin.view._controls.push({id: name, control:_slider });
+            this.plugin.view._controls.push({ id: name, control: _slider });
         }
         return this;
     }
@@ -162,27 +162,24 @@ export class settingGroup {
                         setTimeout(() => colorpicker.setDesc(value), 0);
                     })
                     .setValue(defaultColor)
-                this.plugin.view._controls.push({id: name, control: picker})
+                this.plugin.view._controls.push({ id: name, control: picker })
 
             })
         colorpicker.setClass("setting-item-inline")
         return this;
     }
-    addText(name: string, cb: (v: string) => void)
-    {
+    addText(name: string, cb: (v: string) => void) {
         const texter = new Setting(this.holdContainer)
             .setName(name)
-            //  .setDesc(this.plugin.settings.link_particle_color || "#000000")
             .addText(picker => picker
                 .setPlaceholder("file path")
                 .onChange(async (value) => {
                     cb(value)
-                    
+
                 })
-        )
+            )
         texter.setClass("setting-item-block")
-     //   colorpicker.setClass("setting-item-inline")
-        return this;        
+        return this;
     }
     attachEl(container: HTMLElement) {
         container.append(this.rootContainer)

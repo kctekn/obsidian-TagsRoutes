@@ -52,7 +52,6 @@ export class codeBlockProcessor {
         const con = this.getTagContent(term)
         const markdownText: string[] = [];
         const values = await Promise.all(con);
-        //    Promise.all(con).then((values) => {
         const noteArr = (values).flat();
         noteArr.sort((a, b) => getLineTime(a) - getLineTime(b))
         markdownText.push("# Tag\ [" + term + "\] total: `" + noteArr.length + "` records.")

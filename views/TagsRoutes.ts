@@ -199,8 +199,6 @@ export class TagRoutesView extends ItemView {
     }
     updateHighlight() {
         // trigger update of highlighted objects in scene
-        //   this.highlightNodes = new Set([...this.selectedNodes, ...this.hoveredNodes])
-        //   this.highlightLinks = new Set([...this.selectedNodesLinks, ...this.hoveredNodesLinks])
         this.highlightNodes.clear();
         this.selectedNodes.forEach(node => this.highlightNodes.add(node));
         this.hoveredNodes.forEach(node => this.highlightNodes.add(node));
@@ -223,7 +221,6 @@ export class TagRoutesView extends ItemView {
         this.Graph
             .linkWidth(this.Graph.linkWidth())
             .linkDirectionalParticles(this.Graph.linkDirectionalParticles())
-         //   .nodeVisibility(this.Graph.nodeVisibility())
             .linkVisibility(this.Graph.linkVisibility())
 
     }
@@ -549,9 +546,7 @@ export class TagRoutesView extends ItemView {
 
     getCache() {
 
-        //	this.app.vault.getMarkdownFiles().forEach(file => {
         this.app.vault.getFiles()
-            //			this.app.vault.getAllLoadedFiles()
             .forEach(file => {
                 const cache = this.app.metadataCache.getCache(file.path);
                 filesDataMap.set(file.path, cache);
@@ -595,7 +590,6 @@ export class TagRoutesView extends ItemView {
         let TagLinkNum = 0;
 
         const resolvedLinks = this.app.metadataCache.resolvedLinks;
-        //   const tagCount: Set<string> = new Set(); // 初始化标签计数对象
         const tagCount: Map<string, number> = new Map(); // 初始化标签计数对象
         // 添加resolved links来创建文件间的关系，和文件节点
         for (const sourcePath in resolvedLinks) {
@@ -682,9 +676,7 @@ export class TagRoutesView extends ItemView {
         this.debugLogToFileM(`|After filtered pathes=>|| filtered nodes: |${TagNodeNum + fileNodeNum + brokennum - nodes.length}|  links:| ${links.length}|`)
         // 计算每个节点的连接数
         nodes.forEach((node: ExtendedNodeObject) => {
-            //    node.connections = links.filter(link => link.source === node.id || link.target === node.id).length;
             node.connections = links.filter(link => link.sourceId === node.id || link.targetId === node.id).length;
-            //     node.size = Math.log2(node.connections + 1) * 5
             node.size = node.connections;
 
         });
@@ -698,9 +690,6 @@ export class TagRoutesView extends ItemView {
                 node.size = node.instanceNum;
             }
         });
-
-
-
 
         // cross-link node objects
         links.forEach(link => {
@@ -791,7 +780,6 @@ export class TagRoutesView extends ItemView {
                 this.highlightOnNodeClick(node);
             })
             .onNodeRightClick((node: ExtendedNodeObject) => {
-               // this.handleNodeClick(node);
                 this.highlightOnNodeRightClick(node);
             })
             .onBackgroundClick(() => {
@@ -959,7 +947,6 @@ export class TagRoutesView extends ItemView {
         //    console.log("On open tag routes view")
         const container = this.containerEl.children[1];
         container.empty();
-        //	container.createEl("h4", { text: "This is for tags routes." });
         this.getCache();
         this.gData = this.buildGdata();
         this.createGraph(container as HTMLElement);

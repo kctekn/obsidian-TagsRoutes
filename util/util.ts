@@ -52,13 +52,6 @@ export const getFileType = (filePath: string): 'md' | 'tag' | 'attachment' | 'br
 	return 'attachment'
 };
 
-// 函数：获取所有链接
-/*
-const getAllLinks = (cache: CachedMetadata | null): string[] => {
-if (!cache || !cache.links) return [];
-return cache.links.map(link => link.link);
-};*/
-
 export const getAllLinks = (cache: CachedMetadata | null): string[] => {
 	if (!cache || !cache.links) return [];
 	return cache.links.map(link => {
