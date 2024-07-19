@@ -118,6 +118,29 @@ export class TagRoutesView extends ItemView {
         }
         this.updateHighlight();
     }
+    highlightOnNodeRightClick(node: ExtendedNodeObject | null) {
+
+        if (node) {
+/*             if (this.selectedNodes.has(node)) {
+                this.selectedNodes.delete(node);
+
+            } else  */{
+
+                this.selectedNodes.add(node);
+                if (node.neighbors) {
+                    node.neighbors.forEach(neighbor => {
+                        this.selectedNodes.add(neighbor)
+                    });
+                }
+                if (node.links) {
+                    node.links.forEach(link => {
+                        this.selectedNodesLinks.add(link)
+                    });
+                }
+            }
+        }
+        this.updateHighlight();
+    }
     /**
      * Node will be null when hover ended
      * @param node 
@@ -760,6 +783,10 @@ export class TagRoutesView extends ItemView {
 
                 this.handleNodeClick(node);
                 this.highlightOnNodeClick(node);
+            })
+            .onNodeRightClick((node: ExtendedNodeObject) => {
+               // this.handleNodeClick(node);
+                this.highlightOnNodeRightClick(node);
             })
             .onBackgroundClick(() => {
                 this.highlightOnNodeClick(null);
