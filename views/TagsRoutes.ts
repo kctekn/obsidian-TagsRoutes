@@ -701,7 +701,7 @@ export class TagRoutesView extends ItemView {
             })
             .linkVisibility((link: any) => {
                 if (this.highlightLinks.size != 0 || this.selectedNode || this.hoverNode) {
-                    console.log("have highlight node links: ",this.highlightLinks.size )
+            //        console.log("have highlight node links: ",this.highlightLinks.size )
                     return this.highlightLinks.has(link) ? true : false
                 } else {
                  //   console.log("no hovered node: ",this.hoveredNodes.size )
