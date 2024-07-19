@@ -99,10 +99,16 @@ export class TagRoutesView extends ItemView {
     highlightOnNodeClick(node: ExtendedNodeObject | null) {
         // no state change
         if ((!node && !this.selectedNodes.size) || (node && this.selectedNode === node)) return;
-        this.selectedNode = node;
 
-        this.selectedNodes.clear();
-        this.selectedNodesLinks.clear();
+        if (this.selectedNodes.has(node)) {
+            
+        } else {
+            
+
+            this.selectedNodes.clear();
+            this.selectedNodesLinks.clear();
+        }
+        this.selectedNode = node;
         if (node) {
             this.selectedNodes.add(node);
             if (node.neighbors) {
