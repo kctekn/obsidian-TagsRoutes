@@ -73,7 +73,7 @@ export class TagRoutesView extends ItemView {
     }
 
     getDisplayText() {
-        return "Tags' Routes";
+        return "Tags routes";
     }
     private hoveredNodes = new Set();
     private hoveredNodesLinks = new Set();
