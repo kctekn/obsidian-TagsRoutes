@@ -109,7 +109,6 @@ export default class TagsRoutes extends Plugin {
 		});
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new TagsroutesSettingsTab(this.app, this));
-
 		// 在 Obsidian 插件的 onload 方法中注册事件
 		this.registerDomEvent(document, 'click', (e: MouseEvent) => {
 			const target = e.target as HTMLElement;
@@ -128,7 +127,7 @@ export default class TagsRoutes extends Plugin {
 						leaf.view.focusGraphTag(tag)
 					}
 				}
-				}
+			}
 				//	this.focusGraphTag(tag); // 在图形中聚焦到对应的节点
 			}
 		});

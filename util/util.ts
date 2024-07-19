@@ -1,8 +1,5 @@
 import { App, CachedMetadata, TagCache, View,moment } from 'obsidian';
 import { TFile } from "obsidian";
-
-
-
 export const setViewType = (view: View, mode: "source" | "preview" | "live") => {
 	if (view && view.getViewType() === 'markdown') {
 		switch (mode) {
@@ -27,19 +24,16 @@ export function createFolderIfNotExists(folderPath: string) {
 	 //  console.log(`Folder already exists: ${folderPath}`);
 	}
  }
- 
 // 函数：获取所有标签
 export const getTags = (cache: CachedMetadata | null): TagCache[] => {
 	if (!cache || !cache.tags) return [];
 	return cache.tags;
 };
-
 // 函数：判断文件类型
 export const getFileType = (filePath: string): 'md' | 'tag' | 'attachment' | 'broken' | 'excalidraw' => {
 	const parts = filePath.split('.');
 	const extension = parts[parts.length - 1];
 	const middlePart = parts[parts.length - 2];
-
 	switch (extension) {
 		case 'md':
 			if (middlePart === 'excalidraw') {
@@ -47,11 +41,9 @@ export const getFileType = (filePath: string): 'md' | 'tag' | 'attachment' | 'br
 			} else {
 				return 'md'
 			}
-
 	}
 	return 'attachment'
 };
-
 export const getAllLinks = (cache: CachedMetadata | null): string[] => {
 	if (!cache || !cache.links) return [];
 	return cache.links.map(link => {
@@ -59,24 +51,19 @@ export const getAllLinks = (cache: CachedMetadata | null): string[] => {
 		return linkPath.contains('.') ? linkPath : `${linkPath}.md`;
 	});
 };
-
 // 函数：解析标签层级结构
 export const parseTagHierarchy = (tag: string): string[] => {
 	const parts = tag.split('/');
 	return parts.map((_, index) => parts.slice(0, index + 1).join('/'));
 };
-
 export const parseTagHierarchy1 =  (tag: string): string[] => {
     return tag.split('/');
 }
-
 export const filterStrings = ['TagsRoutes', 'AnotherString']; // 需要过滤的字符串列表
-
 // 过滤条件函数：检查路径中是否包含字符串列表中的任何一个字符串
 export const shouldRemove = (path: string, filterList: string[]) => {
 	return filterList.some(filterStr => path.includes(filterStr));
 };
-
 export async function showFile(filePath: string) {
 	const { vault } = this.app;
 	let file = vault.getAbstractFileByPath(filePath)
@@ -99,8 +86,6 @@ export async function showFile(filePath: string) {
 		//	console.log("log file is not ready for show")
 	}
 }
-
-
 export function getLineTime(line:string) {
 	let regstr = 'Time: +(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})'
 	let regex = new RegExp(regstr, 'g')
@@ -110,5 +95,3 @@ export function getLineTime(line:string) {
 	} else
 			return 0
 }
-
-

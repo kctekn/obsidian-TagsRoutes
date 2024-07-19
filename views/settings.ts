@@ -1,6 +1,5 @@
 import { Setting, ExtraButtonComponent, ColorComponent, SliderComponent, ValueComponent, BaseComponent } from 'obsidian';
 import TagsRoutes from 'main';
-
 export class settingGroup {
     public readonly id: string;
     public readonly rootContainer: HTMLElement;
@@ -10,8 +9,6 @@ export class settingGroup {
     private _baseContainer: HTMLElement;
     private _goAction: boolean = true;
     plugin: TagsRoutes;
-
-
     /*
        This constructor will create:
         - a root container:
@@ -23,20 +20,15 @@ export class settingGroup {
         this.plugin = plugin
         this.rootContainer = document.createElement('div')
         this.rootContainer.id = id;
-
         if (type === "flex-box") {
             this.holdContainer = this.rootContainer.createDiv('div')
             this.holdContainer.addClass('setting-flex-box')
             return this;
         }
-
         this.headContainer = this.rootContainer.createEl('div', { cls: 'title-bar' })
         this.addColorPicker = this.addColorPicker.bind(this)
-
         this.holdContainer = this.rootContainer.createDiv('div')
         this.holdContainer.addClass('group-holder')
-
-
         if (type === "group") {
             this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('span', { cls: 'group-bar-button' }))
                 .setIcon("chevron-down")
@@ -46,7 +38,6 @@ export class settingGroup {
                         this.holdContainer.style.display = 'inline';
                         this.handleButton.setTooltip("Close " + name);
                         this.handleButton.setIcon("x")
-
                     } else {
                         this.holdContainer.style.display = 'none';
                         this.handleButton.setTooltip("Open " + name);
@@ -92,7 +83,6 @@ export class settingGroup {
             } else {
                 this.handleButton.setIcon("settings")
             }
-
             this.handleButton.extraSettingsEl.style.justifyContent = 'flex-end';
         }
         return this
@@ -109,12 +99,10 @@ export class settingGroup {
         }
         return this
     }
-
     public hide() {
         this.holdContainer.style.display = 'none'
         return this
     }
-
     public hideAll() {
         const subholders = Array.from(this.rootContainer.getElementsByClassName('group-holder'));
         subholders.forEach(element => {
@@ -123,7 +111,6 @@ export class settingGroup {
             }
         });
     }
-
     public show() {
         this.holdContainer.style.display = 'block'
         return this
@@ -163,7 +150,6 @@ export class settingGroup {
                     })
                     .setValue(defaultColor)
                 this.plugin.view._controls.push({ id: name, control: picker })
-
             })
         colorpicker.setClass("setting-item-inline")
         return this;
@@ -175,7 +161,6 @@ export class settingGroup {
                 .setPlaceholder("file path")
                 .onChange(async (value) => {
                     cb(value)
-
                 })
             )
         texter.setClass("setting-item-block")
