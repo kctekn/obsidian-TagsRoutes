@@ -87,6 +87,7 @@ export class TagRoutesView extends ItemView {
     private selectedNodes = new Set();
     private selectedNodesLinks = new Set();
     private highlightNodes = new Set();
+    private highlightLinks = new Set();
     private hoverNode: ExtendedNodeObject | null;
     private selectedNode: ExtendedNodeObject | null;
 
@@ -160,6 +161,7 @@ export class TagRoutesView extends ItemView {
     updateHighlight() {
         // trigger update of highlighted objects in scene
         this.highlightNodes = new Set([...this.selectedNodes, ...this.hoveredNodes])
+        this.highlightLinks = new Set([...this.selectedNodesLinks, ...this.hoveredNodesLinks])
         this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
             const obj = node.__threeObj; // 获取节点的 Three.js 对象
             if(obj) {
@@ -170,6 +172,9 @@ export class TagRoutesView extends ItemView {
         this.Graph
             .linkWidth(this.Graph.linkWidth())
             .linkDirectionalParticles(this.Graph.linkDirectionalParticles())
+            .nodeVisibility(this.Graph.nodeVisibility())
+            .linkVisibility(this.Graph.linkVisibility())
+
     }
     focusGraphNodeById(filePath: string) {
         // 获取 Graph 中的相应节点，并将视图聚焦到该节点
@@ -206,23 +211,23 @@ export class TagRoutesView extends ItemView {
         this.plugin.saveSettings();
     }
     onLinkWidth(value: number) {
-        this.Graph.linkWidth((link: any) => this.hoveredNodesLinks.has(link) ? 2 * value : value)
+        this.Graph.linkWidth((link: any) => this.highlightLinks.has(link) ? 2 * value : value)
         this.plugin.settings.customSlot[0].link_width = value
         this.plugin.saveSettings();
     }
     onLinkParticleNumber(value: number) {
-        this.Graph.linkDirectionalParticles((link: any) => this.hoveredNodesLinks.has(link) ? value * 2 : value)
+        this.Graph.linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
         this.plugin.settings.customSlot[0].link_particle_number = value
         this.plugin.saveSettings();
     }
     onLinkParticleSize(value: number) {
-        this.Graph.linkDirectionalParticleWidth((link: any) => this.hoveredNodesLinks.has(link) ? value * 2 : value)
+        this.Graph.linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
 
         this.plugin.settings.customSlot[0].link_particle_size = value
         this.plugin.saveSettings();
     }
     onLinkParticleColor(value: string) {
-        this.Graph.linkDirectionalParticleColor((link: any) => this.hoveredNodesLinks.has(link) ? '#ff00ff' : value)
+        this.Graph.linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? '#ff00ff' : value)
         this.plugin.settings.customSlot[0].link_particle_color = value;
         this.plugin.saveSettings();
     }
@@ -522,6 +527,7 @@ export class TagRoutesView extends ItemView {
             default:
                 color = '#ffffff'; // 默认颜色
         }
+        return color;
         if (this.highlightNodes.has(node)) color = '#3333ff'
         if (node === this.selectedNode || node === this.hoverNode)
             color = '#FF3333'
@@ -684,10 +690,28 @@ export class TagRoutesView extends ItemView {
                 return distance < 10 ? 20 : distance * this.distanceFactor;
             }))
             (graphContainer)
-            .linkWidth((link: any) => this.hoveredNodesLinks.has(link) ? 2 : 1)
-            .linkDirectionalParticles((link: any) => this.hoveredNodesLinks.has(link) ? 4 : 2)
-            .linkDirectionalParticleWidth((link: any) => this.hoveredNodesLinks.has(link) ? 3 : 0.5)
-            .linkDirectionalParticleColor((link: any) => this.hoveredNodesLinks.has(link) ? '#ff00ff' : '#ffffff')
+            .nodeVisibility((node: any) => {
+                if (this.highlightNodes.size != 0) {
+                  //  console.log("have hovered node: ",this.hoveredNodes.size )
+                    return this.highlightNodes.has(node) ? true : false
+                } else {
+                 //   console.log("no hovered node: ",this.hoveredNodes.size )
+                    return true
+                }
+            })
+            .linkVisibility((link: any) => {
+                if (this.highlightLinks.size != 0 || this.selectedNode || this.hoverNode) {
+                    console.log("have highlight node links: ",this.highlightLinks.size )
+                    return this.highlightLinks.has(link) ? true : false
+                } else {
+                 //   console.log("no hovered node: ",this.hoveredNodes.size )
+                    return true
+                }
+            })
+            .linkWidth((link: any) => this.highlightLinks.has(link) ? 2 : 1)
+            .linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? 4 : 2)
+            .linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? 3 : 0.5)
+            .linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? '#ff00ff' : '#ffffff')
             .nodeLabel((node: any) => node.type == 'tag' ? `${node.id} (${node.instanceNum})` : `${node.id} (${node.connections})`)
             .nodeOpacity(0.9)
             .nodeThreeObject((node: ExtendedNodeObject) => {
