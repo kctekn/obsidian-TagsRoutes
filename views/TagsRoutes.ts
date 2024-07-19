@@ -158,21 +158,43 @@ export class TagRoutesView extends ItemView {
 
         this.updateHighlight();
     }
+    gethighlight(node: any) {
+        
+        if (this.highlightNodes.size != 0) {
+            //  console.log("have hovered node: ",this.hoveredNodes.size )
+            return this.highlightNodes.has(node) ? true : false
+        } else {
+            //   console.log("no hovered node: ",this.hoveredNodes.size )
+            return true
+        };
+    }
     updateHighlight() {
         // trigger update of highlighted objects in scene
-        this.highlightNodes = new Set([...this.selectedNodes, ...this.hoveredNodes])
-        this.highlightLinks = new Set([...this.selectedNodesLinks, ...this.hoveredNodesLinks])
+        //   this.highlightNodes = new Set([...this.selectedNodes, ...this.hoveredNodes])
+        //   this.highlightLinks = new Set([...this.selectedNodesLinks, ...this.hoveredNodesLinks])
+        this.highlightNodes.clear();
+        this.selectedNodes.forEach(node => this.highlightNodes.add(node));
+        this.hoveredNodes.forEach(node => this.highlightNodes.add(node));
+        
+        this.highlightLinks.clear();
+        this.selectedNodesLinks.forEach(link => this.highlightLinks.add(link));
+        this.hoveredNodesLinks.forEach(link => this.highlightLinks.add(link));
         this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
             const obj = node.__threeObj; // 获取节点的 Three.js 对象
-            if(obj) {
-                (obj.material as THREE.MeshBasicMaterial).color.set(this.getColorByType(node));
+            if (obj) {
+                if (this.highlightNodes.has(node)) {
+                    (obj.material as THREE.MeshBasicMaterial).color.set(this.getColorByType(node));
+
+                }
+
+                (obj.material as THREE.MeshBasicMaterial).visible = this.gethighlight(node);
             }
         });
         // this.Graph.graphData(this.gData);
         this.Graph
             .linkWidth(this.Graph.linkWidth())
             .linkDirectionalParticles(this.Graph.linkDirectionalParticles())
-            .nodeVisibility(this.Graph.nodeVisibility())
+         //   .nodeVisibility(this.Graph.nodeVisibility())
             .linkVisibility(this.Graph.linkVisibility())
 
     }
