@@ -92,7 +92,6 @@ export class TagRoutesView extends ItemView {
      * 
      */
     highlightOnNodeClick(node: ExtendedNodeObject | null) {
-        console.log("this node: ", node)
         // no state change
         if ((!node && !this.selectedNodes.size) || (node && this.selectedNode === node)) return;
         if (this.plugin.settings.customSlot[0].toggle_global_map) {
@@ -538,14 +537,14 @@ export class TagRoutesView extends ItemView {
     }
     // 恢复 broken 节点的方法
     resetBrokenNodes() {
-        this.selectedNode = null
+/*         this.selectedNode = null
         this.selectedNodes.clear();
         this.selectedNodesLinks.clear();
         this.hoverNode = null
         this.hoveredNodes.clear();
         this.hoveredNodesLinks.clear();
         this.highlightLinks.clear();
-        this.highlightNodes.clear();
+        this.highlightNodes.clear(); */
         // 移除所有连接到 broken 节点的链接
         let links: LinkObject[] = [];
         let nodes: ExtendedNodeObject[] = [];
@@ -565,6 +564,8 @@ export class TagRoutesView extends ItemView {
         // 更新图表数据
         this.gData = { nodes: nodes, links: links }
         this.Graph.graphData(this.gData);
+        this.Graph.refresh();
+        
     }
     // 计算连接数的方法
     calculateConnections() {
