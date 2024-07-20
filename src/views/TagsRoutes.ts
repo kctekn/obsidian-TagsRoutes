@@ -93,24 +93,46 @@ export class TagRoutesView extends ItemView {
     highlightOnNodeClick(node: ExtendedNodeObject | null) {
         // no state change
         if ((!node && !this.selectedNodes.size) || (node && this.selectedNode === node)) return;
-        if (!this.selectedNodes.has(node)||this.plugin.settings.customSlot[0].toggle_global_map) {
+        if (this.plugin.settings.customSlot[0].toggle_global_map) {
             this.selectedNodes.clear();
             this.selectedNodesLinks.clear();
-        }
-        this.selectedNode = node;
-        if (node) {
-            this.selectedNodes.add(node);
-            if (node.neighbors) {
-                node.neighbors.forEach(neighbor => {
-                    this.selectedNodes.add(neighbor)
-                });
+            this.selectedNode = node;
+            if (node) {
+                this.selectedNodes.add(node);
+                if (node.neighbors) {
+                    node.neighbors.forEach(neighbor => {
+                        this.selectedNodes.add(neighbor)
+                    });
+                }
+                if (node.links) {
+                    node.links.forEach(link => {
+                        this.selectedNodesLinks.add(link)
+                    });
+                }
             }
-            if (node.links) {
-                node.links.forEach(link => {
-                    this.selectedNodesLinks.add(link)
-                });
+        } else {
+            if (!this.selectedNodes.has(node)) {
+                this.selectedNodes.clear();
+                this.selectedNodesLinks.clear();
+                this.selectedNode = node;
+                if (node) {
+                   this.selectedNodes.add(node);
+                   if (node.neighbors) {
+                       node.neighbors.forEach(neighbor => {
+                           this.selectedNodes.add(neighbor)
+                       });
+                   }
+                   if (node.links) {
+                       node.links.forEach(link => {
+                           this.selectedNodesLinks.add(link)
+                       });
+                   }
+               } 
             }
+
+                
         }
+
         this.updateHighlight();
     }
     highlightOnNodeRightClick(node: ExtendedNodeObject | null) {
