@@ -418,13 +418,13 @@ export class TagRoutesView extends ItemView {
             this.plugin.settings.customSlot[this.currentSlot], "node_repulsion");
         this.setControlValue("Link distance", this._controls,
             this.plugin.settings.customSlot[this.currentSlot], "link_distance");
-        this.setControlValue("Link Width", this._controls,
+        this.setControlValue("Link width", this._controls,
             this.plugin.settings.customSlot[this.currentSlot], "link_width");
-        this.setControlValue("Link Particle size", this._controls,
+        this.setControlValue("Link particle size", this._controls,
             this.plugin.settings.customSlot[this.currentSlot], "link_particle_size");
-        this.setControlValue("Link Particle number", this._controls,
+        this.setControlValue("Link particle number", this._controls,
             this.plugin.settings.customSlot[this.currentSlot], "link_particle_number");
-        this.setControlValue("Link Particle color", this._controls,
+        this.setControlValue("Link particle color", this._controls,
             this.plugin.settings.customSlot[this.currentSlot], "link_particle_color");
     }
     onLoad() {
