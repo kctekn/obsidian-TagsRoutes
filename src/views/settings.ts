@@ -1,5 +1,6 @@
-import { Setting, ExtraButtonComponent, ColorComponent, SliderComponent, ValueComponent, BaseComponent } from 'obsidian';
-import TagsRoutes from 'main';
+import { Setting, ExtraButtonComponent, SliderComponent, ToggleComponent } from 'obsidian';
+import  TagsRoutes  from '../main';
+import { stringify } from 'querystring';
 export class settingGroup {
     public readonly id: string;
     public readonly rootContainer: HTMLElement;
@@ -26,7 +27,8 @@ export class settingGroup {
             return this;
         }
         this.headContainer = this.rootContainer.createEl('div', { cls: 'title-bar' })
-        this.addColorPicker = this.addColorPicker.bind(this)
+      //  this.addColorPicker = this.addColorPicker.bind(this)
+      //  this.addToggle = this.addToggle.bind(this)
         this.holdContainer = this.rootContainer.createDiv('div')
         this.holdContainer.addClass('group-holder')
         if (type === "group") {
@@ -152,6 +154,29 @@ export class settingGroup {
                 this.plugin.view._controls.push({ id: name, control: picker })
             })
         colorpicker.setClass("setting-item-inline")
+        return this;
+    }
+    addToggle(name: string, defaultState: boolean, cb:(v:boolean)=>void) {
+		const toggler = new Setting(this.holdContainer)
+			.setName(name)
+			//.setDesc('Enable or disable logging the number of nodes and links when the graph loads')
+			.addToggle((toggle: ToggleComponent) => {
+				toggle
+                    .onChange( async value =>cb(value)
+                      /*  async (value) => {
+						if (!value) {
+							this.toggleEnableShow.setValue(value);
+						}
+						this.plugin.settings.enableSave = value;
+						await this.plugin.saveSettings();
+                    }*/
+                )
+					.setValue(defaultState)
+                //this.toggleEnableSave = toggle;
+                this.plugin.view._controls.push({ id: name, control: toggle})
+			}
+        )
+        toggler.setClass("setting-item-inline")
         return this;
     }
     addText(name: string, cb: (v: string) => void) {

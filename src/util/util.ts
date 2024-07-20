@@ -1,4 +1,4 @@
-import { App, CachedMetadata, TagCache, View,moment } from 'obsidian';
+import { CachedMetadata, TagCache, View } from 'obsidian';
 import { TFile } from "obsidian";
 export const setViewType = (view: View, mode: "source" | "preview" | "live") => {
 	if (view && view.getViewType() === 'markdown') {

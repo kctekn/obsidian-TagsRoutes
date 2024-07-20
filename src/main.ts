@@ -1,6 +1,6 @@
-import { App,  Notice, Plugin, PluginSettingTab, Setting, ToggleComponent,WorkspaceLeaf } from 'obsidian';
+import { App, WorkspaceLeaf, Notice, Plugin, PluginSettingTab, Setting, ToggleComponent } from 'obsidian';
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
-import { createFolderIfNotExists} from "./util/util"
+import { createFolderIfNotExists } from "./util/util"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
 //const versionInfo = require('./version_info.txt');
 
@@ -19,12 +19,13 @@ export interface TagRoutesSettings {
 	link_particle_size: number;
 	link_particle_number: number;
 	link_particle_color: string;
+	toggle_global_map: boolean;
 }
 interface Settings {
 	enableSave: boolean;
 	enableShow: boolean;
 	currentSlot: number;
-	customSlot: [TagRoutesSettings,TagRoutesSettings,TagRoutesSettings,TagRoutesSettings,TagRoutesSettings,TagRoutesSettings]
+	customSlot: [TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings]
 }
 export const DEFAULT_DISPLAY_SETTINGS: TagRoutesSettings = {
 	broken_file_link_center: 'true',
@@ -41,12 +42,13 @@ export const DEFAULT_DISPLAY_SETTINGS: TagRoutesSettings = {
 	link_width: 1,
 	link_particle_size: 2,
 	link_particle_number: 2,
+	toggle_global_map: false
 }
 const DEFAULT_SETTINGS: Settings = {
 	enableSave: true,
 	enableShow: true,
 	currentSlot: 1,
-	customSlot:[DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS]
+	customSlot: [DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS]
 }
 // plugin 主体
 export default class TagsRoutes extends Plugin {
@@ -60,7 +62,7 @@ export default class TagsRoutes extends Plugin {
 			}
 		}
 	}
-	async  onDoubleWait() {
+	async onDoubleWait() {
 		if (this.app.metadataCache.resolvedLinks !== undefined) {
 			await this.initializePlugin();
 		} else {
@@ -94,7 +96,7 @@ export default class TagsRoutes extends Plugin {
 		await this.loadSettings();
 		this.registerView(
 			VIEW_TYPE_TAGS_ROUTES,
-			(leaf) =>  this.view = new TagRoutesView(leaf, this)
+			(leaf) => this.view = new TagRoutesView(leaf, this)
 		);
 		const codeProcess = new codeBlockProcessor(this);
 		this.registerMarkdownCodeBlockProcessor("tagsroutes", codeProcess.codeBlockProcessor);
@@ -136,7 +138,7 @@ export default class TagsRoutes extends Plugin {
 	}
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-		this.settings.customSlot[0] =structuredClone( 
+		this.settings.customSlot[0] = structuredClone(
 			this.settings.customSlot[this.settings.currentSlot]);
 	}
 	async saveSettings() {
@@ -202,7 +204,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 						this.plugin.settings.enableShow = value;
 						await this.plugin.saveSettings();
 					})
-				.setValue(this.plugin.settings.enableShow )
+					.setValue(this.plugin.settings.enableShow)
 				this.toggleEnableShow = toggle;
 			}
 			)

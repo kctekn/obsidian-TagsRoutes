@@ -1,12 +1,12 @@
-import { App, Editor, moment, ExtraButtonComponent, MarkdownView, TAbstractFile, MarkdownPreviewView, Modal, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, ColorComponent, ValueComponent } from 'obsidian';
+import { moment, MarkdownView, Notice, CachedMetadata, ValueComponent } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
 import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile } from "../util/util"
 import ForceGraph3D from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
-import { settingGroup } from "views/settings"
-import TagsRoutes, { DEFAULT_DISPLAY_SETTINGS, TagRoutesSettings } from 'main';
+import { settingGroup } from "./settings"
+import TagsRoutes, { DEFAULT_DISPLAY_SETTINGS, TagRoutesSettings } from '../main';
 import { Vector2 } from 'three';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
 interface GraphData {
@@ -66,6 +66,9 @@ export class TagRoutesView extends ItemView {
         this.onLinkParticleSize = this.onLinkParticleSize.bind(this);
         this.onLinkParticleColor = this.onLinkParticleColor.bind(this);
         this.onSlotSliderChange = this.onSlotSliderChange.bind(this)
+        this.onToggleGlobalMap = this.onToggleGlobalMap.bind(this)
+        this.getNodeVisible = this.getNodeVisible.bind(this)
+        this.getLinkVisible = this.getLinkVisible.bind(this)
         this.currentSlot = this.plugin.settings.currentSlot;
     }
     getViewType() {
@@ -167,14 +170,21 @@ export class TagRoutesView extends ItemView {
         }
         this.updateHighlight();
     }
-    gethighlight(node: any) {
+    getNodeVisible(node: any) {
+        if (this.plugin.settings.customSlot[0].toggle_global_map) return true;
         if (this.highlightNodes.size != 0) {
-            //  console.log("have hovered node: ",this.hoveredNodes.size )
             return this.highlightNodes.has(node) ? true : false
         } else {
-            //   console.log("no hovered node: ",this.hoveredNodes.size )
             return true
         };
+    }
+    getLinkVisible(link: any) {
+        if (this.plugin.settings.customSlot[0].toggle_global_map) return true;
+        if (this.highlightLinks.size != 0 || this.selectedNode || this.hoverNode) {
+            return this.highlightLinks.has(link) ? true : false
+        } else {
+            return true
+        }
     }
     updateHighlight() {
         // trigger update of highlighted objects in scene
@@ -188,9 +198,9 @@ export class TagRoutesView extends ItemView {
             const obj = node.__threeObj; // 获取节点的 Three.js 对象
             if (obj) {
                 if (this.highlightNodes.has(node)) {
-                    (obj.material as THREE.MeshBasicMaterial).color.set(this.getColorByType(node));
+                    (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
                 }
-                (obj.material as THREE.MeshBasicMaterial).visible = this.gethighlight(node);
+                (obj.material as THREE.MeshBasicMaterial).visible = this.getNodeVisible(node);
             }
         });
         // this.Graph.graphData(this.gData);
@@ -249,6 +259,10 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.customSlot[0].link_particle_color = value;
         this.plugin.saveSettings();
     }
+    onToggleGlobalMap(value: boolean) {
+        this.plugin.settings.customSlot[0].toggle_global_map = value;
+        this.plugin.saveSettings();
+    }
     onText(value: string) {
     }
     onNodeSize(value: number) {
@@ -257,7 +271,7 @@ export class TagRoutesView extends ItemView {
             if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
             nodeSize = Math.log2(nodeSize) * value;
             const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
-            let color = this.getColorByType(node);
+            let color = this.getNodeColorByType(node);
             const material = new THREE.MeshBasicMaterial({ color });
             this.plugin.settings.customSlot[0].node_size = value;
             this.plugin.saveSettings();
@@ -486,7 +500,7 @@ export class TagRoutesView extends ItemView {
                 filesDataMap.set(file.path, cache);
             });
     }
-    getColorByType(node: Node) {
+    getNodeColorByType(node: Node) {
         let color;
         switch (node.type) {
             case 'md':
@@ -651,24 +665,8 @@ export class TagRoutesView extends ItemView {
                 return distance < 10 ? 20 : distance * this.distanceFactor;
             }))
             (graphContainer)
-            .nodeVisibility((node: any) => {
-                if (this.highlightNodes.size != 0) {
-                  //  console.log("have hovered node: ",this.hoveredNodes.size )
-                    return this.highlightNodes.has(node) ? true : false
-                } else {
-                 //   console.log("no hovered node: ",this.hoveredNodes.size )
-                    return true
-                }
-            })
-            .linkVisibility((link: any) => {
-                if (this.highlightLinks.size != 0 || this.selectedNode || this.hoverNode) {
-            //        console.log("have highlight node links: ",this.highlightLinks.size )
-                    return this.highlightLinks.has(link) ? true : false
-                } else {
-                 //   console.log("no hovered node: ",this.hoveredNodes.size )
-                    return true
-                }
-            })
+            .nodeVisibility(this.getNodeVisible)
+            .linkVisibility(this.getLinkVisible)
             .linkWidth((link: any) => this.highlightLinks.has(link) ? 2 : 1)
             .linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? 4 : 2)
             .linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? 3 : 0.5)
@@ -680,7 +678,7 @@ export class TagRoutesView extends ItemView {
                 if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
                 nodeSize = Math.log2(nodeSize) * 5;
                 const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
-                let color = this.getColorByType(node);
+                let color = this.getNodeColorByType(node);
                 const material = new THREE.MeshBasicMaterial({ color });
                 return new THREE.Mesh(geometry, material);
             })
@@ -743,6 +741,7 @@ export class TagRoutesView extends ItemView {
                     .addSlider("Link particle size", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_size, this.onLinkParticleSize)
                     .addSlider("Link particle number", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_number, this.onLinkParticleNumber)
                     .addColorPicker("Link particle color", this.plugin.settings.customSlot[0].link_particle_color, this.onLinkParticleColor)
+                    .addToggle("Toggle global map", this.plugin.settings.customSlot[0].toggle_global_map, this.onToggleGlobalMap)
             })
             .add({
                 arg: (new settingGroup(this.plugin, "save-load", "Save and load"))

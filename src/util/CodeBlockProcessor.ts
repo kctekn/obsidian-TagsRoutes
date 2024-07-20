@@ -1,6 +1,6 @@
-import { MarkdownPostProcessorContext, moment, TFile, MarkdownRenderer, MarkdownView, HeadingCache, getFrontMatterInfo, parseFrontMatterTags } from "obsidian"
-import { getLineTime } from "./util"
-import TagsRoutes from 'main';
+import { MarkdownPostProcessorContext, moment, TFile, HeadingCache } from "obsidian"
+import  TagsRoutes  from '../main';
+import { getLineTime } from "./util";
 export class codeBlockProcessor {
     plugin: TagsRoutes;
     constructor(plugin: TagsRoutes) {

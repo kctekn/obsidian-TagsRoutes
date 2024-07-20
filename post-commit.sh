@@ -10,4 +10,4 @@ branch_name=$(git rev-parse --abbrev-ref HEAD)
 modification_time=$(date)
 
 # 将这些信息写入文件
-echo "Branch: $branch_name, Date: $modification_time, Commit: $commit_hash" > version_info.txt
+echo "Branch: $branch_name, Date: $modification_time, Commit: $commit_hash" > src/version_info.txt

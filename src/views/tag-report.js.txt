@@ -1,0 +1,71 @@
+
+
+var term = "#empty"
+function getarg(...args) {
+    term = args[0]
+}
+getarg(input)
+const files = app.vault.getMarkdownFiles()
+const arr = files.map(
+    async (file) => {
+        const content = await app.vault.cachedRead(file)
+        if (content.contains("tag-report")) { 
+            return []
+        }
+
+        const lines = content
+            .split(/\n[\ ]*\n/)
+            .filter(line => line.contains(term))
+
+        if (lines.length != 0) {
+            var mmtime 
+            var regstr = term + '[\/_# \u4e00-\u9fa5]* +(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})'
+            var regex = new RegExp(regstr, 'g')
+            const retArr = lines.map(
+
+                (line) => {
+                    regex.lastIndex = 0
+                    let match = regex.exec(line)
+                    if (match) {
+                        mmtime = " Tag Time: " + match[1]
+                    } else {
+                        mmtime = " Created Time: " + moment(file.stat.ctime).format('YYYY-MM-DD HH:mm:ss')
+                    }
+                    return [line + "\n\n \[*From* " + "[[" +
+                        file.name.split(".")[0] + "]], *" + mmtime + "*\]\n"]
+                }
+            )
+            return retArr
+        } else {
+            return []
+        }
+    }
+)
+function getLineTime(line) {
+    let regstr = 'Time: +(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})'
+    let regex = new RegExp(regstr, 'g')
+    let match = regex.exec(line)
+    if (match) {
+        return (new Date(match[1])).getTime()
+    } else
+        return 0
+}
+Promise.all(arr).then(values => {
+    let noteArr = values.flat()
+    noteArr.sort((a, b) => getLineTime(a) - getLineTime(b))
+    dv.header(3, "Tag\ [" + term + "\] total: `" + noteArr.length + "` records.")
+    for (let i = 0; i < noteArr.length; i++) {
+        dv.paragraph("## " + (i + 1) + "\n" + `${noteArr[noteArr.length - 1 - i]}`)
+    }
+})    
+
+async function fun001(a, b){
+    return a + b;
+}
+
+function fun002()
+{
+    a = 3;
+    b = 4;
+    fun001(a,b).then(value=>console.log("the result is:", value))
+}
