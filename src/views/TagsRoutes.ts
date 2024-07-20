@@ -299,6 +299,8 @@ export class TagRoutesView extends ItemView {
                 obj.scale.set(scaleValue,scaleValue,scaleValue)
             } 
         })
+        this.plugin.settings.customSlot[0].node_size = value;
+        this.plugin.saveSettings();
     }
     onNodeRepulsion(value: number) {
         this.plugin.settings.customSlot[0].node_repulsion = value;
