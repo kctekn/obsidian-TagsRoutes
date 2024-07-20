@@ -69,6 +69,7 @@ export class TagRoutesView extends ItemView {
         this.onToggleGlobalMap = this.onToggleGlobalMap.bind(this)
         this.getNodeVisible = this.getNodeVisible.bind(this)
         this.getLinkVisible = this.getLinkVisible.bind(this)
+        this.onResetGraph = this.onResetGraph.bind(this);
         this.currentSlot = this.plugin.settings.currentSlot;
     }
     getViewType() {
@@ -219,12 +220,12 @@ export class TagRoutesView extends ItemView {
             if (obj) {
                 if (this.plugin.settings.customSlot[0].toggle_global_map) {
                     (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
-                    (obj.material as THREE.MeshBasicMaterial).visible = true;
+                     obj.visible = true;
                 } else {
                     if (this.highlightNodes.has(node)) {
                         (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
                     }
-                    (obj.material as THREE.MeshBasicMaterial).visible = this.getNodeVisible(node);
+                    obj.visible = this.getNodeVisible(node);
                 }
             }
         });
@@ -291,16 +292,12 @@ export class TagRoutesView extends ItemView {
     onText(value: string) {
     }
     onNodeSize(value: number) {
-        this.Graph.nodeThreeObject((node: ExtendedNodeObject) => {
-            let nodeSize = (node.connections || 1)
-            if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
-            nodeSize = Math.log2(nodeSize) * value;
-            const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
-            let color = this.getNodeColorByType(node);
-            const material = new THREE.MeshBasicMaterial({ color });
-            this.plugin.settings.customSlot[0].node_size = value;
-            this.plugin.saveSettings();
-            return new THREE.Mesh(geometry, material);
+        let scaleValue = (value / 5 -1)*0.6+1; 
+        this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
+            const obj = node.__threeObj; // 获取节点的 Three.js 对象
+            if (obj) {
+                obj.scale.set(scaleValue,scaleValue,scaleValue)
+            } 
         })
     }
     onNodeRepulsion(value: number) {
@@ -340,6 +337,19 @@ export class TagRoutesView extends ItemView {
         });
         // 重新渲染 Graph
         this.Graph.graphData(this.gData);
+    }
+    onResetGraph()
+    {
+        this.selectedNode = null
+        this.selectedNodes.clear();
+        this.selectedNodesLinks.clear();
+        this.hoverNode = null
+        this.hoveredNodes.clear();
+        this.hoveredNodesLinks.clear();
+        this.highlightLinks.clear();
+        this.highlightNodes.clear();
+        this.gData = this.buildGdata();
+        this.Graph.graphData(this.gData)
     }
     // 恢复 UnlinkedExcalidrawNodes 节点的方法
     resetUnlinkedExcalidrawNodes() {
@@ -672,7 +682,7 @@ export class TagRoutesView extends ItemView {
             b.links.push(link);
         });
         this.debugLogToFileM(`|Tags parse completed=>||  tag nodes: |${TagNodeNum}| tag links:| ${TagLinkNum}|`)
-        this.debugLogToFileM("|tags num:| " + (TagNodeNum) + "| broken files: |" + brokennum + "| tag links:| " + (links.length - FileLinkNum + "|"))
+        this.debugLogToFileM("|tags num:| " + (TagNodeNum) + "| broken files: |" + brokennum + "| tag links:| " + TagLinkNum + "|")
         this.debugWriteToFile();
         if (this.plugin.settings.enableShow) {
             showFile(logFilePath);
@@ -758,7 +768,7 @@ export class TagRoutesView extends ItemView {
                     .addButton("Unlink borken", "graph-button", () => { this.resetBrokenNodes() })
                     .addButton("Link Excalidraw orphans", "graph-button", () => { this.connectExcalidrawNodes() })
                     .addButton("Unlink Excalidraw orphans", "graph-button", () => { this.resetUnlinkedExcalidrawNodes() })
-                    .addButton("Reset graph", "graph-button", () => { this.Graph.graphData(this.gData = this.buildGdata()) })
+                    .addButton("Reset graph", "graph-button", () => { this.onResetGraph()})
             })
             .add({
                 arg: (new settingGroup(this.plugin, "control sliders", "Display control"))
