@@ -158,7 +158,6 @@ export default class TagsRoutes extends Plugin {
 		return this.mergeDeep(target, ...sources);
 	}
 	async loadSettings() {
-		const loadedData = await this.loadData();
 		this.settings = this.mergeDeep({}, DEFAULT_SETTINGS, await this.loadData()) as Settings;
 		this.settings.customSlot[0] = structuredClone(
 			this.settings.customSlot[this.settings.currentSlot]);
