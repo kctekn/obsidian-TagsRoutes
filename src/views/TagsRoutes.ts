@@ -94,6 +94,7 @@ export class TagRoutesView extends ItemView {
         // no state change
         if ((!node && !this.selectedNodes.size) || (node && this.selectedNode === node)) return;
         if (this.plugin.settings.customSlot[0].toggle_global_map) {
+            // the global map mode
             this.selectedNodes.clear();
             this.selectedNodesLinks.clear();
             this.selectedNode = node;
@@ -111,26 +112,27 @@ export class TagRoutesView extends ItemView {
                 }
             }
         } else {
+            // the none global map mode
             if (!this.selectedNodes.has(node)) {
                 this.selectedNodes.clear();
                 this.selectedNodesLinks.clear();
                 this.selectedNode = node;
                 if (node) {
-                   this.selectedNodes.add(node);
-                   if (node.neighbors) {
-                       node.neighbors.forEach(neighbor => {
-                           this.selectedNodes.add(neighbor)
-                       });
-                   }
-                   if (node.links) {
-                       node.links.forEach(link => {
-                           this.selectedNodesLinks.add(link)
-                       });
-                   }
-               } 
+                    this.selectedNodes.add(node);
+                    if (node.neighbors) {
+                        node.neighbors.forEach(neighbor => {
+                            this.selectedNodes.add(neighbor)
+                        });
+                    }
+                    if (node.links) {
+                        node.links.forEach(link => {
+                            this.selectedNodesLinks.add(link)
+                        });
+                    }
+                }
             }
 
-                
+
         }
 
         this.updateHighlight();
@@ -375,7 +377,7 @@ export class TagRoutesView extends ItemView {
             // not load, just return
             console.log("           setting changed, wait for save")
             console.log("slot 0", this.plugin.settings.customSlot[0])
-            console.log("slot ",this.currentSlot, this.plugin.settings.customSlot[this.plugin.settings.currentSlot])
+            console.log("slot ", this.currentSlot, this.plugin.settings.customSlot[this.plugin.settings.currentSlot])
             new Notice(`Tags routes: Settings changed, click 'Save' to save to slot ${this.currentSlot}`, 5000);
             return;
         } else {
