@@ -2,7 +2,8 @@ import { App, WorkspaceLeaf, Notice, Plugin, PluginSettingTab, Setting, ToggleCo
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
 import { createFolderIfNotExists } from "./util/util"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
-//const versionInfo = require('./version_info.txt');
+const versionInfo = require('./version_info.txt');
+type AnyObject = Record<string, any>;
 
 export interface TagRoutesSettings {
 	broken_file_link_center: string;
@@ -136,8 +137,29 @@ export default class TagsRoutes extends Plugin {
 	}
 	onunload() {
 	}
+
+	mergeDeep(target: AnyObject, ...sources: AnyObject[]): AnyObject {
+		if (!sources.length) return target;
+		const source = sources.shift();
+
+		if (typeof target === 'object' && typeof source === 'object') {
+			for (const key in source) {
+				if (source[key] !== undefined) {
+					if (typeof source[key] === 'object' && source[key] !== null) {
+						if (!target[key]) Object.assign(target, { [key]: {} });
+						this.mergeDeep(target[key], source[key]);
+					} else {
+						Object.assign(target, { [key]: source[key] });
+					}
+				}
+			}
+		}
+
+		return this.mergeDeep(target, ...sources);
+	}
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		const loadedData = await this.loadData();
+		this.settings = this.mergeDeep({}, DEFAULT_SETTINGS, await this.loadData()) as Settings;
 		this.settings.customSlot[0] = structuredClone(
 			this.settings.customSlot[this.settings.currentSlot]);
 	}
