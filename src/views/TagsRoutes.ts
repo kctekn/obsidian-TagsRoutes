@@ -93,8 +93,7 @@ export class TagRoutesView extends ItemView {
     highlightOnNodeClick(node: ExtendedNodeObject | null) {
         // no state change
         if ((!node && !this.selectedNodes.size) || (node && this.selectedNode === node)) return;
-        if (this.selectedNodes.has(node)) {
-        } else {
+        if (!this.selectedNodes.has(node)||this.plugin.settings.customSlot[0].toggle_global_map) {
             this.selectedNodes.clear();
             this.selectedNodesLinks.clear();
         }
@@ -116,22 +115,19 @@ export class TagRoutesView extends ItemView {
     }
     highlightOnNodeRightClick(node: ExtendedNodeObject | null) {
         if (node) {
-/*             if (this.selectedNodes.has(node)) {
-                this.selectedNodes.delete(node);
-            } else  */{
-                this.selectedNodes.add(node);
-                if (node.neighbors) {
-                    node.neighbors.forEach(neighbor => {
-                        this.selectedNodes.add(neighbor)
-                    });
-                }
-                if (node.links) {
-                    node.links.forEach(link => {
-                        this.selectedNodesLinks.add(link)
-                    });
-                }
+            this.selectedNodes.add(node);
+            if (node.neighbors) {
+                node.neighbors.forEach(neighbor => {
+                    this.selectedNodes.add(neighbor)
+                });
+            }
+            if (node.links) {
+                node.links.forEach(link => {
+                    this.selectedNodesLinks.add(link)
+                });
             }
         }
+
         this.updateHighlight();
     }
     /**
@@ -197,10 +193,15 @@ export class TagRoutesView extends ItemView {
         this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
             const obj = node.__threeObj; // 获取节点的 Three.js 对象
             if (obj) {
-                if (this.highlightNodes.has(node)) {
+                if (this.plugin.settings.customSlot[0].toggle_global_map) {
                     (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
+                    (obj.material as THREE.MeshBasicMaterial).visible = true;
+                } else {
+                    if (this.highlightNodes.has(node)) {
+                        (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
+                    }
+                    (obj.material as THREE.MeshBasicMaterial).visible = this.getNodeVisible(node);
                 }
-                (obj.material as THREE.MeshBasicMaterial).visible = this.getNodeVisible(node);
             }
         });
         // this.Graph.graphData(this.gData);
@@ -521,10 +522,11 @@ export class TagRoutesView extends ItemView {
             default:
                 color = '#ffffff'; // 默认颜色
         }
-        return color;
-        if (this.highlightNodes.has(node)) color = '#3333ff'
-        if (node === this.selectedNode || node === this.hoverNode)
-            color = '#FF3333'
+        if (this.plugin.settings.customSlot[0].toggle_global_map) {
+            if (this.highlightNodes.has(node)) color = '#3333ff'
+            if (node === this.selectedNode || node === this.hoverNode)
+                color = '#FF3333'
+        }
         return color;
     }
     buildGdata(): GraphData {
