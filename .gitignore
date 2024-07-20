@@ -23,3 +23,4 @@ data.json
 /version_info.txt
 /package-lock.json
 /.tgitconfig
+/src/version_info.txt

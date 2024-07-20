@@ -92,6 +92,7 @@ export class TagRoutesView extends ItemView {
      * 
      */
     highlightOnNodeClick(node: ExtendedNodeObject | null) {
+        console.log("this node: ", node)
         // no state change
         if ((!node && !this.selectedNodes.size) || (node && this.selectedNode === node)) return;
         if (this.plugin.settings.customSlot[0].toggle_global_map) {
@@ -458,6 +459,15 @@ export class TagRoutesView extends ItemView {
     }
     // 连接所有 broken 节点的方法
     connectBrokenNodes(linkStar: boolean) {
+        this.selectedNode = null
+        this.selectedNodes.clear();
+        this.selectedNodesLinks.clear();
+        this.hoverNode = null
+        this.hoveredNodes.clear();
+        this.hoveredNodesLinks.clear();
+        this.highlightLinks.clear();
+        this.highlightNodes.clear();
+
         let links: LinkObject[] = this.gData.links;
         let nodes: ExtendedNodeObject[] = this.gData.nodes;
         if (nodes.filter(node => node.id === 'broken').length != 0) {
@@ -471,22 +481,46 @@ export class TagRoutesView extends ItemView {
             x: 0,
             y: 0,
             z: 0,
-            connections: 0
+            connections: 0,
+            neighbors: [],
+            links: []
         };
         if (linkStar) {
             // 找到所有 type 为 broken 的节点
             const brokenNodes = this.gData.nodes.filter(node => node.type === 'broken');
             //      console.log("broken nodes number: ", brokenNodes.length)
             // 将所有 broken 节点连接到新创建的 broken 节点上
+       //     !brokenNode.neighbors && (brokenNode.neighbors = []);
+       //     !brokenNode.links && (brokenNode.links = [])
             brokenNodes.forEach(node => {
-                links.push({ source: brokenNode.id, target: node.id, sourceId: brokenNode.id, targetId: node.id });
+                let addLink = { source: brokenNode.id, target: node.id, sourceId: brokenNode.id, targetId: node.id }
+                links.push(addLink);
+                !node.neighbors && (node.neighbors = []);
+                brokenNode.neighbors?.push(node)
+                node.neighbors.push(brokenNode)
+                !node.links && (node.links = [])
+                brokenNode.links?.push(addLink)
+                addLink = {source: node.id, target: brokenNode.id, sourceId: node.id, targetId: brokenNode.id }
+                links.push(addLink)
+                node.links?.push(addLink)
+
             });
         } else {
             // 将所有 broken 节点以一条线连接起来
             const brokenNodes = this.gData.nodes.filter(node => node.type === 'broken');
             //    console.log("broken nodes number: ", brokenNodes.length)
             for (let i = 0; i < brokenNodes.length - 1; i++) {
-                links.push({ source: brokenNodes[i].id, target: brokenNodes[i + 1].id, sourceId: brokenNodes[i].id, targetId: brokenNodes[i + 1].id });
+                let addLink ={ source: brokenNodes[i].id, target: brokenNodes[i + 1].id, sourceId: brokenNodes[i].id, targetId: brokenNodes[i + 1].id }
+                links.push(addLink);
+                brokenNodes[i].links?.push(addLink)
+                addLink = { target: brokenNodes[i].id, source: brokenNodes[i + 1].id, targetId: brokenNodes[i].id, sourceId: brokenNodes[i + 1].id }
+                links.push(addLink)
+                brokenNodes[i+1].links?.push(addLink)
+                !brokenNodes[i].neighbors && (brokenNodes[i].neighbors = []);
+                !brokenNodes[i+1].neighbors && (brokenNodes[i+1].neighbors = []);
+                brokenNodes[i].neighbors?.push(brokenNodes[i + 1])
+                brokenNodes[i+1].neighbors?.push(brokenNodes[i])
+                
             }
         }
         // 将新创建的 broken 节点添加到节点列表中
@@ -504,6 +538,14 @@ export class TagRoutesView extends ItemView {
     }
     // 恢复 broken 节点的方法
     resetBrokenNodes() {
+        this.selectedNode = null
+        this.selectedNodes.clear();
+        this.selectedNodesLinks.clear();
+        this.hoverNode = null
+        this.hoveredNodes.clear();
+        this.hoveredNodesLinks.clear();
+        this.highlightLinks.clear();
+        this.highlightNodes.clear();
         // 移除所有连接到 broken 节点的链接
         let links: LinkObject[] = [];
         let nodes: ExtendedNodeObject[] = [];
