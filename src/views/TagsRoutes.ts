@@ -342,16 +342,10 @@ export class TagRoutesView extends ItemView {
     }
     onResetGraph()
     {
-        this.selectedNode = null
-        this.selectedNodes.clear();
-        this.selectedNodesLinks.clear();
-        this.hoverNode = null
-        this.hoveredNodes.clear();
-        this.hoveredNodesLinks.clear();
-        this.highlightLinks.clear();
-        this.highlightNodes.clear();
+        this.clearHightlightNodes();
         this.gData = this.buildGdata();
-        this.Graph.graphData(this.gData)
+        this.Graph.graphData(this.gData);
+        this.Graph.refresh();
     }
     // 恢复 UnlinkedExcalidrawNodes 节点的方法
     resetUnlinkedExcalidrawNodes() {
@@ -458,14 +452,7 @@ export class TagRoutesView extends ItemView {
     }
     // 连接所有 broken 节点的方法
     connectBrokenNodes(linkStar: boolean) {
-        this.selectedNode = null
-        this.selectedNodes.clear();
-        this.selectedNodesLinks.clear();
-        this.hoverNode = null
-        this.hoveredNodes.clear();
-        this.hoveredNodesLinks.clear();
-        this.highlightLinks.clear();
-        this.highlightNodes.clear();
+        this.clearHightlightNodes()
 
         let links: LinkObject[] = this.gData.links;
         let nodes: ExtendedNodeObject[] = this.gData.nodes;
@@ -534,17 +521,22 @@ export class TagRoutesView extends ItemView {
         //this.calculateConnections();
         // 更新图表数据
         this.Graph.graphData(this.gData);
+        this.Graph.refresh();
     }
-    // 恢复 broken 节点的方法
-    resetBrokenNodes() {
-/*         this.selectedNode = null
+    clearHightlightNodes()
+    {
+        this.selectedNode = null
         this.selectedNodes.clear();
         this.selectedNodesLinks.clear();
         this.hoverNode = null
         this.hoveredNodes.clear();
         this.hoveredNodesLinks.clear();
         this.highlightLinks.clear();
-        this.highlightNodes.clear(); */
+        this.highlightNodes.clear(); 
+    }
+    // 恢复 broken 节点的方法
+    resetBrokenNodes() {
+        this.clearHightlightNodes()
         // 移除所有连接到 broken 节点的链接
         let links: LinkObject[] = [];
         let nodes: ExtendedNodeObject[] = [];
