@@ -516,7 +516,7 @@ export class TagRoutesView extends ItemView {
         nodes.forEach((node: ExtendedNodeObject) => {
             node.connections = links.filter(link => link.sourceId === node.id || link.targetId === node.id).length;
         });
-        this.gData = { nodes: nodes, links: links };
+    //    this.gData = { nodes: nodes, links: links };
         // 重新计算连接数
         //this.calculateConnections();
         // 更新图表数据
