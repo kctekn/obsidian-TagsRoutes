@@ -101,6 +101,8 @@ export default class TagsRoutes extends Plugin {
 		new Notice(versionInfo, 0)
 		createFolderIfNotExists('scripts')
 		createFolderIfNotExists('TagsRoutes')
+		createFolderIfNotExists('TagsRoutes/logs')
+		createFolderIfNotExists('TagsRoutes/reports')
 		await this.loadSettings();
 		this.registerView(
 			VIEW_TYPE_TAGS_ROUTES,

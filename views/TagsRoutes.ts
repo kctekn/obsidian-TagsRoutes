@@ -49,7 +49,7 @@ interface Node {
 
 // 创建 filesDataMap
 const filesDataMap: Map<string, CachedMetadata | null> = new Map();
-const logFilePath = 'TagsRoutes/logMessage.md'
+const logFilePath = 'TagsRoutes/logs/logMessage.md'
 
 // 创建一个View 
 export class TagRoutesView extends ItemView {
@@ -786,7 +786,7 @@ export class TagRoutesView extends ItemView {
     handleTagClick(node: ExtendedNodeObject) {
         if (node.type === 'tag') {
             const sanitizedId = node.id.replace(/\//g, '__');
-            const newFilePath = `TagsRoutes/TagReport_${sanitizedId}.md`; // 新文件的路径和名称
+            const newFilePath = `TagsRoutes/reports/TagReport_${sanitizedId}.md`; // 新文件的路径和名称
             const fileContent1 = `---\ntags:\n  - tag-report\n---\n
 \`\`\`tagsroutes
     ${node.id}
