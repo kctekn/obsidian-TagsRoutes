@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext, moment, TFile, MarkdownRenderer, MarkdownView, HeadingCache } from "obsidian"
+import { MarkdownPostProcessorContext, moment, TFile, MarkdownRenderer, MarkdownView, HeadingCache, getFrontMatterInfo, parseFrontMatterTags } from "obsidian"
 import { getLineTime } from "./util"
 import TagsRoutes from 'main';
 export class codeBlockProcessor {
@@ -14,6 +14,10 @@ export class codeBlockProcessor {
         const arr = files.map(
             async (file) => {
                 const content = await this.plugin.app.vault.cachedRead(file)
+                const fmi = getFrontMatterInfo(content)
+                const fmiTags = parseFrontMatterTags(fmi.frontmatter)
+                console.log("the front matter: ", fmi)
+                console.log("the fmi tags: ", fmiTags)
                 if (content.contains("tag-report")) {
                     return []
                 }
@@ -87,7 +91,7 @@ export class codeBlockProcessor {
         const regstr = '(#[\\w\/_\u4e00-\u9fa5]*)'
         const regex = new RegExp(regstr, 'g')
         const match = source.match(regex)
-        const term = match ?.[0] || "#empty"
+        const term = match?.[0] || "#empty"
         const con = this.getTagContent(term)
         const markdownText: string[] = [];
         const values = await Promise.all(con);
@@ -96,23 +100,35 @@ export class codeBlockProcessor {
         noteArr.sort((a, b) => getLineTime(a) - getLineTime(b))
         markdownText.push("# Tag\ [" + term + "\] total: `" + noteArr.length + "` records.")
         for (let i = 0; i < noteArr.length; i++) {
-            noteArr[noteArr.length - 1 - i] = noteArr[noteArr.length - 1 - i].replace(/^#/g,"###").replace(/\n#/g,"\n###")
-            noteArr[noteArr.length - 1 - i] = "> [!info] " + (i+1) + "\n> " + noteArr[noteArr.length - 1 - i].replace(/\n/g,"\n> ")
+            noteArr[noteArr.length - 1 - i] = noteArr[noteArr.length - 1 - i].replace(/^#/g, "###").replace(/\n#/g, "\n###")
+            noteArr[noteArr.length - 1 - i] = "> [!info] " + (i + 1) + "\n> " + noteArr[noteArr.length - 1 - i].replace(/\n/g, "\n> ")
             markdownText.push("## " + (i + 1) + "\n" + `${noteArr[noteArr.length - 1 - i]}`)
         }
         const markDownSource = markdownText.filter(line => line.trim() !== "").join("\n")
-        //console.log("markdown source is:", markDownSource)
-        const fileContent = `---\ntags:\n  - tag-report\n---\n
+        const useDiv: boolean = true;
+        if (useDiv) {
+            //el.createEl('pre', {text: markDownSource})
+            MarkdownRenderer.render(this.plugin.app,
+                markDownSource,
+                el.createEl('div'), ctx.sourcePath, this.plugin.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownView
+            )
+
+        } else {
+
+
+            //console.log("markdown source is:", markDownSource)
+            const fileContent = `---\ntags:\n  - tag-report\n---\n
 \`\`\`tagsroutes
            ${term}
 \`\`\`
 *This file is generated automatically, will be override.*
 *Don't edit this file in case your work will be lost.*
 `
-        const { vault } = this.plugin.app;
-        const file = vault.getAbstractFileByPath(ctx.sourcePath);
-        if (file instanceof TFile) {
-            vault.modify(file, fileContent + markDownSource)
+            const { vault } = this.plugin.app;
+            const file = vault.getAbstractFileByPath(ctx.sourcePath);
+            if (file instanceof TFile) {
+                vault.modify(file, fileContent + markDownSource)
+            }
         }
     }
 }

@@ -104,7 +104,7 @@ export default class TagsRoutes extends Plugin {
 		await this.loadSettings();
 		this.registerView(
 			VIEW_TYPE_TAGS_ROUTES,
-			(leaf) =>  this.view = new TagRoutesView(leaf, this)
+			(leaf) => this.view = new TagRoutesView(leaf, this)
 		);
 		const codeProcess = new codeBlockProcessor(this);
 		this.registerMarkdownCodeBlockProcessor("tagsroutes", codeProcess.codeBlockProcessor);
@@ -136,16 +136,25 @@ export default class TagsRoutes extends Plugin {
 		// 在 Obsidian 插件的 onload 方法中注册事件
 		this.registerDomEvent(document, 'click', (e: MouseEvent) => {
 			const target = e.target as HTMLElement;
-			if (target && target.hasClass('tag')) {
-				const tag = target.innerText; // 获取标签内容
-				// 传递文件路径给 Graph 并聚焦到相应的节点
-				for (let leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
-					if (leaf.view instanceof TagRoutesView) {
-						leaf.view.focusGraphTag(tag)
+			if (target) { 
+				let tag = "";
+				if (target.hasClass('tag')) {
+					tag = target.innerText; // 获取标签内容
+				}
+				if (target.hasClass('cm-hashtag')) {
+					tag = '#'+target.innerText; // 获取标签内容
+				}
+				if (tag) {
+					// 传递文件路径给 Graph 并聚焦到相应的节点
+					for (let leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
+						if (leaf.view instanceof TagRoutesView) {
+							leaf.view.focusGraphTag(tag)
+						}
 					}
 				}
-				//	this.focusGraphTag(tag); // 在图形中聚焦到对应的节点
-			}
+			//	this.focusGraphTag(tag); // 在图形中聚焦到对应的节点
+		}
+	
 		});
 
 	//	const { vault } = this.app;
