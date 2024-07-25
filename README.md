@@ -90,7 +90,10 @@ This allows you to clearly understand the status of files and tags through:
 
 
 # Install
-- Download the release file, and extract to your obsidian's: valut/.obsidian/plugin/tags-routes.
+- Search for "Tags routes" in Obsidian's community plugins browser, or you can find it [HERE](https://obsidian.md/plugins?search=tags%20routes).
+- Choose to intall it.
+- You can also install it manually:
+	- Download the release file, and extract to your obsidian's: valut/.obsidian/plugin/tags-routes.
 - Enable it in obsidian settings tab.
 
 # Acknowledgements
