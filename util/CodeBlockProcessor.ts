@@ -15,13 +15,15 @@ export class codeBlockProcessor {
             async (file) => {
                 const content = await this.plugin.app.vault.cachedRead(file)
                 const fmi = getFrontMatterInfo(content)
-                const fmiTags = parseFrontMatterTags(fmi.frontmatter)
-                console.log("the front matter: ", fmi)
-                console.log("the fmi tags: ", fmiTags)
-                if (content.contains("tag-report")) {
+                if (fmi.exists && fmi.frontmatter.contains("tag-report")) {
+                 //   console.log("bypass file1: ", file.path)
                     return []
                 }
-                const lines = content
+/*                 if (content.contains("tag-report")) {
+                    console.log("bypass file2: ", file.path)
+                    return []
+                }
+ */                const lines = content
                     .split(/\n[\ ]*\n/)
                     .filter(line => line.contains(term))
                 if (lines.length != 0) {
