@@ -8,6 +8,7 @@ import * as d3 from 'd3-force-3d';
 import { settingGroup } from "./settings"
 import TagsRoutes, { DEFAULT_DISPLAY_SETTINGS, TagRoutesSettings } from '../main';
 import { Vector2 } from 'three';
+import SpriteText from 'three-spritetext';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
 interface GraphData {
     nodes: ExtendedNodeObject[];
@@ -37,6 +38,9 @@ interface ExtendedNodeObject extends Node {
     size?: number;
     neighbors?: ExtendedNodeObject[];
     links?: LinkObject[];
+    _ThreeGroup?: THREE.Group;
+    _ThreeMesh?: THREE.Mesh;
+    _Sprite?: SpriteText;
 }
 interface Node {
     id: string;
@@ -69,6 +73,7 @@ export class TagRoutesView extends ItemView {
         this.getNodeVisible = this.getNodeVisible.bind(this)
         this.getLinkVisible = this.getLinkVisible.bind(this)
         this.onResetGraph = this.onResetGraph.bind(this);
+        this.createNodeThreeObject = this.createNodeThreeObject.bind(this)
         this.currentSlot = this.plugin.settings.currentSlot;
     }
     getViewType() {
@@ -85,6 +90,42 @@ export class TagRoutesView extends ItemView {
     private highlightLinks = new Set();
     private hoverNode: ExtendedNodeObject | null;
     private selectedNode: ExtendedNodeObject | null;
+
+    createNodeThreeObject(node: ExtendedNodeObject) {
+        
+        const group = new THREE.Group();
+
+        let nodeSize = (node.connections || 1)
+        if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
+        nodeSize = Math.log2(nodeSize) * 5;
+        const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
+        let color = this.getNodeColorByType(node);
+        const material = new THREE.MeshBasicMaterial({ color });
+        const mesh = new THREE.Mesh(geometry, material);
+        group.add(mesh)
+        const parts = node.id.split('/')
+        const node_text_name = parts[parts.length - 1];
+        const sprite = new SpriteText(node_text_name);
+        sprite.material.depthWrite = true; // make sprite background transparent
+        sprite.color = this.getNodeColorByType(node);
+        sprite.visible = false;
+        if (node.type === 'tag') sprite.color = '#ffffff'
+        sprite.textHeight = 0;
+        //sprite.scale.set(18, 18, 8); // 设置标签大小
+
+
+        sprite.position.set(0, -nodeSize - 20, 0); // 将标签位置设置在节点上方
+        group.add(sprite);
+
+        node._ThreeGroup = group;
+        node._ThreeMesh = mesh;
+        node._Sprite = sprite;
+
+
+        return group;
+
+        //return new THREE.Mesh(geometry, material);
+    }
     /**
      * Handle the highlight data change of a clicked node
      * @param node | null
@@ -218,6 +259,7 @@ export class TagRoutesView extends ItemView {
         this.Graph.linkColor(this.Graph.linkColor());
     }
     updateHighlight() {
+        //return;
         // trigger update of highlighted objects in scene
         this.highlightNodes.clear();
         this.selectedNodes.forEach(node => this.highlightNodes.add(node));
@@ -225,8 +267,8 @@ export class TagRoutesView extends ItemView {
         this.highlightLinks.clear();
         this.selectedNodesLinks.forEach(link => this.highlightLinks.add(link));
         this.hoveredNodesLinks.forEach(link => this.highlightLinks.add(link));
-        this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
-            const obj = node.__threeObj; // 获取节点的 Three.js 对象
+        this.Graph.graphData().nodes.forEach((node: ExtendedNodeObject) => {
+            const obj = node._ThreeMesh; // 获取节点的 Three.js 对象
             if (obj) {
                 if (this.plugin.settings.customSlot[0].toggle_global_map) {
                     (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
@@ -236,9 +278,29 @@ export class TagRoutesView extends ItemView {
                         (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
                     }
                     obj.visible = this.getNodeVisible(node);
+                   // node._Sprite.visible = obj.visible;
                 }
             }
-        });
+            if (node._Sprite) {
+                if (this.highlightNodes.has(node)&& node.type =='tag') {
+                    node._Sprite.visible = true;
+                    node._Sprite.textHeight = 18;
+                } else {
+                    node._Sprite.visible = false;
+                    node._Sprite.textHeight = 0;
+                }
+            }
+            }
+        );
+        if (this.hoverNode && this.hoverNode._Sprite) {
+            this.hoverNode._Sprite.visible = true;
+            this.hoverNode._Sprite.textHeight = 18;
+        }
+/*         if (this.selectedNode && this.selectedNode._Sprite) {
+            this.selectedNode._Sprite.visible = true;
+            this.selectedNode._Sprite.textHeight = 18;
+        } */
+
         // this.Graph.graphData(this.gData);
         this.Graph
             .linkWidth(this.Graph.linkWidth())
@@ -302,7 +364,7 @@ export class TagRoutesView extends ItemView {
             const obj = node.__threeObj; // 获取节点的 Three.js 对象
             if (obj) {
                 obj.scale.set(scaleValue,scaleValue,scaleValue)
-            }
+            } 
         })
         this.plugin.settings.customSlot[0].node_size = value;
         this.plugin.saveSettings();
@@ -667,10 +729,10 @@ export class TagRoutesView extends ItemView {
                         if (element !== "excalidraw") {
                             fileTags.push("#" + element);
                         }
-                    });
+                });
                 } else {
                     console.error('Unexpected tags format:', tags);
-                }
+                    }
             }
 
 
@@ -704,8 +766,8 @@ export class TagRoutesView extends ItemView {
                             tagLinks.add(linkKey);
                         }
                     }
-                });
             });
+        });
 
             rootTags.forEach(rootTag => {
                 links.push({ source: filePath, target: rootTag, sourceId: filePath, targetId: rootTag });
@@ -791,17 +853,9 @@ export class TagRoutesView extends ItemView {
             .linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? 3 : 0.5)
             .linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot[0].colorMap["linkParticleHighlightColor"] :
             this.plugin.settings.customSlot[0].colorMap["linkParticleColor"] )
-            .nodeLabel((node: any) => node.type == 'tag' ? `${node.id} (${node.instanceNum})` : `${node.id} (${node.connections})`)
+         //   .nodeLabel((node: any) => node.type == 'tag' ? `${node.id} (${node.instanceNum})` : `${node.id} (${node.connections})`)
             .nodeOpacity(0.9)
-            .nodeThreeObject((node: ExtendedNodeObject) => {
-                let nodeSize = (node.connections || 1)
-                if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
-                nodeSize = Math.log2(nodeSize) * 5;
-                const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
-                let color = this.getNodeColorByType(node);
-                const material = new THREE.MeshBasicMaterial({ color });
-                return new THREE.Mesh(geometry, material);
-            })
+            .nodeThreeObject(this.createNodeThreeObject)
             .onNodeClick((node: ExtendedNodeObject) => {
                 const distance = 640;
                 const distRatio = 1 + distance / Math.hypot(node.x ?? 0, node.y ?? 0, node.z ?? 0);
