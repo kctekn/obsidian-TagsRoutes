@@ -112,7 +112,7 @@ export class TagRoutesView extends ItemView {
         if (node.type === 'tag') sprite.color = '#ffffff'
         sprite.textHeight = 0;
         //sprite.scale.set(18, 18, 8); // 设置标签大小
-        
+
 
         sprite.position.set(0, -nodeSize - 20, 0); // 将标签位置设置在节点上方
         group.add(sprite);
