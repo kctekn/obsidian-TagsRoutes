@@ -7,6 +7,8 @@ export class settingGroup {
     private headContainer: HTMLElement;
     private holdContainer: HTMLElement;
     private handleButton: ExtraButtonComponent;
+    private _baseContainer: HTMLElement;
+    private _goAction: boolean = true;
     plugin: TagsRoutes;
 
 
@@ -31,8 +33,6 @@ export class settingGroup {
 
         this.headContainer = this.rootContainer.createEl('div', { cls: 'title-bar' })
         this.addColorPicker = this.addColorPicker.bind(this)
-
-        //head.textContent = name;
         this.holdContainer = this.rootContainer.createDiv('div')
         this.holdContainer.addClass('group-holder')
 
@@ -44,8 +44,6 @@ export class settingGroup {
                 .onClick(() => {
                         if (this.holdContainer.style.display === 'none') {
                             this.holdContainer.style.display = 'inline';
-                        //this.settingButton.extraSettingsEl.addClass = 'flex-end';
-                        //  this.settingButton.extraSettingsEl.style.justifyContent = 'flex-end';
                         this.handleButton.setTooltip("Close " + name);
                         this.handleButton.setIcon("x")
 
@@ -55,22 +53,29 @@ export class settingGroup {
                         this.handleButton.setIcon("chevron-down")
                     }
                 });
-            //  this.handleButton.extraSettingsEl.style.justifyContent = 'flex-end';
-            //this.settingsButton.extraSettingsEl.addClasses(["clickable-icon"])
             this.headContainer.createEl('span', { cls: 'group-bar-text' }).textContent = name;
         } else if (type==="root") {
             // use a solid style for root container
             this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('div', { cls: 'root-title-bar' }))
-                //                .setIcon("x")
                 .setTooltip("Open " + name)
                 .onClick(() => {
+                    if (!this._goAction && this.holdContainer.style.display == 'none' &&
+                        this._baseContainer.style.opacity == '100') {
+                        this._baseContainer.style.opacity = '0'
+                        return;
+                    }
+                    if (this.holdContainer.style.display == 'none' &&
+                        this._baseContainer.style.opacity == '0') {
+                        this._baseContainer.style.opacity = '100'
+                        this._goAction = true;
+                        return;
+                    }
+
                     if (this.holdContainer.style.display === 'none') {
                         this.holdContainer.style.display = 'block';
-                        //this.settingButton.extraSettingsEl.addClass = 'flex-end';
-                        //  this.settingButton.extraSettingsEl.style.justifyContent = 'flex-end';
                         this.handleButton.setTooltip("Close " + name);
                         this.handleButton.setIcon("x")
-
+                        this._goAction = false
                     } else {
                         this.holdContainer.style.display = 'none';
                         this.handleButton.setTooltip("Open " + name);
@@ -84,11 +89,7 @@ export class settingGroup {
             }
 
             this.handleButton.extraSettingsEl.style.justifyContent = 'flex-end';
-            //this.settingsButton.extraSettingsEl.addClasses(["clickable-icon"])
-            // this.headContainer.createEl('span', { cls: 'title-bar' }).textContent = name;            
         } 
-        //  return;
-
         return this
     }
     /*
@@ -180,6 +181,8 @@ export class settingGroup {
     }
     attachEl(container: HTMLElement) {
         container.append(this.rootContainer)
+        this._baseContainer = container;
+        this._baseContainer.style.opacity = '100'
         return this;
     }
 }
