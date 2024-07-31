@@ -6,7 +6,7 @@ on:
       - "*"
 
 env:
-  PLUGIN_NAME: obsidian-tags-routes # Change this to match the id of your plugin.
+  PLUGIN_NAME: tags-routes # Change this to match the id of your plugin.
 
 jobs:
   build:
