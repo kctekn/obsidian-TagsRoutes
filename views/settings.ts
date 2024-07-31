@@ -62,11 +62,13 @@ export class settingGroup {
                     if (!this._goAction && this.holdContainer.style.display == 'none' &&
                         this._baseContainer.style.opacity == '100') {
                         this._baseContainer.style.opacity = '0'
+                        this.handleButton.setTooltip("Show settings button");
                         return;
                     }
                     if (this.holdContainer.style.display == 'none' &&
                         this._baseContainer.style.opacity == '0') {
                         this._baseContainer.style.opacity = '100'
+                        this.handleButton.setTooltip("Open " + name);
                         this._goAction = true;
                         return;
                     }
@@ -79,6 +81,9 @@ export class settingGroup {
                     } else {
                         this.holdContainer.style.display = 'none';
                         this.handleButton.setTooltip("Open " + name);
+                        if (this._goAction == false) {
+                            this.handleButton.setTooltip("Hide this button");
+                        }
                         this.handleButton.setIcon("settings")
                     }
                 });
