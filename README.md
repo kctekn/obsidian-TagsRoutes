@@ -5,7 +5,23 @@
 </div>
 
 This is a plugin for obsidian, to visualize files and tags as nodes in 3D graphic.
+
 ![GIF-nearest](https://github.com/user-attachments/assets/27d000e5-fc97-4b53-ac6f-a5ed9a14aea0)
+
+## What's New on version 1.0.5
+
+1. **Multiple Slots for Display Settings**
+   - You now have 5 slots to save your display settings. This allows you to quickly switch between them by dragging the slider.
+
+2. **Improved Query Function**
+   - The query function is now handled by a custom code block processor, eliminating the need for DataviewJS.
+     - You can now delete the `scripts/tag-report.js` file and the `scripts` folder from your vault.
+
+3. **Enhanced Tag Interaction**
+   - Clicking on a tag to focus on a node in the graph now works in edit mode as well.
+
+4. **Other Fixes**
+   - Fix a ficker issue might occure, Refer here: https://github.com/kctekn/obsidian-TagsRoutes/issues/2  Thanks @ShaneNZ for the feecback.
 
 # How to operate:
 https://github.com/kctekn/obsidian-TagsRoutes/assets/32674595/2c37676c-f307-4a74-9dae-0679067cbae7
@@ -57,11 +73,6 @@ This approach helps you identify the most significant parts of your vault at a g
   - Click on a file node to open it in the editor, regardless of its file type.
  
   - Click on a tag node to generate a query result for that tag, displayed in a file in the editor.
-    - Note that this feature requires the Dataview plugin.
-    	- 	The setting shows as the picture: to enable the javascript queries.
-     	-   ![dataviewSetting](https://github.com/kctekn/obsidian-TagsRoutes/assets/32674595/b02e562d-1a92-4891-a743-5c628ee93ffa)
-
-
     - Provides a clear view of the tag's content by capturing the surrounding lines until a blank line is encountered, showing the entire paragraph containing the tag.
  
 - **Graph Focus** :
