@@ -1,22 +1,15 @@
 /*
-
 This CSS file will be included with your plugin, and
 available in the app when your plugin is enabled.
-
 If your plugin does not need CSS, delete this file.
-
 */
-
-
 .tags-routes {
     padding: 0px !important;
     position: relative;
 }
-
 .tags-routes .graph-container{
     overflow: hidden !important;
 }
-
 .tags-routes .settings-container {
     position: absolute;
     top: 5px;
@@ -25,13 +18,11 @@ If your plugin does not need CSS, delete this file.
     /*   text-align : center;*/
     border-radius: 5px;
 }
-
 .tags-routes .slider-container {
     display: block;
     margin-left: 5px;
     margin-right: 5px;
 }
-
 .tags-routes .group-holder {
     text-align: center;
 }
@@ -42,30 +33,17 @@ If your plugin does not need CSS, delete this file.
     padding: 1px 10px;
     margin: 4px;
     font-size: 14px;
-    /*background-color: #008CBA;*/
-    /*	background-color: #ff0000; */
-    /*color: white;*/
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    /*	width: 150px;*/
     height: 25px;
     text-align: center;
 }
-
-.tags-routes .graph-button:hover {
-    /*background-color: #005f73;
-		color: white;*/
-}
-
-
-
 .tags-routes .title-bar {
     display: block;
     text-align: left;
     /*border-bottom: 1px dotted;*/
 }
-
 .tags-routes .group-bar-button {
     display: inline-block;
     margin-top: 5px;
@@ -80,7 +58,6 @@ If your plugin does not need CSS, delete this file.
     padding-right: 45px;
     margin-right: 5px;
 }
-
 .tags-routes .setting-item-block {
     display: block;
     text-align: left;
@@ -113,7 +90,6 @@ If your plugin does not need CSS, delete this file.
     width: 100%;
     margin-top: 0.5em;
     padding: 0px;
-    /* 确保滑动条的input元素也占据100%宽度 */
 }
 .notice-container {
   /*  display: none;*/

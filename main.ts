@@ -1,10 +1,8 @@
-import { App, Editor, MarkdownView, Modal,MarkdownRenderer, Notice, Plugin, PluginSettingTab, Setting, getAllTags, CachedMetadata, TagCache, ToggleComponent, ValueComponent } from 'obsidian';
-import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
+import { App,  Notice, Plugin, PluginSettingTab, Setting, ToggleComponent,WorkspaceLeaf } from 'obsidian';
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
 import { createFolderIfNotExists} from "./util/util"
-import { fileContent } from "./util/query"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
-const versionInfo = require('./version_info.txt');
+//const versionInfo = require('./version_info.txt');
 
 
 export interface TagRoutesSettings {
@@ -97,9 +95,8 @@ export default class TagsRoutes extends Plugin {
 		});
 	}
 	async initializePlugin() {
-		console.log(versionInfo);
-		new Notice(versionInfo, 0)
-		createFolderIfNotExists('scripts')
+		//console.log(versionInfo);
+		//new Notice(versionInfo, 0)
 		createFolderIfNotExists('TagsRoutes')
 		createFolderIfNotExists('TagsRoutes/logs')
 		createFolderIfNotExists('TagsRoutes/reports')
