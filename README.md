@@ -12,7 +12,7 @@ This is a plugin for obsidian, to visualize files and tags as nodes in 3D graphi
 
 1. **Multiple Slots for Display Settings**
    - You now have 5 slots to save your display settings. This allows you to quickly switch between them by dragging the slider.
-
+     - So it likes that you have 5 themes to switch for better showing the graph in instance.
 2. **Improved Query Function**
    - The query function is now handled by a custom code block processor, eliminating the need for DataviewJS.
      - You can now delete the `scripts/tag-report.js` file and the `scripts` folder from your vault.
