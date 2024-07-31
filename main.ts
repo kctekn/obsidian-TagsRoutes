@@ -3,8 +3,6 @@ import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
 import { createFolderIfNotExists} from "./util/util"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
 //const versionInfo = require('./version_info.txt');
-
-
 export interface TagRoutesSettings {
 	broken_file_link_center: string;
 	broken_file_link_line: string;
@@ -27,7 +25,6 @@ interface Settings {
 	currentSlot: number;
 	customSlot: [TagRoutesSettings,TagRoutesSettings,TagRoutesSettings,TagRoutesSettings,TagRoutesSettings,TagRoutesSettings]
 }
-
 export const DEFAULT_DISPLAY_SETTINGS: TagRoutesSettings = {
 	broken_file_link_center: 'true',
 	broken_file_link_line: 'false',
@@ -44,20 +41,15 @@ export const DEFAULT_DISPLAY_SETTINGS: TagRoutesSettings = {
 	link_particle_size: 2,
 	link_particle_number: 2,
 }
-
 const DEFAULT_SETTINGS: Settings = {
 	enableSave: true,
 	enableShow: true,
 	currentSlot: 1,
 	customSlot:[DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS,DEFAULT_DISPLAY_SETTINGS]
 }
-
 // plugin 主体
 export default class TagsRoutes extends Plugin {
-
-//	public settings_old: TagRoutesSettings;
 	public settings: Settings;
-//	public settingsSlots: TagRoutesSettings[] = [];
 	public view: TagRoutesView;
 	onFileClick(filePath: string) {
 		// 传递文件路径给 Graph 并聚焦到相应的节点
@@ -113,25 +105,12 @@ export default class TagsRoutes extends Plugin {
 					this.onFileClick(file.path);
 			})
 		);
-		/*
-				this.addRibbonIcon("dice", "Print leaf types", () => {
-					this.app.workspace.iterateAllLeaves((leaf) => {
-						console.log(leaf.getViewState().type);
-					});
-				});
-		*/
 		//添加按钮1
 		this.addRibbonIcon("footprints", "Open tags routes", () => {
 			this.activateView();
 		});
-
-
-
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new TagsroutesSettingsTab(this.app, this));
-
-
-
 		// 在 Obsidian 插件的 onload 方法中注册事件
 		this.registerDomEvent(document, 'click', (e: MouseEvent) => {
 			const target = e.target as HTMLElement;
@@ -153,36 +132,22 @@ export default class TagsRoutes extends Plugin {
 				}
 			//	this.focusGraphTag(tag); // 在图形中聚焦到对应的节点
 		}
-	
 		});
-
-	//	const { vault } = this.app;
-    //    // 检查文件是否已经存在
-    //    if (!vault.getAbstractFileByPath("scripts/tag-report.js")) {
-    //        await vault.create("scripts/tag-report.js", fileContent);
-    //    }
 	}
-
 	onunload() {
-
 	}
-
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 		this.settings.customSlot[0] =structuredClone( 
 			this.settings.customSlot[this.settings.currentSlot]);
 	}
-
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
-
 	async activateView() {
 		const { workspace } = this.app;
-
 		let leaf: WorkspaceLeaf | null = null;
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES);
-
 		if (leaves.length > 0) {
 			// A leaf with our view already exists, use that
 			leaf = leaves[0];
@@ -194,7 +159,6 @@ export default class TagsRoutes extends Plugin {
 				await leaf.setViewState({ type: VIEW_TYPE_TAGS_ROUTES, active: true });
 			}
 		}
-
 		// "Reveal" the leaf in case it is in a collapsed sidebar
 		if (leaf) {
 			workspace.revealLeaf(leaf);
@@ -209,12 +173,9 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
-
 	display(): void {
 		const { containerEl } = this;
-
 		containerEl.empty();
-
 		new Setting(containerEl)
 			.setName('Log Node/Link Count')
 			.setDesc('Enable or disable logging the number of nodes and links when the graph loads')
