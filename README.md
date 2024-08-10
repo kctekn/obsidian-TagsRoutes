@@ -29,7 +29,7 @@ These updates aim to provide a more focused and efficient user experience. We ho
 
 
  _**Watch this short demo to learn how to use these new features:**_ 
- 
+![node-highlight](https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/node-highlight.gif))
 
 
 ## What's New on version 1.0.5
