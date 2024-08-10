@@ -297,7 +297,7 @@ export class TagRoutesView extends ItemView {
             const obj = node.__threeObj; // 获取节点的 Three.js 对象
             if (obj) {
                 obj.scale.set(scaleValue,scaleValue,scaleValue)
-            } 
+            }
         })
         this.plugin.settings.customSlot[0].node_size = value;
         this.plugin.saveSettings();
@@ -937,6 +937,12 @@ export class TagRoutesView extends ItemView {
         this.gData = this.buildGdata();
         this.createGraph(container as HTMLElement);
         this.Graph.graphData(this.gData);
+        //need a delay for scene creation
+        setTimeout(() => {
+            this.setControlValue("Node size", this._controls,
+            this.plugin.settings.customSlot[this.currentSlot], "node_size");
+        }, 2000);
+
     }
     // view 的close 事件
     async onClose() {
