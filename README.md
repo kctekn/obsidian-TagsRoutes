@@ -6,7 +6,7 @@
 
 This is a plugin for obsidian, to visualize files and tags as nodes in 3D graphic.
 
-![GIF-nearest](https://github.com/user-attachments/assets/27d000e5-fc97-4b53-ac6f-a5ed9a14aea0)
+<img width="40%" src="https://github.com/user-attachments/assets/27d000e5-fc97-4b53-ac6f-a5ed9a14aea0">
 
 ## Version 1.0.6 Release Notes
 
@@ -29,7 +29,8 @@ These updates aim to provide a more focused and efficient user experience. We ho
 
 
  _**Watch this short demo to learn how to use these new features:**_ 
-![node-highlight](https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/node-highlight.gif))
+ 
+<img width="50%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/node-highlight.gif">
 
 
 ## What's New on version 1.0.5
