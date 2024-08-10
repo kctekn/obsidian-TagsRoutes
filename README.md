@@ -8,6 +8,30 @@ This is a plugin for obsidian, to visualize files and tags as nodes in 3D graphi
 
 ![GIF-nearest](https://github.com/user-attachments/assets/27d000e5-fc97-4b53-ac6f-a5ed9a14aea0)
 
+## Version 1.0.6 Release Notes
+
+This release brings two key improvements to enhance your user experience:
+
+**1. Focused Node View:**
+
+- You can now toggle between a global and local view while focusing on a specific node.
+- **Local view:**  Hides non-focused nodes, allowing you to concentrate on the selected node and its immediate connections. This declutters the scene and provides a clearer picture of the focused area.
+- **Global view:** Displays all nodes as usual.
+-  Switch between these views easily to analyze your data from different perspectives.
+
+**2. Streamlined Interface:**
+
+- The settings icon in the top right corner has been replaced with a more intuitive cycling button. 
+- Click the button repeatedly to cycle through four different stages or functionalities. This change simplifies the interface and reduces visual clutter.
+
+
+These updates aim to provide a more focused and efficient user experience. We hope you enjoy the improvements!
+
+
+ _**Watch this short demo to learn how to use these new features:**_ 
+ 
+
+
 ## What's New on version 1.0.5
 
 1. **Multiple Slots for Display Settings**
