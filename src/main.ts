@@ -2,7 +2,7 @@ import { App, WorkspaceLeaf, Notice, Plugin, PluginSettingTab, Setting, ToggleCo
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
 import { createFolderIfNotExists } from "./util/util"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
-const versionInfo = require('./version_info.txt');
+//const versionInfo = require('./version_info.txt');
 type AnyObject = Record<string, any>;
 
 export interface TagRoutesSettings {
