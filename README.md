@@ -8,6 +8,9 @@ This is a plugin for obsidian, to visualize files and tags as nodes in 3D graphi
 
 <img width="40%" src="https://github.com/user-attachments/assets/27d000e5-fc97-4b53-ac6f-a5ed9a14aea0">
 
+Wiki: [Organize Tags by Timestamp Using the Obsidian Plugin: "Tags Routes"](https://github.com/kctekn/obsidian-TagsRoutes/wiki/Organize-Tags-by-Timestamp-Using-the-Obsidian-Plugin:-%22Tags-Routes%22)
+
+
 ## Version 1.0.6 Release Notes
 
 This release brings two key improvements to enhance your user experience:
