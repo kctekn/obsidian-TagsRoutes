@@ -633,6 +633,8 @@ export class TagRoutesView extends ItemView {
         this.debugLogToFileM("", true)
         this.debugLogToFileM(`|File parse completed=>|| markdown and linked files nodes:| ${nodes.length}| total file links:| ${links.length}|`)
         filesDataMap.forEach((cache, filePath) => {
+            if (cache?.frontmatter && cache?.frontmatter?.tags && cache.frontmatter.tags.contains("tag-report"))
+                return;
             const fileTags = getTags(cache);
             // 确保目标文件也在图中
             if (!nodes.some(node => node.id == filePath)) {
