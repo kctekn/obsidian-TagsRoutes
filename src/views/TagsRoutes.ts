@@ -802,7 +802,7 @@ export class TagRoutesView extends ItemView {
                 arg: (new settingGroup(this.plugin, "commands", "Node commands"))
                     .addButton("Link broken as star", "graph-button", () => { this.connectBrokenNodes(true) })
                     .addButton("Link broken as line", "graph-button", () => { this.connectBrokenNodes(false) })
-                    .addButton("Unlink borken", "graph-button", () => { this.resetBrokenNodes() })
+                    .addButton("Unlink broken", "graph-button", () => { this.resetBrokenNodes() })
                     .addButton("Link Excalidraw orphans", "graph-button", () => { this.connectExcalidrawNodes() })
                     .addButton("Unlink Excalidraw orphans", "graph-button", () => { this.resetUnlinkedExcalidrawNodes() })
                     .addButton("Reset graph", "graph-button", () => { this.onResetGraph()})
