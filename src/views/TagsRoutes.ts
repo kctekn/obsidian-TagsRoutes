@@ -64,7 +64,7 @@ export class TagRoutesView extends ItemView {
         this.onLinkWidth = this.onLinkWidth.bind(this);
         this.onLinkParticleNumber = this.onLinkParticleNumber.bind(this);
         this.onLinkParticleSize = this.onLinkParticleSize.bind(this);
-        this.onLinkParticleColor = this.onLinkParticleColor.bind(this);
+       // this.onLinkParticleColor = this.onLinkParticleColor.bind(this);
         this.onSlotSliderChange = this.onSlotSliderChange.bind(this)
         this.onToggleGlobalMap = this.onToggleGlobalMap.bind(this)
         this.getNodeVisible = this.getNodeVisible.bind(this)
@@ -207,6 +207,17 @@ export class TagRoutesView extends ItemView {
             return true
         }
     }
+    updateColor() {
+        //console.log("update color")
+        this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
+            const obj = node.__threeObj; // 获取节点的 Three.js 对象
+            if (obj) {
+                (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
+                return;
+            }
+        })
+        this.Graph.linkColor(this.Graph.linkColor());
+    }
     updateHighlight() {
         // trigger update of highlighted objects in scene
         this.highlightNodes.clear();
@@ -280,11 +291,12 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.customSlot[0].link_particle_size = value
         this.plugin.saveSettings();
     }
-    onLinkParticleColor(value: string) {
-        this.Graph.linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? '#ff00ff' : value)
+/*     onLinkParticleColor(value: string) {
+        return;
+        this.Graph.linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot[0].colorMap["linkParticleHighlightColor"] : value)
         this.plugin.settings.customSlot[0].link_particle_color = value;
         this.plugin.saveSettings();
-    }
+    } */
     onToggleGlobalMap(value: boolean) {
         this.plugin.settings.customSlot[0].toggle_global_map = value;
         this.plugin.saveSettings();
@@ -397,6 +409,7 @@ export class TagRoutesView extends ItemView {
         //   console.log("_controls: ", this._controls);
         // 使用辅助函数
         this.applyChanges();
+        this.updateColor();
         new Notice(`Tags routes: Load slot ${this.currentSlot}`);
     }
     onSave() {
@@ -440,6 +453,7 @@ export class TagRoutesView extends ItemView {
         this.plugin.saveData(this.plugin.settings);
         // 使用辅助函数
         this.applyChanges();
+        this.updateColor();
         //new Notice('Graph load on slot ', this.currentSlot);
         new Notice(`Tags routes: Graph load from slot ${this.currentSlot}`);
     }
@@ -448,6 +462,7 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.customSlot[this.currentSlot] = structuredClone(DEFAULT_DISPLAY_SETTINGS);
         this.plugin.saveData(this.plugin.settings);
         this.applyChanges();
+        this.updateColor();
         new Notice(`Graph reset on slot ${this.currentSlot}`);
     }
     // 连接所有 broken 节点的方法
@@ -578,27 +593,33 @@ export class TagRoutesView extends ItemView {
         let color;
         switch (node.type) {
             case 'md':
-                color = '#00ff00'; // 绿色
+                //color = '#00ff00'; // 绿色
+                color = this.plugin.settings.customSlot[0].colorMap["markdown"];
+            //    console.log("md color: ", color)
                 break;
             case 'tag':
-                color = '#ff00ff'; // 粉色
+               // color = '#ff00ff'; // 粉色
+                color = this.plugin.settings.customSlot[0].colorMap["tag"];
                 break;
             case 'attachment':
-                color = '#ffff00'; // 黄色
+               // color = '#ffff00'; // 黄色
+                color = this.plugin.settings.customSlot[0].colorMap["attachment"];
                 break;
             case 'broken':
-                color = '#770000'  // 红色
+               // color = '#770000'  // 红色
+                color = this.plugin.settings.customSlot[0].colorMap["broken"];
                 break;
             case 'excalidraw':
-                color = '#00ffff'  // 青色
+               // color = '#00ffff'  // 青色
+                color = this.plugin.settings.customSlot[0].colorMap["excalidraw"];
                 break;
             default:
                 color = '#ffffff'; // 默认颜色
         }
         if (this.plugin.settings.customSlot[0].toggle_global_map) {
-            if (this.highlightNodes.has(node)) color = '#3333ff'
+            if (this.highlightNodes.has(node)) color = this.plugin.settings.customSlot[0].colorMap["nodeHighlightColor"];
             if (node === this.selectedNode || node === this.hoverNode)
-                color = '#FF3333'
+                color = this.plugin.settings.customSlot[0].colorMap["nodeFocusColor"];
         }
         return color;
     }
@@ -666,10 +687,11 @@ export class TagRoutesView extends ItemView {
             */
             if (cache?.frontmatter?.tags != undefined) {
                 cache?.frontmatter?.tags.forEach((element: string) => {
-                    fileTags.push("#"+element )
+                    if (element !== "excalidraw")
+                        fileTags.push("#" + element)
                 });
             }
-            
+
             fileTags.forEach(fileTag => {
                 const tagParts = fileTag.split('/');
                 let currentTag = '';
@@ -780,10 +802,13 @@ export class TagRoutesView extends ItemView {
             (graphContainer)
             .nodeVisibility(this.getNodeVisible)
             .linkVisibility(this.getLinkVisible)
+            .linkColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot[0].colorMap["linkHighlightColor"] :
+            this.plugin.settings.customSlot[0].colorMap["linkNormalColor"] )
             .linkWidth((link: any) => this.highlightLinks.has(link) ? 2 : 1)
             .linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? 4 : 2)
             .linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? 3 : 0.5)
-            .linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? '#ff00ff' : '#ffffff')
+            .linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot[0].colorMap["linkParticleHighlightColor"] :
+            this.plugin.settings.customSlot[0].colorMap["linkParticleColor"] )
             .nodeLabel((node: any) => node.type == 'tag' ? `${node.id} (${node.instanceNum})` : `${node.id} (${node.connections})`)
             .nodeOpacity(0.9)
             .nodeThreeObject((node: ExtendedNodeObject) => {
@@ -853,7 +878,7 @@ export class TagRoutesView extends ItemView {
                     .addSlider("Link width", 1, 5, 1, this.plugin.settings.customSlot[0].link_width, this.onLinkWidth)
                     .addSlider("Link particle size", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_size, this.onLinkParticleSize)
                     .addSlider("Link particle number", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_number, this.onLinkParticleNumber)
-                    .addColorPicker("Link particle color", this.plugin.settings.customSlot[0].link_particle_color, this.onLinkParticleColor)
+                 //   .addColorPicker("Link particle color", this.plugin.settings.customSlot[0].link_particle_color, this.onLinkParticleColor)
                     .addToggle("Toggle global map", this.plugin.settings.customSlot[0].toggle_global_map, this.onToggleGlobalMap)
             })
             .add({

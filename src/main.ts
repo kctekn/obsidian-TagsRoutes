@@ -5,6 +5,34 @@ import { codeBlockProcessor } from './util/CodeBlockProcessor';
 //const versionInfo = require('./version_info.txt');
 type AnyObject = Record<string, any>;
 
+export interface colorMap {
+	markdown: string;
+	attachment: string;
+	broken: string;
+	excalidraw: string;
+	tag: string;
+	nodeHighlightColor: string;
+	nodeFocusColor: string;
+	linkHighlightColor: string;
+	linkNormalColor: string;
+	linkParticleColor: string;
+	linkParticleHighlightColor: string;
+}
+export const defaultolorMap: colorMap = {
+	markdown: "#00ff00",
+	attachment: "#ffff00",
+	broken: "#ff0000",
+	excalidraw: "#00ffff",
+	tag: "#ff00ff",
+	nodeHighlightColor: "#3333ff",
+	nodeFocusColor: "#FF3333",
+	linkHighlightColor: "#ffffff",
+	linkNormalColor: "#ffffff",
+	linkParticleColor: "#ffffff",
+	linkParticleHighlightColor:"#ff00ff",
+	
+	
+}
 export interface TagRoutesSettings {
 	broken_file_link_center: string;
 	broken_file_link_line: string;
@@ -21,6 +49,7 @@ export interface TagRoutesSettings {
 	link_particle_number: number;
 	link_particle_color: string;
 	toggle_global_map: boolean;
+	colorMap: colorMap;
 }
 interface Settings {
 	enableSave: boolean;
@@ -28,12 +57,13 @@ interface Settings {
 	currentSlot: number;
 	customSlot: [TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings]
 }
+
 export const DEFAULT_DISPLAY_SETTINGS: TagRoutesSettings = {
 	broken_file_link_center: 'true',
 	broken_file_link_line: 'false',
-	md_color: 'green',
-	attachment_color: 'yellow',
-	broken_color: 'red',
+	md_color: '#00ff00',
+	attachment_color: '#ffff00',
+	broken_color: '#ff0000',
 	excllidraw_file_color: '#00ffff',
 	tag_color: '#ff00ff',
 	link_particle_color: '#ffffff',
@@ -43,7 +73,8 @@ export const DEFAULT_DISPLAY_SETTINGS: TagRoutesSettings = {
 	link_width: 1,
 	link_particle_size: 2,
 	link_particle_number: 2,
-	toggle_global_map: false
+	toggle_global_map: false,
+	colorMap:defaultolorMap,
 }
 const DEFAULT_SETTINGS: Settings = {
 	enableSave: true,
@@ -193,23 +224,49 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 	constructor(app: App, plugin: TagsRoutes) {
 		super(app, plugin);
 		this.plugin = plugin;
+		this.loadColor = this.loadColor.bind(this)
+	}
+	addColorPicker(container: HTMLElement, name: string,  keyName: keyof colorMap, cb: (v: string) => void) {
+		const defaultColor = this.plugin.settings.customSlot[0].colorMap[keyName];
+		const colorpicker = new Setting(container)
+            .setName(name)
+            .setDesc(defaultColor || "#000000")
+            .addColorPicker(picker => {
+                picker
+				.setValue(defaultColor)
+				.onChange(async (value) => {
+						this.plugin.settings.customSlot[0].colorMap[keyName]=value
+						this.plugin.view.onSave();
+						cb(value)
+                        setTimeout(() => colorpicker.setDesc(value), 0);
+                    })
+                //this.plugin.view._controls.push({ id: name, control: picker })
+            })
+        colorpicker.setClass("setting-item-inline")
+        return this;
+	}
+	loadColor(value: string) {
+		this.plugin.view.updateColor();
 	}
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
+
+		new Setting(containerEl).setName("General").setHeading()
+
 		new Setting(containerEl)
 			.setName('Log Node/Link Count')
 			.setDesc('Enable or disable logging the number of nodes and links when the graph loads')
 			.addToggle((toggle: ToggleComponent) => {
 				toggle
-					.onChange(async (value) => {
+				.setValue(this.plugin.settings.enableSave)
+				.onChange(async (value) => {
 						if (!value) {
 							this.toggleEnableShow.setValue(value);
 						}
 						this.plugin.settings.enableSave = value;
 						await this.plugin.saveSettings();
 					})
-					.setValue(this.plugin.settings.enableSave)
 				this.toggleEnableSave = toggle;
 			}
 			)
@@ -228,6 +285,18 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.enableShow)
 				this.toggleEnableShow = toggle;
 			}
-			)
+		)
+		new Setting(containerEl).setName("Color").setHeading().setDesc("Color customization for each type")
+		this.addColorPicker(containerEl, "### Markdown", "markdown", this.loadColor)
+		this.addColorPicker	(containerEl,"### Tags", "tag",this.loadColor)
+		this.addColorPicker	(containerEl,"### Exclidraw","excalidraw",this.loadColor)
+		this.addColorPicker	(containerEl,"### Attachments", "attachment",this.loadColor)
+		this.addColorPicker	(containerEl,"### Broken", "broken",this.loadColor)
+		this.addColorPicker	(containerEl,"### Node highlight", "nodeHighlightColor",this.loadColor)
+		this.addColorPicker	(containerEl,"### Node focus", "nodeFocusColor",this.loadColor)
+		this.addColorPicker	(containerEl,"### Link normal", "linkNormalColor",this.loadColor)
+		this.addColorPicker	(containerEl,"### Link highlight", "linkHighlightColor",this.loadColor)
+		this.addColorPicker	(containerEl,"### Link particle normal", "linkParticleColor",this.loadColor)
+		this.addColorPicker	(containerEl,"### Link particle high light", "linkParticleHighlightColor",this.loadColor)
 	}
 }
