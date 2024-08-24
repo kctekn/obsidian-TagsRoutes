@@ -611,6 +611,10 @@ export class TagRoutesView extends ItemView {
         let FileLinkNum = 0;
         let TagNodeNum = 0;
         let TagLinkNum = 0;
+
+        /*
+          Add nodes which are linked together
+        */
         const resolvedLinks = this.app.metadataCache.resolvedLinks;
         const tagCount: Map<string, number> = new Map(); // 初始化标签计数对象
         // 添加resolved links来创建文件间的关系，和文件节点
@@ -632,47 +636,79 @@ export class TagRoutesView extends ItemView {
         FileLinkNum = links.length;
         this.debugLogToFileM("", true)
         this.debugLogToFileM(`|File parse completed=>|| markdown and linked files nodes:| ${nodes.length}| total file links:| ${links.length}|`)
+
+        /*
+          Add tags
+        */        
         filesDataMap.forEach((cache, filePath) => {
             if (cache?.frontmatter && cache?.frontmatter?.tags && cache.frontmatter.tags.contains("tag-report"))
                 return;
-            const fileTags = getTags(cache);
             // 确保目标文件也在图中
             if (!nodes.some(node => node.id == filePath)) {
                 nodes.push({ id: filePath, type: 'broken' });
             }
-            /* 文件只与根标签联接 */
+            
+            /*
+            Add tags in note content
+            */               
+            const fileTags = getTags(cache).map(cache=>cache.tag);
+            
+/*             
+            console.log("file: ", filePath)
+            console.log("frontmatter tags:", cache?.frontmatter?.tags)
+            console.log("file tags:", fileTags); 
+*/
+
             const rootTags = new Set<string>();
-            fileTags.forEach(tag => {
-                const tagParts = tag.tag.split('/');
-                rootTags.add(tagParts[0]);
-                // 更新标签计数，包括所有父标签
-                tagParts.forEach((_, i) => {
-                    const tagPart = tagParts.slice(0, i + 1).join('/');
-                    tagCount.set(tagPart, (tagCount.get(tagPart) || 0) + 1);
+
+            /*
+            Add tags in note frontmatter
+            */
+            if (cache?.frontmatter?.tags != undefined) {
+                cache?.frontmatter?.tags.forEach((element: string) => {
+                    fileTags.push("#"+element )
                 });
-            });
-            rootTags.forEach(rootTag => {
-                links.push({ source: filePath, target: rootTag, sourceId: filePath, targetId: rootTag });
-            });
-            // 创建标签之间的链接
-            fileTags.forEach(tag => {
-                const tagParts = parseTagHierarchy(tag.tag);// tag.tag.split('/');
-                for (let i = 0; i < tagParts.length; i++) {
-                    const tagPart = tagParts[i];
-                    if (!tagSet.has(tagPart)) {
-                        nodes.push({ id: tagPart, type: 'tag' });
-                        tagSet.add(tagPart);
+            }
+            
+            fileTags.forEach(fileTag => {
+                const tagParts = fileTag.split('/');
+                let currentTag = '';
+
+                tagParts.forEach((part, index) => {
+                    currentTag += (index > 0 ? '/' : '') + part;
+
+                    // 更新根标签
+                    if (index === 0) {
+                        rootTags.add(currentTag);
                     }
-                    if (i > 0) {
-                        const parentTag = tagParts[i - 1];
-                        const linkKey = `${parentTag}->${tagPart}`;
+
+                    // 更新标签计数
+                    tagCount.set(currentTag, (tagCount.get(currentTag) || 0) + 1);
+
+                    // 创建节点
+                    if (!tagSet.has(currentTag)) {
+                        nodes.push({ id: currentTag, type: 'tag' });
+                        tagSet.add(currentTag);
+                    }
+
+                    // 创建链接
+                    if (index > 0) {
+                        const parentTag = tagParts.slice(0, index).join('/');
+                        const linkKey = `${parentTag}->${currentTag}`;
                         if (!tagLinks.has(linkKey)) {
-                            links.push({ source: parentTag, target: tagPart, sourceId: parentTag, targetId: tagPart });
+                            links.push({ source: parentTag, target: currentTag, sourceId: parentTag, targetId: currentTag });
                             tagLinks.add(linkKey);
                         }
                     }
-                }
+                });
             });
+
+            rootTags.forEach(rootTag => {
+                links.push({ source: filePath, target: rootTag, sourceId: filePath, targetId: rootTag });
+            });
+
+
+
         });
         //markdwon + orphan + tags
         const brokennum = nodes.filter(node => node.type == 'broken').length;
