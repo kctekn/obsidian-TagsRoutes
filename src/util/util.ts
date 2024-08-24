@@ -30,7 +30,7 @@ export const getTags = (cache: CachedMetadata | null): TagCache[] => {
 	return cache.tags;
 };
 // 函数：判断文件类型
-export const getFileType = (filePath: string): 'md' | 'tag' | 'attachment' | 'broken' | 'excalidraw' => {
+export const getFileType = (filePath: string): 'markdown' | 'tag' | 'attachment' | 'broken' | 'excalidraw' => {
 	const parts = filePath.split('.');
 	const extension = parts[parts.length - 1];
 	const middlePart = parts[parts.length - 2];
@@ -39,7 +39,7 @@ export const getFileType = (filePath: string): 'md' | 'tag' | 'attachment' | 'br
 			if (middlePart === 'excalidraw') {
 				return 'excalidraw';
 			} else {
-				return 'md'
+				return 'markdown'
 			}
 	}
 	return 'attachment'

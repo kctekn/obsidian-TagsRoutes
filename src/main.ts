@@ -36,18 +36,12 @@ export const defaultolorMap: colorMap = {
 export interface TagRoutesSettings {
 	broken_file_link_center: string;
 	broken_file_link_line: string;
-	md_color: string;
-	attachment_color: string;
-	broken_color: string;
-	excllidraw_file_color: string;
-	tag_color: string;
 	node_size: number;
 	node_repulsion: number;
 	link_distance: number;
 	link_width: number;
 	link_particle_size: number;
 	link_particle_number: number;
-	link_particle_color: string;
 	toggle_global_map: boolean;
 	colorMap: colorMap;
 }
@@ -61,12 +55,6 @@ interface Settings {
 export const DEFAULT_DISPLAY_SETTINGS: TagRoutesSettings = {
 	broken_file_link_center: 'true',
 	broken_file_link_line: 'false',
-	md_color: '#00ff00',
-	attachment_color: '#ffff00',
-	broken_color: '#ff0000',
-	excllidraw_file_color: '#00ffff',
-	tag_color: '#ff00ff',
-	link_particle_color: '#ffffff',
 	node_size: 5,
 	node_repulsion: 0,
 	link_distance: 5,
@@ -240,7 +228,6 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 						cb(value)
                         setTimeout(() => colorpicker.setDesc(value), 0);
                     })
-                //this.plugin.view._controls.push({ id: name, control: picker })
             })
         colorpicker.setClass("setting-item-inline")
         return this;

@@ -28,7 +28,7 @@ interface nodeThreeObject extends ExtendedNodeObject {
     __threeObj?: THREE.Mesh
 }
 interface ExtendedNodeObject extends Node {
-    type: 'md' | 'tag' | 'attachment' | 'broken' | 'excalidraw';
+    type: 'markdown' | 'tag' | 'attachment' | 'broken' | 'excalidraw';
     x?: number;
     y?: number;
     z?: number;
@@ -64,7 +64,6 @@ export class TagRoutesView extends ItemView {
         this.onLinkWidth = this.onLinkWidth.bind(this);
         this.onLinkParticleNumber = this.onLinkParticleNumber.bind(this);
         this.onLinkParticleSize = this.onLinkParticleSize.bind(this);
-       // this.onLinkParticleColor = this.onLinkParticleColor.bind(this);
         this.onSlotSliderChange = this.onSlotSliderChange.bind(this)
         this.onToggleGlobalMap = this.onToggleGlobalMap.bind(this)
         this.getNodeVisible = this.getNodeVisible.bind(this)
@@ -291,12 +290,6 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.customSlot[0].link_particle_size = value
         this.plugin.saveSettings();
     }
-/*     onLinkParticleColor(value: string) {
-        return;
-        this.Graph.linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot[0].colorMap["linkParticleHighlightColor"] : value)
-        this.plugin.settings.customSlot[0].link_particle_color = value;
-        this.plugin.saveSettings();
-    } */
     onToggleGlobalMap(value: boolean) {
         this.plugin.settings.customSlot[0].toggle_global_map = value;
         this.plugin.saveSettings();
@@ -592,26 +585,12 @@ export class TagRoutesView extends ItemView {
     getNodeColorByType(node: Node) {
         let color;
         switch (node.type) {
-            case 'md':
-                //color = '#00ff00'; // 绿色
-                color = this.plugin.settings.customSlot[0].colorMap["markdown"];
-            //    console.log("md color: ", color)
-                break;
+            case 'markdown':
             case 'tag':
-               // color = '#ff00ff'; // 粉色
-                color = this.plugin.settings.customSlot[0].colorMap["tag"];
-                break;
             case 'attachment':
-               // color = '#ffff00'; // 黄色
-                color = this.plugin.settings.customSlot[0].colorMap["attachment"];
-                break;
             case 'broken':
-               // color = '#770000'  // 红色
-                color = this.plugin.settings.customSlot[0].colorMap["broken"];
-                break;
             case 'excalidraw':
-               // color = '#00ffff'  // 青色
-                color = this.plugin.settings.customSlot[0].colorMap["excalidraw"];
+                color = this.plugin.settings.customSlot[0].colorMap[node.type];
                 break;
             default:
                 color = '#ffffff'; // 默认颜色
@@ -673,13 +652,6 @@ export class TagRoutesView extends ItemView {
             Add tags in note content
             */               
             const fileTags = getTags(cache).map(cache=>cache.tag);
-            
-/*             
-            console.log("file: ", filePath)
-            console.log("frontmatter tags:", cache?.frontmatter?.tags)
-            console.log("file tags:", fileTags); 
-*/
-
             const rootTags = new Set<string>();
 
             /*
@@ -878,7 +850,6 @@ export class TagRoutesView extends ItemView {
                     .addSlider("Link width", 1, 5, 1, this.plugin.settings.customSlot[0].link_width, this.onLinkWidth)
                     .addSlider("Link particle size", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_size, this.onLinkParticleSize)
                     .addSlider("Link particle number", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_number, this.onLinkParticleNumber)
-                 //   .addColorPicker("Link particle color", this.plugin.settings.customSlot[0].link_particle_color, this.onLinkParticleColor)
                     .addToggle("Toggle global map", this.plugin.settings.customSlot[0].toggle_global_map, this.onToggleGlobalMap)
             })
             .add({
