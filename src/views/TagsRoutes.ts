@@ -436,8 +436,6 @@ export class TagRoutesView extends ItemView {
             this.plugin.settings.customSlot[this.currentSlot], "link_particle_size");
         this.setControlValue("Link particle number", this._controls,
             this.plugin.settings.customSlot[this.currentSlot], "link_particle_number");
-        this.setControlValue("Link particle color", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "link_particle_color");
     }
     onLoad() {
         console.log("load from slot: ", this.currentSlot)
