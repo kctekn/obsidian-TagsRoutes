@@ -10,6 +10,16 @@ This is a plugin for obsidian, to visualize files and tags as nodes in 3D graphi
 
 Wiki: [Organize Tags by Timestamp Using the Obsidian Plugin: "Tags Routes"](https://github.com/kctekn/obsidian-TagsRoutes/wiki/Organize-Tags-by-Timestamp-Using-the-Obsidian-Plugin:-%22Tags-Routes%22)
 
+## Version 1.0.7 Release Notes
+**1. Enhanced Tag Processing**
+- Tags in the note's frontmatter are now processed identically to tags within the note content, ensuring consistent tag handling throughout.
+
+**2. Comprehensive Color Customization**
+- Introduced full color customization for nodes, links, and particles via the plugin settings tab.
+- Implemented a color scheme slot system, allowing users to:
+  - Save multiple color schemes to different slots.
+  - Easily switch between color schemes with a simple drag on the slider.
+  - Set unique color schemes for each slot, enhancing visual customization.
 
 ## Version 1.0.6 Release Notes
 
