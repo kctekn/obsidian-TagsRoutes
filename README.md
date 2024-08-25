@@ -21,6 +21,16 @@ Wiki: [Organize Tags by Timestamp Using the Obsidian Plugin: "Tags Routes"](http
   - Easily switch between color schemes with a simple drag on the slider.
   - Set unique color schemes for each slot, enhancing visual customization.
 
+ _**Watch this short demo to learn how to use these new features:**_
+ 
+ **Setup Color**
+ 
+<img width="50%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/setup-color.gif">
+
+**Switch Settings**
+
+<img width="50%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/switch-settings.gif">
+
 ## Version 1.0.6 Release Notes
 
 This release brings two key improvements to enhance your user experience:
