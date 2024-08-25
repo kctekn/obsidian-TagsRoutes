@@ -229,7 +229,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
                         setTimeout(() => colorpicker.setDesc(value), 0);
                     })
             })
-        colorpicker.setClass("setting-item-inline")
+        //colorpicker.setClass("setting-item-inline")
         return this;
 	}
 	loadColor(value: string) {
@@ -239,7 +239,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		new Setting(containerEl).setName("General").setHeading()
+		containerEl.createEl("h1", { text: "General" });
 
 		new Setting(containerEl)
 			.setName('Log Node/Link Count')
@@ -273,17 +273,25 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 				this.toggleEnableShow = toggle;
 			}
 		)
-		new Setting(containerEl).setName("Color").setHeading().setDesc("Color customization for each type")
-		this.addColorPicker(containerEl, "### Markdown", "markdown", this.loadColor)
-		this.addColorPicker	(containerEl,"### Tags", "tag",this.loadColor)
-		this.addColorPicker	(containerEl,"### Exclidraw","excalidraw",this.loadColor)
-		this.addColorPicker	(containerEl,"### Attachments", "attachment",this.loadColor)
-		this.addColorPicker	(containerEl,"### Broken", "broken",this.loadColor)
-		this.addColorPicker	(containerEl,"### Node highlight", "nodeHighlightColor",this.loadColor)
-		this.addColorPicker	(containerEl,"### Node focus", "nodeFocusColor",this.loadColor)
-		this.addColorPicker	(containerEl,"### Link normal", "linkNormalColor",this.loadColor)
-		this.addColorPicker	(containerEl,"### Link highlight", "linkHighlightColor",this.loadColor)
-		this.addColorPicker	(containerEl,"### Link particle normal", "linkParticleColor",this.loadColor)
-		this.addColorPicker	(containerEl,"### Link particle high light", "linkParticleHighlightColor",this.loadColor)
+		containerEl.createEl("h1", { text: "Color" });
+
+		new Setting(containerEl).setName("Node type").setHeading()
+		this.addColorPicker(containerEl, "Markdown", "markdown", this.loadColor)
+		this.addColorPicker	(containerEl,"Tags", "tag",this.loadColor)
+		this.addColorPicker	(containerEl,"Exclidraw","excalidraw",this.loadColor)
+		this.addColorPicker	(containerEl,"Attachments", "attachment",this.loadColor)
+		this.addColorPicker	(containerEl,"Broken", "broken",this.loadColor)
+
+		new Setting(containerEl).setName("Node state").setHeading().setDesc("Effects in global map mode")
+		this.addColorPicker	(containerEl,"Highlight", "nodeHighlightColor",this.loadColor)
+		this.addColorPicker	(containerEl,"Focus", "nodeFocusColor",this.loadColor)
+
+		new Setting(containerEl).setName("Link state").setHeading()
+		this.addColorPicker	(containerEl,"Normal", "linkNormalColor",this.loadColor)
+		this.addColorPicker(containerEl, "Highlight", "linkHighlightColor", this.loadColor)
+
+		new Setting(containerEl).setName("Particle state").setHeading()
+		this.addColorPicker	(containerEl,"Normal", "linkParticleColor",this.loadColor)
+		this.addColorPicker	(containerEl,"Highlight", "linkParticleHighlightColor",this.loadColor)
 	}
 }
