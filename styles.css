@@ -44,6 +44,15 @@ If your plugin does not need CSS, delete this file.
     text-align: left;
     /*border-bottom: 1px dotted;*/
 }
+.tags-routes .inline-settings{
+    display:grid;
+    justify-content: end;
+    grid-auto-flow: column;
+    align-items:end;
+    border-top: 1px solid var(--background-modifier-border);
+    text-align: right;
+    
+}
 .tags-routes .group-bar-button {
     display: inline-block;
     margin-top: 5px;

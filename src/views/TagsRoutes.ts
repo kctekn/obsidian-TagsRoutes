@@ -75,6 +75,7 @@ export class TagRoutesView extends ItemView {
         this.onResetGraph = this.onResetGraph.bind(this);
         this.createNodeThreeObject = this.createNodeThreeObject.bind(this)
         this.currentSlot = this.plugin.settings.currentSlot;
+        this.updateColor = this.updateColor.bind(this);
     }
     getViewType() {
         return VIEW_TYPE_TAGS_ROUTES;
@@ -250,7 +251,7 @@ export class TagRoutesView extends ItemView {
     updateColor() {
         //console.log("update color")
         this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
-            const obj = node.__threeObj; // 获取节点的 Three.js 对象
+            const obj = node._ThreeMesh; // 获取节点的 Three.js 对象
             if (obj) {
                 (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
                 return;

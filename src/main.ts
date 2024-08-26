@@ -1,4 +1,4 @@
-import { App, WorkspaceLeaf, Notice, Plugin, PluginSettingTab, Setting, ToggleComponent } from 'obsidian';
+import { App, WorkspaceLeaf, Notice, Plugin, PluginSettingTab, Setting, ToggleComponent, TextComponent, ColorComponent } from 'obsidian';
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
 import { createFolderIfNotExists } from "./util/util"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
@@ -205,6 +205,78 @@ export default class TagsRoutes extends Plugin {
 		}
 	}
 }
+class addColorPickerGroup {
+	private plugin: TagsRoutes;
+	private text: Setting;
+	private colorPicker: Setting;
+	private textC: TextComponent;
+	private colorC: ColorComponent;
+	private isProgrammaticChange: boolean = false;
+
+	constructor(plugin: TagsRoutes, container: HTMLElement, keyname: keyof colorMap) {
+		this.plugin = plugin;
+		const holder = container.createEl("div", "inline-settings")
+
+		this.text = new Setting(holder.createEl("span")).addText(
+			(text) => {
+				this.textC = text
+					.setValue("")
+					.onChange((v) => {
+						const color = this.namedColorToHex(v)
+						if (color !== "" && color !== "#0e0e0e") {
+							this.isProgrammaticChange = true;
+							console.log("value changed: ", this.namedColorToHex(v))
+							this.colorC.setValue(this.namedColorToHex(v))
+							this.text.setDesc(`${v} - ${color}`)
+							this.isProgrammaticChange = false;
+				}
+					})
+				
+
+			 }
+		).setName(this.capitalizeFirstLetter(keyname))
+		.setDesc(this.plugin.settings.customSlot[0].colorMap[keyname])
+		this.colorPicker = new Setting(holder.createEl("span")).addColorPicker(
+			(c) => {
+				this.colorC = c
+					.setValue(this.plugin.settings.customSlot[0].colorMap[keyname])
+					.onChange((v) => {
+						this.textC.setValue("")
+						if (this.isProgrammaticChange == false)
+						this.text.setDesc(v)
+						this.plugin.settings.customSlot[0].colorMap[keyname] = v
+						this.plugin.view.onSave();
+						this.plugin.view.updateColor();
+                       // setTimeout(() => this.colorPicker.setDesc(v), 0);
+				})
+			 }
+		)
+		//this.text.
+	}
+	capitalizeFirstLetter(string:string) {
+		return string.toLowerCase().replace(/\b[a-z]/g, function(match) {
+		  return match.toUpperCase();
+		});
+	}
+	namedColorToHex(color: string): string {
+		const tempDiv = document.createElement('div');
+		tempDiv.style.color = color;
+		document.body.appendChild(tempDiv);
+	
+		const computedColor = window.getComputedStyle(tempDiv).color;
+		document.body.removeChild(tempDiv);
+	
+		const rgb = computedColor.match(/\d+/g)?.map(Number);
+		if (!rgb || rgb.length !== 3) {
+			console.log("not a color")
+			return "";
+			throw new Error(`Invalid color: ${color}`);
+		}
+	
+		const hex = rgb.map(c => c.toString(16).padStart(2, '0')).join('');
+		return `#${hex}`;
+	}
+}
 class TagsroutesSettingsTab extends PluginSettingTab {
 	plugin: TagsRoutes;
 	toggleEnableSave: ToggleComponent;
@@ -235,10 +307,11 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 	loadColor(value: string) {
 		this.plugin.view.updateColor();
 	}
+
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-
+	//	containerEl.addClass("tags-routes")
 		containerEl.createEl("h1", { text: "General" });
 
 		new Setting(containerEl)
@@ -274,13 +347,21 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 			}
 		)
 		containerEl.createEl("h1", { text: "Color" });
+        const colorSettingsGroup = containerEl.createEl("div",{cls: "tags-routes"})
+		new Setting(colorSettingsGroup).setName("Node type").setHeading()
+	//	this.addColorPicker(colorSettingsGroup, "Markdown", "markdown", this.loadColor)
 
-		new Setting(containerEl).setName("Node type").setHeading()
-		this.addColorPicker(containerEl, "Markdown", "markdown", this.loadColor)
-		this.addColorPicker	(containerEl,"Tags", "tag",this.loadColor)
-		this.addColorPicker	(containerEl,"Exclidraw","excalidraw",this.loadColor)
-		this.addColorPicker	(containerEl,"Attachments", "attachment",this.loadColor)
-		this.addColorPicker	(containerEl,"Broken", "broken",this.loadColor)
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "markdown");
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "tag");
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "excalidraw");
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "attachment");
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "broken");
+
+
+//		this.addColorPicker	(colorSettingsGroup,"Tags", "tag",this.loadColor)
+//		this.addColorPicker	(containerEl,"Exclidraw","excalidraw",this.loadColor)
+//		this.addColorPicker	(containerEl,"Attachments", "attachment",this.loadColor)
+//		this.addColorPicker	(containerEl,"Broken", "broken",this.loadColor)
 
 		new Setting(containerEl).setName("Node state").setHeading().setDesc("Effects in global map mode")
 		this.addColorPicker	(containerEl,"Highlight", "nodeHighlightColor",this.loadColor)
