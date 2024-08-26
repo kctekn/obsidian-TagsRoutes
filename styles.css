@@ -49,9 +49,12 @@ If your plugin does not need CSS, delete this file.
     justify-content: end;
     grid-auto-flow: column;
     align-items:end;
-    border-top: 1px solid var(--background-modifier-border);
+  /*  border-top: 1px solid var(--background-modifier-border);*/
     text-align: right;
     
+}
+.tags-routes .tg-settingtab-heading {
+    border-bottom: 1px solid var(--background-modifier-border);
 }
 .tags-routes .group-bar-button {
     display: inline-block;

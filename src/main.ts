@@ -213,7 +213,7 @@ class addColorPickerGroup {
 	private colorC: ColorComponent;
 	private isProgrammaticChange: boolean = false;
 
-	constructor(plugin: TagsRoutes, container: HTMLElement, keyname: keyof colorMap) {
+	constructor(plugin: TagsRoutes, container: HTMLElement, name: string, keyname: keyof colorMap) {
 		this.plugin = plugin;
 		const holder = container.createEl("div", "inline-settings")
 
@@ -234,7 +234,7 @@ class addColorPickerGroup {
 				
 
 			 }
-		).setName(this.capitalizeFirstLetter(keyname))
+		).setName(name)
 		.setDesc(this.plugin.settings.customSlot[0].colorMap[keyname])
 		this.colorPicker = new Setting(holder.createEl("span")).addColorPicker(
 			(c) => {
@@ -348,14 +348,14 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		)
 		containerEl.createEl("h1", { text: "Color" });
         const colorSettingsGroup = containerEl.createEl("div",{cls: "tags-routes"})
-		new Setting(colorSettingsGroup).setName("Node type").setHeading()
+		new Setting(colorSettingsGroup).setName("Node type").setHeading().settingEl.addClass("tg-settingtab-heading")
 	//	this.addColorPicker(colorSettingsGroup, "Markdown", "markdown", this.loadColor)
 
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "markdown");
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "tag");
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "excalidraw");
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "attachment");
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "broken");
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Markdown", "markdown");
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Tag","tag");
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Excalidraw","excalidraw");
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Attachment","attachment");
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Broken", "broken");
 
 
 //		this.addColorPicker	(colorSettingsGroup,"Tags", "tag",this.loadColor)
@@ -363,16 +363,22 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 //		this.addColorPicker	(containerEl,"Attachments", "attachment",this.loadColor)
 //		this.addColorPicker	(containerEl,"Broken", "broken",this.loadColor)
 
-		new Setting(containerEl).setName("Node state").setHeading().setDesc("Effects in global map mode")
-		this.addColorPicker	(containerEl,"Highlight", "nodeHighlightColor",this.loadColor)
-		this.addColorPicker	(containerEl,"Focus", "nodeFocusColor",this.loadColor)
+		new Setting(colorSettingsGroup).setName("Node state").setHeading().setDesc("Effects in global map mode").settingEl.addClass("tg-settingtab-heading")
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Highlight", "nodeHighlightColor");
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Focus", "nodeFocusColor");
+		//this.addColorPicker	(containerEl,"Highlight", "nodeHighlightColor",this.loadColor)
+		//this.addColorPicker	(containerEl,"Focus", "nodeFocusColor",this.loadColor)
 
-		new Setting(containerEl).setName("Link state").setHeading()
-		this.addColorPicker	(containerEl,"Normal", "linkNormalColor",this.loadColor)
-		this.addColorPicker(containerEl, "Highlight", "linkHighlightColor", this.loadColor)
+		new Setting(colorSettingsGroup).setName("Link state").setHeading().settingEl.addClass("tg-settingtab-heading")
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Normal", "linkNormalColor");
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Highlight", "linkHighlightColor");
+		//this.addColorPicker	(containerEl,"Normal", "linkNormalColor",this.loadColor)
+		//this.addColorPicker(containerEl, "Highlight", "linkHighlightColor", this.loadColor)
 
-		new Setting(containerEl).setName("Particle state").setHeading()
-		this.addColorPicker	(containerEl,"Normal", "linkParticleColor",this.loadColor)
-		this.addColorPicker	(containerEl,"Highlight", "linkParticleHighlightColor",this.loadColor)
+		new Setting(colorSettingsGroup).setName("Particle state").setHeading().settingEl.addClass("tg-settingtab-heading")
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Normal", "linkParticleColor");
+		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Highlight", "linkParticleHighlightColor");
+		//this.addColorPicker	(containerEl,"Normal", "linkParticleColor",this.loadColor)
+		//this.addColorPicker	(containerEl,"Highlight", "linkParticleHighlightColor",this.loadColor)
 	}
 }
