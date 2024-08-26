@@ -347,6 +347,14 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 			}
 		)
 		containerEl.createEl("h1", { text: "Color" });
+		const desc = containerEl.createEl("div", { text: "You can enter css named colors here, like 'blue', 'lightblue' etc." }); //For supported css named color, please refer to: <a href=\"abc\">abc</a> " }).addClass("setting-item-description")
+		desc.createEl("br")
+		desc.appendText("For the supported css named colors, please refer to: ")
+		desc.createEl("a", { href: "https://www.w3.org/wiki/CSS/Properties/color/keywords", text: "Css color keywords" })
+		desc.addClass("setting-item-description");
+		
+		//containerEl.createEl("a", { href: "https://www.w3.org/wiki/CSS/Properties/color/keywords", text:"Color keywords" }).addClass("setting-item-description")
+
         const colorSettingsGroup = containerEl.createEl("div",{cls: "tags-routes"})
 		new Setting(colorSettingsGroup).setName("Node type").setHeading().settingEl.addClass("tg-settingtab-heading")
 	//	this.addColorPicker(colorSettingsGroup, "Markdown", "markdown", this.loadColor)
