@@ -6,7 +6,7 @@ import ForceGraph3D from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "./settings"
-import TagsRoutes, { DEFAULT_DISPLAY_SETTINGS, TagRoutesSettings } from '../main';
+import TagsRoutes, { defaultolorMap, DEFAULT_DISPLAY_SETTINGS, TagRoutesSettings } from '../main';
 import { Vector2 } from 'three';
 import SpriteText from 'three-spritetext';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
@@ -365,7 +365,7 @@ export class TagRoutesView extends ItemView {
             const obj = node.__threeObj; // 获取节点的 Three.js 对象
             if (obj) {
                 obj.scale.set(scaleValue,scaleValue,scaleValue)
-            } 
+            }
         })
         this.plugin.settings.customSlot[0].node_size = value;
         this.plugin.saveSettings();
@@ -651,15 +651,16 @@ export class TagRoutesView extends ItemView {
             case 'attachment':
             case 'broken':
             case 'excalidraw':
-                color = this.plugin.settings.customSlot[0].colorMap[node.type];
+                color = this.plugin.settings.customSlot[0].colorMap[node.type].value; 
+              //  console.log("get color: ", color)
                 break;
             default:
                 color = '#ffffff'; // 默认颜色
         }
         if (this.plugin.settings.customSlot[0].toggle_global_map) {
-            if (this.highlightNodes.has(node)) color = this.plugin.settings.customSlot[0].colorMap["nodeHighlightColor"];
+            if (this.highlightNodes.has(node)) color = this.plugin.settings.customSlot[0].colorMap["nodeHighlightColor"].value;
             if (node === this.selectedNode || node === this.hoverNode)
-                color = this.plugin.settings.customSlot[0].colorMap["nodeFocusColor"];
+                color = this.plugin.settings.customSlot[0].colorMap["nodeFocusColor"].value;
         }
         return color;
     }
@@ -718,7 +719,8 @@ export class TagRoutesView extends ItemView {
             /*
             Add tags in note frontmatter
             */
-            if (cache?.frontmatter?.tags != undefined) {
+            try {
+                if (cache?.frontmatter?.tags != undefined) {
                 let tags = cache.frontmatter.tags;
 
                 if (typeof tags === "string") {
@@ -767,8 +769,8 @@ export class TagRoutesView extends ItemView {
                             tagLinks.add(linkKey);
                         }
                     }
+                });
             });
-        });
 
             rootTags.forEach(rootTag => {
                 links.push({ source: filePath, target: rootTag, sourceId: filePath, targetId: rootTag });
@@ -847,13 +849,13 @@ export class TagRoutesView extends ItemView {
             (graphContainer)
             .nodeVisibility(this.getNodeVisible)
             .linkVisibility(this.getLinkVisible)
-            .linkColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot[0].colorMap["linkHighlightColor"] :
-            this.plugin.settings.customSlot[0].colorMap["linkNormalColor"] )
+            .linkColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot[0].colorMap["linkHighlightColor"].value :
+            this.plugin.settings.customSlot[0].colorMap["linkNormalColor"].value )
             .linkWidth((link: any) => this.highlightLinks.has(link) ? 2 : 1)
             .linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? 4 : 2)
             .linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? 3 : 0.5)
-            .linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot[0].colorMap["linkParticleHighlightColor"] :
-            this.plugin.settings.customSlot[0].colorMap["linkParticleColor"] )
+            .linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot[0].colorMap["linkParticleHighlightColor"].value :
+            this.plugin.settings.customSlot[0].colorMap["linkParticleColor"].value )
          //   .nodeLabel((node: any) => node.type == 'tag' ? `${node.id} (${node.instanceNum})` : `${node.id} (${node.connections})`)
             .nodeOpacity(0.9)
             .nodeThreeObject(this.createNodeThreeObject)

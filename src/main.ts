@@ -4,32 +4,35 @@ import { createFolderIfNotExists } from "./util/util"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
 //const versionInfo = require('./version_info.txt');
 type AnyObject = Record<string, any>;
-
+export interface colorSpec {
+	name?: string;
+	value: string;
+}
 export interface colorMap {
-	markdown: string;
-	attachment: string;
-	broken: string;
-	excalidraw: string;
-	tag: string;
-	nodeHighlightColor: string;
-	nodeFocusColor: string;
-	linkHighlightColor: string;
-	linkNormalColor: string;
-	linkParticleColor: string;
-	linkParticleHighlightColor: string;
+	markdown: colorSpec;
+	attachment: colorSpec;
+	broken: colorSpec;
+	excalidraw: colorSpec;
+	tag: colorSpec;
+	nodeHighlightColor: colorSpec;
+	nodeFocusColor: colorSpec;
+	linkHighlightColor: colorSpec;
+	linkNormalColor: colorSpec;
+	linkParticleColor: colorSpec;
+	linkParticleHighlightColor: colorSpec;
 }
 export const defaultolorMap: colorMap = {
-	markdown: "#00ff00",
-	attachment: "#ffff00",
-	broken: "#ff0000",
-	excalidraw: "#00ffff",
-	tag: "#ff00ff",
-	nodeHighlightColor: "#3333ff",
-	nodeFocusColor: "#FF3333",
-	linkHighlightColor: "#ffffff",
-	linkNormalColor: "#ffffff",
-	linkParticleColor: "#ffffff",
-	linkParticleHighlightColor:"#ff00ff",
+	markdown: {name:"default", value: "#00ff00"},
+	attachment: {name:"default",  value: "#ffff00" },
+	broken: {name:"default",  value: "#ff0000"},
+	excalidraw: {name:"default",  value: "#00ffff"},
+	tag: {name:"default",  value: "#ff00ff"},
+	nodeHighlightColor: {name:"default",  value: "#3333ff"},
+	nodeFocusColor: {name:"default",  value: "#FF3333"},
+	linkHighlightColor: {name:"default",  value: "#ffffff"},
+	linkNormalColor: {name:"default",  value: "#ffffff"},
+	linkParticleColor: {name:"default",  value: "#ffffff"},
+	linkParticleHighlightColor: {name:"default",  value: "#ff00ff"},
 	
 	
 }
@@ -157,27 +160,39 @@ export default class TagsRoutes extends Plugin {
 	onunload() {
 	}
 
-	mergeDeep(target: AnyObject, ...sources: AnyObject[]): AnyObject {
+	mergeDeep(target: any, ...sources: any[]): any {
 		if (!sources.length) return target;
 		const source = sources.shift();
-
-		if (typeof target === 'object' && typeof source === 'object') {
-			for (const key in source) {
-				if (source[key] !== undefined) {
-					if (typeof source[key] === 'object' && source[key] !== null) {
-						if (!target[key]) Object.assign(target, { [key]: {} });
+	
+		if (this.isObject(target) && this.isObject(source)) {
+			for (const key in target) {
+				if (key in source) {
+					if (this.isObject(target[key]) && this.isObject(source[key])) {
+						// 递归合并嵌套对象
 						this.mergeDeep(target[key], source[key]);
-					} else {
-						Object.assign(target, { [key]: source[key] });
+					} else if (typeof target[key] === typeof source[key] && typeof target[key] !== 'object') {
+						// 只在类型匹配时更新值
+						target[key] = source[key];
 					}
+					// 如果类型不匹配，保留 target 的值
 				}
+				// 如果 source 中没有这个键，保留 target 的值
 			}
 		}
-
+	
+		// 继续合并剩余的 sources
 		return this.mergeDeep(target, ...sources);
 	}
+	
+	// 辅助函数：检查是否为对象
+	 isObject(item: any): boolean {
+		return (item && typeof item === 'object' && !Array.isArray(item));
+	}
 	async loadSettings() {
-		this.settings = this.mergeDeep({}, DEFAULT_SETTINGS, await this.loadData()) as Settings;
+		this.settings = structuredClone(DEFAULT_SETTINGS);
+	//	console.log("settings load default: ", this.settings)
+		this.settings = this.mergeDeep(this.settings, await this.loadData()) as Settings;
+	//	console.log("settings load  merged: ", this.settings)
 		this.settings.customSlot[0] = structuredClone(
 			this.settings.customSlot[this.settings.currentSlot]);
 	}
@@ -222,12 +237,13 @@ class addColorPickerGroup {
 				this.textC = text
 					.setValue("")
 					.onChange((v) => {
-						const color = this.namedColorToHex(v)
-						if (color !== "" && color !== "#0e0e0e") {
+						if (v === "") return;
+						const colorHex = this.namedColorToHex(v)
+						if (colorHex !== "" && colorHex !== "#0e0e0e") {
 							this.isProgrammaticChange = true;
-							console.log("value changed: ", this.namedColorToHex(v))
-							this.colorC.setValue(this.namedColorToHex(v))
-							this.text.setDesc(`${v} - ${color}`)
+							this.plugin.settings.customSlot[0].colorMap[keyname].name = v;
+							this.colorC.setValue(colorHex)
+							this.text.setDesc(`${v} - ${colorHex}`)
 							this.isProgrammaticChange = false;
 				}
 					})
@@ -235,16 +251,21 @@ class addColorPickerGroup {
 
 			 }
 		).setName(name)
-		.setDesc(this.plugin.settings.customSlot[0].colorMap[keyname])
+		.setDesc(this.plugin.settings.customSlot[0].colorMap[keyname].name||this.plugin.settings.customSlot[0].colorMap[keyname].value)
 		this.colorPicker = new Setting(holder.createEl("span")).addColorPicker(
 			(c) => {
 				this.colorC = c
-					.setValue(this.plugin.settings.customSlot[0].colorMap[keyname])
+					.setValue(this.plugin.settings.customSlot[0].colorMap[keyname].value)
 					.onChange((v) => {
 						this.textC.setValue("")
-						if (this.isProgrammaticChange == false)
-						this.text.setDesc(v)
-						this.plugin.settings.customSlot[0].colorMap[keyname] = v
+						if (this.isProgrammaticChange == false) {
+							this.text.setDesc(v)
+							this.plugin.settings.customSlot[0].colorMap[keyname].value = v;
+							this.plugin.settings.customSlot[0].colorMap[keyname].name = "";
+						} else {
+							this.plugin.settings.customSlot[0].colorMap[keyname].value = v;
+						}
+						console.log("the color3: ",this.plugin.settings.customSlot[0].colorMap[keyname] )
 						this.plugin.view.onSave();
 						this.plugin.view.updateColor();
                        // setTimeout(() => this.colorPicker.setDesc(v), 0);
@@ -287,7 +308,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		this.loadColor = this.loadColor.bind(this)
 	}
 	addColorPicker(container: HTMLElement, name: string,  keyName: keyof colorMap, cb: (v: string) => void) {
-		const defaultColor = this.plugin.settings.customSlot[0].colorMap[keyName];
+		const defaultColor = this.plugin.settings.customSlot[0].colorMap[keyName].value;
 		const colorpicker = new Setting(container)
             .setName(name)
             .setDesc(defaultColor || "#000000")
@@ -295,7 +316,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
                 picker
 				.setValue(defaultColor)
 				.onChange(async (value) => {
-						this.plugin.settings.customSlot[0].colorMap[keyName]=value
+						this.plugin.settings.customSlot[0].colorMap[keyName].value=value
 						this.plugin.view.onSave();
 						cb(value)
                         setTimeout(() => colorpicker.setDesc(value), 0);
