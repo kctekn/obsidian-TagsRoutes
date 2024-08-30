@@ -29,7 +29,7 @@ interface nodeThreeObject extends ExtendedNodeObject {
     __threeObj?: THREE.Mesh
 }
 interface ExtendedNodeObject extends Node {
-    type: 'markdown' | 'tag' | 'attachment' | 'broken' | 'excalidraw';
+    type: 'markdown' | 'tag' | 'attachment' | 'broken' | 'excalidraw' | 'frontmatter-tag';
     x?: number;
     y?: number;
     z?: number;
@@ -654,6 +654,9 @@ export class TagRoutesView extends ItemView {
                 color = this.plugin.settings.customSlot[0].colorMap[node.type].value; 
               //  console.log("get color: ", color)
                 break;
+            case 'frontmatter-tag':
+                color = 'DarkSalmon';
+                break;
             default:
                 color = '#ffffff'; // 默认颜色
         }
@@ -669,6 +672,8 @@ export class TagRoutesView extends ItemView {
         const links: LinkObject[] = [];
         const tagSet: Set<string> = new Set();
         const tagLinks: Set<string> = new Set();
+        const frontmatterTagLinks: Set<string> = new Set();
+        const frontmatterTagSet: Set<string> = new Set();
         let fileNodeNum = 0;
         let FileLinkNum = 0;
         let TagNodeNum = 0;
@@ -679,6 +684,7 @@ export class TagRoutesView extends ItemView {
         */
         const resolvedLinks = this.app.metadataCache.resolvedLinks;
         const tagCount: Map<string, number> = new Map(); // 初始化标签计数对象
+        const frontmatterTagCount:Map<string, number> = new Map(); // 初始化标签计数对象
         // 添加resolved links来创建文件间的关系，和文件节点
         for (const sourcePath in resolvedLinks) {
             if (!nodes.some(node => node.id == sourcePath)) {
@@ -716,29 +722,6 @@ export class TagRoutesView extends ItemView {
             const fileTags = getTags(cache).map(cache=>cache.tag);
             const rootTags = new Set<string>();
 
-            /*
-            Add tags in note frontmatter
-            */
-            try {
-                if (cache?.frontmatter?.tags != undefined) {
-                let tags = cache.frontmatter.tags;
-
-                if (typeof tags === "string") {
-                    tags = [tags];
-                }
-
-                if (Array.isArray(tags)) {
-                    tags.forEach((element: string) => {
-                        if (element !== "excalidraw") {
-                            fileTags.push("#" + element);
-                        }
-                });
-                } else {
-                    console.error('Unexpected tags format:', tags);
-                    }
-            }
-
-
             fileTags.forEach(fileTag => {
                 const tagParts = fileTag.split('/');
                 let currentTag = '';
@@ -775,7 +758,68 @@ export class TagRoutesView extends ItemView {
             rootTags.forEach(rootTag => {
                 links.push({ source: filePath, target: rootTag, sourceId: filePath, targetId: rootTag });
             });
+            /*
+            Add tags in note frontmatter
+            */
+            const frontmatterTags: string[] = []
+            const frontmatterRootTags = new Set<string>();
+            //get frontmatter tags
+            try {
+                if (cache?.frontmatter?.tags != undefined) {
+                    let tags = cache.frontmatter.tags;
 
+                    if (typeof tags === "string") {
+                        tags = [tags];
+                    }
+
+                    if (Array.isArray(tags)) {
+                        tags.forEach((element: string) => {
+                            if (element !== "excalidraw") {
+                                frontmatterTags.push("FMT-" + element);
+                            }
+                        });
+                    } else {
+                        console.error('Unexpected tags format:', tags);
+                    }
+                }
+
+
+            fileTags.forEach(fileTag => {
+                const tagParts = fileTag.split('/');
+                let currentTag = '';
+
+                tagParts.forEach((part, index) => {
+                    currentTag += (index > 0 ? '/' : '') + part;
+
+                    // 更新根标签
+                    if (index === 0) {
+                        frontmatterRootTags.add(currentTag);
+                    }
+
+                    // 更新标签计数
+                    frontmatterTagCount.set(currentTag, (frontmatterTagCount.get(currentTag) || 0) + 1);
+
+                    // 创建节点
+                    if (!frontmatterTagSet.has(currentTag)) {
+                        nodes.push({ id: currentTag, type: 'frontmatter-tag' });
+                        frontmatterTagSet.add(currentTag);
+                    }
+
+                    // 创建链接
+                    if (index > 0) {
+                        const parentTag = tagParts.slice(0, index).join('/');
+                        const linkKey = `${parentTag}->${currentTag}`;
+                        if (!tagLinks.has(linkKey)) {
+                            links.push({ source: parentTag, target: currentTag, sourceId: parentTag, targetId: currentTag });
+                            tagLinks.add(linkKey);
+                        }
+                    }
+                });
+            });
+
+/*             frontmatterRootTags.forEach(rootTag => {
+                links.push({ source: filePath, target: rootTag, sourceId: filePath, targetId: rootTag });
+            }); */
 
 
         });
