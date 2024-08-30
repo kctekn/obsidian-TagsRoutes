@@ -105,8 +105,25 @@ export class TagRoutesView extends ItemView {
         const mesh = new THREE.Mesh(geometry, material);
         group.add(mesh)
         const parts = node.id.split('/')
-        const node_text_name = parts[parts.length - 1];
-        const sprite = new SpriteText(node_text_name);
+     //   const node_text_name = parts[parts.length - 1].replace(/.excalidraw.md$/,'').replace(/.md$/,'')
+     //   const sprite = new SpriteText(node_text_name);
+
+        let node_text_name = "";
+
+            if (node.type == 'tag') {
+                node_text_name = parts[parts.length - 1]
+            } else {
+                let node_full_name = parts[parts.length - 1];
+                let partsName = node_full_name.split('.')
+                if (partsName.length > 1) {
+                    partsName.length = partsName.length - (node.type === 'excalidraw'  ? 2 : 1)
+                }
+                node_text_name = partsName.join('.')
+            }
+       
+        const sprite = new SpriteText(node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
+
+
         sprite.material.depthWrite = true; // make sprite background transparent
         sprite.color = this.getNodeColorByType(node);
         sprite.visible = false;

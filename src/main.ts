@@ -209,7 +209,8 @@ export default class TagsRoutes extends Plugin {
 		} else {
 			// Our view could not be found in the workspace, create a new leaf
 			// in the right sidebar for it
-			leaf = workspace.getLeaf('split')
+//			leaf = workspace.getLeaf('split')
+			leaf = workspace.getLeaf(true)
 			if (leaf) {
 				await leaf.setViewState({ type: VIEW_TYPE_TAGS_ROUTES, active: true });
 			}
