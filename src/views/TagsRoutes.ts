@@ -655,36 +655,24 @@ export class TagRoutesView extends ItemView {
             /*
             Add tags in note frontmatter
             */
-            try {
-                if (cache?.frontmatter?.tags != undefined) {
-                    cache.frontmatter.tags.forEach((element: string) => {
+            if (cache?.frontmatter?.tags != undefined) {
+                let tags = cache.frontmatter.tags;
+
+                if (typeof tags === "string") {
+                    tags = [tags];
+                }
+
+                if (Array.isArray(tags)) {
+                    tags.forEach((element: string) => {
                         if (element !== "excalidraw") {
                             fileTags.push("#" + element);
                         }
                     });
-                }
-            } catch (e) {
-                console.log("Error occurred: ", e); // 打印错误信息
-                console.log("file: ", filePath)
-                console.log("frontmatter: ", cache?.frontmatter)
-                if (cache?.frontmatter?.tags != undefined) {
-                    let tags = cache.frontmatter.tags;
-
-                    if (typeof tags === "string") {
-                        tags = [tags];
-                    }
-
-                    if (Array.isArray(tags)) {
-                        tags.forEach((element: string) => {
-                            if (element !== "excalidraw") {
-                                fileTags.push("#" + element);
-                            }
-                        });
-                    } else {
-                        console.error('Unexpected tags format:', tags);
-                    }
+                } else {
+                    console.error('Unexpected tags format:', tags);
                 }
             }
+
 
             fileTags.forEach(fileTag => {
                 const tagParts = fileTag.split('/');
