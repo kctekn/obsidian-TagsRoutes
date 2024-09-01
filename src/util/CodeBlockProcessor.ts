@@ -7,6 +7,20 @@ export class codeBlockProcessor {
         this.plugin = plugin;
         this.codeBlockProcessor = this.codeBlockProcessor.bind(this);
     }
+    private checkAndGetFrontmatterTag(term: string) {
+        // if term is a frontmatter tag:
+        const files = this.plugin.app.vault.getMarkdownFiles()
+        const arr = files.map(
+            async (file) => {
+                const content = await this.plugin.app.vault.cachedRead(file)
+                const fmi = getFrontMatterInfo(content)
+                if (fmi.exists && fmi.frontmatter.contains("tag-report")) {
+                    return []
+                }
+            }
+        )
+    
+    }
     private getTagContent(term: string) {
         const files = this.plugin.app.vault.getMarkdownFiles()
         const arr = files.map(

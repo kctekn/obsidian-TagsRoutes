@@ -110,3 +110,8 @@ If your plugin does not need CSS, delete this file.
 	display: none;
 	visibility: hidden;
 }
+.tags-routes-settings-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}

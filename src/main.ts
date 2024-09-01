@@ -1,4 +1,4 @@
-import { App, WorkspaceLeaf, Notice, Plugin, PluginSettingTab, Setting, ToggleComponent, TextComponent, ColorComponent } from 'obsidian';
+import { App, WorkspaceLeaf, Notice, Plugin, PluginSettingTab, Setting, ToggleComponent, TextComponent, ColorComponent, ExtraButtonComponent } from 'obsidian';
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
 import { createFolderIfNotExists } from "./util/util"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
@@ -52,6 +52,7 @@ interface Settings {
 	enableSave: boolean;
 	enableShow: boolean;
 	currentSlot: number;
+	openInCurrentTab: boolean;
 	customSlot: [TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings]
 }
 
@@ -71,6 +72,7 @@ const DEFAULT_SETTINGS: Settings = {
 	enableSave: true,
 	enableShow: true,
 	currentSlot: 1,
+	openInCurrentTab: false,
 	customSlot: [DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS]
 }
 // plugin 主体
@@ -209,8 +211,11 @@ export default class TagsRoutes extends Plugin {
 		} else {
 			// Our view could not be found in the workspace, create a new leaf
 			// in the right sidebar for it
-//			leaf = workspace.getLeaf('split')
-			leaf = workspace.getLeaf(true)
+			if (!this.settings.openInCurrentTab) {
+				leaf = workspace.getLeaf('split')
+			} else {
+				leaf = workspace.getLeaf()
+			}
 			if (leaf) {
 				await leaf.setViewState({ type: VIEW_TYPE_TAGS_ROUTES, active: true });
 			}
@@ -221,16 +226,19 @@ export default class TagsRoutes extends Plugin {
 		}
 	}
 }
-class addColorPickerGroup {
+class colorPickerGroup {
 	private plugin: TagsRoutes;
 	private text: Setting;
+	private keyname: keyof colorMap
 	private colorPicker: Setting;
 	private textC: TextComponent;
 	private colorC: ColorComponent;
 	private isProgrammaticChange: boolean = false;
+	private skipSave = false;
 
 	constructor(plugin: TagsRoutes, container: HTMLElement, name: string, keyname: keyof colorMap) {
 		this.plugin = plugin;
+		this.keyname = keyname;
 		const holder = container.createEl("div", "inline-settings")
 
 		this.text = new Setting(holder.createEl("span")).addText(
@@ -266,14 +274,17 @@ class addColorPickerGroup {
 						} else {
 							this.plugin.settings.customSlot[0].colorMap[keyname].value = v;
 						}
-						console.log("the color3: ",this.plugin.settings.customSlot[0].colorMap[keyname] )
-						this.plugin.view.onSave();
+						console.log("the color3: ", this.plugin.settings.customSlot[0].colorMap[keyname])
+						if (!this.skipSave) {
+							this.plugin.view.onSave();
+						}
 						this.plugin.view.updateColor();
                        // setTimeout(() => this.colorPicker.setDesc(v), 0);
 				})
 			 }
 		)
 		//this.text.
+		return this;
 	}
 	capitalizeFirstLetter(string:string) {
 		return string.toLowerCase().replace(/\b[a-z]/g, function(match) {
@@ -298,11 +309,18 @@ class addColorPickerGroup {
 		const hex = rgb.map(c => c.toString(16).padStart(2, '0')).join('');
 		return `#${hex}`;
 	}
+	resetColor(skipSave:boolean) {
+		this.skipSave = skipSave;
+		this.colorC.setValue(this.plugin.settings.customSlot[0].colorMap[this.keyname].value)
+		this.skipSave = false;
+	}
 }
 class TagsroutesSettingsTab extends PluginSettingTab {
 	plugin: TagsRoutes;
 	toggleEnableSave: ToggleComponent;
 	toggleEnableShow: ToggleComponent;
+	toggleOpenInCurrentTab: ToggleComponent;
+	colors: colorPickerGroup[] = [];
 	constructor(app: App, plugin: TagsRoutes) {
 		super(app, plugin);
 		this.plugin = plugin;
@@ -368,7 +386,40 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 				this.toggleEnableShow = toggle;
 			}
 		)
-		containerEl.createEl("h1", { text: "Color" });
+		new Setting(containerEl)
+			.setName('Open graph in current tab')
+			.setDesc('Toggle to open graph within current tab')
+			.addToggle((toggle: ToggleComponent) => {
+				toggle
+					.onChange(async (value) => {
+						if (value) {
+							this.toggleOpenInCurrentTab.setValue(value);
+						}
+						this.plugin.settings.openInCurrentTab = value;
+						await this.plugin.saveSettings();
+					})
+					.setValue(this.plugin.settings.openInCurrentTab)
+				this.toggleOpenInCurrentTab = toggle;
+			}
+		)
+
+
+
+		const colorTitle = containerEl.createEl("div", {cls: 'tags-routes-settings-title'}); 
+		colorTitle.createEl("h1", { text: "Color" });
+
+
+		new ExtraButtonComponent(colorTitle.createEl('span', { cls: 'group-bar-button' }))
+		.setIcon("reset")
+		.setTooltip("Reset color of current slot ")
+		.onClick(() => {
+			this.plugin.settings.customSlot[0].colorMap = structuredClone(defaultolorMap);
+			this.plugin.view.onSave();
+			this.plugin.view.updateColor();
+			this.colors.forEach(v => v.resetColor(true))
+			new Notice(`Color reset on slot ${this.plugin.settings.currentSlot}`);
+		});
+
 		const desc = containerEl.createEl("div", { text: "You can enter css named colors here, like 'blue', 'lightblue' etc." }); //For supported css named color, please refer to: <a href=\"abc\">abc</a> " }).addClass("setting-item-description")
 		desc.createEl("br")
 		desc.appendText("For the supported css named colors, please refer to: ")
@@ -381,11 +432,11 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		new Setting(colorSettingsGroup).setName("Node type").setHeading().settingEl.addClass("tg-settingtab-heading")
 	//	this.addColorPicker(colorSettingsGroup, "Markdown", "markdown", this.loadColor)
 
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Markdown", "markdown");
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Tag","tag");
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Excalidraw","excalidraw");
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Attachment","attachment");
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Broken", "broken");
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Markdown", "markdown"))
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Tag","tag"));
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Excalidraw","excalidraw"));
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Attachment","attachment"));
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Broken", "broken"));
 
 
 //		this.addColorPicker	(colorSettingsGroup,"Tags", "tag",this.loadColor)
@@ -394,20 +445,20 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 //		this.addColorPicker	(containerEl,"Broken", "broken",this.loadColor)
 
 		new Setting(colorSettingsGroup).setName("Node state").setHeading().setDesc("Effects in global map mode").settingEl.addClass("tg-settingtab-heading")
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Highlight", "nodeHighlightColor");
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Focus", "nodeFocusColor");
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Highlight", "nodeHighlightColor"));
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Focus", "nodeFocusColor"));
 		//this.addColorPicker	(containerEl,"Highlight", "nodeHighlightColor",this.loadColor)
 		//this.addColorPicker	(containerEl,"Focus", "nodeFocusColor",this.loadColor)
 
 		new Setting(colorSettingsGroup).setName("Link state").setHeading().settingEl.addClass("tg-settingtab-heading")
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Normal", "linkNormalColor");
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Highlight", "linkHighlightColor");
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Normal", "linkNormalColor"));
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Highlight", "linkHighlightColor"));
 		//this.addColorPicker	(containerEl,"Normal", "linkNormalColor",this.loadColor)
 		//this.addColorPicker(containerEl, "Highlight", "linkHighlightColor", this.loadColor)
 
 		new Setting(colorSettingsGroup).setName("Particle state").setHeading().settingEl.addClass("tg-settingtab-heading")
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Normal", "linkParticleColor");
-		new addColorPickerGroup(this.plugin, colorSettingsGroup, "Highlight", "linkParticleHighlightColor");
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Normal", "linkParticleColor"));
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Highlight", "linkParticleHighlightColor"));
 		//this.addColorPicker	(containerEl,"Normal", "linkParticleColor",this.loadColor)
 		//this.addColorPicker	(containerEl,"Highlight", "linkParticleHighlightColor",this.loadColor)
 	}

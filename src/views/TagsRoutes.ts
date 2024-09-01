@@ -52,7 +52,7 @@ const logFilePath = 'TagsRoutes/logs/logMessage.md'
 // 创建一个View 
 export class TagRoutesView extends ItemView {
     plugin: TagsRoutes;
-    private Graph: any;
+    private Graph: ForceGraph3DInstance;
     private gData: GraphData = {
         nodes: [],
         links: []
@@ -81,7 +81,10 @@ export class TagRoutesView extends ItemView {
         return VIEW_TYPE_TAGS_ROUTES;
     }
     getDisplayText() {
-        return "Tags routes";
+        return "🤩Tags routes";
+    }
+    getIcon() {
+        return "waypoints";
     }
     private hoveredNodes = new Set();
     private hoveredNodesLinks = new Set();
@@ -121,7 +124,7 @@ export class TagRoutesView extends ItemView {
                 node_text_name = partsName.join('.')
             }
        
-        const sprite = new SpriteText(node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
+        const sprite = new SpriteText("🍕" +node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
 
 
         sprite.material.depthWrite = true; // make sprite background transparent
@@ -277,7 +280,6 @@ export class TagRoutesView extends ItemView {
         this.Graph.linkColor(this.Graph.linkColor());
     }
     updateHighlight() {
-        //return;
         // trigger update of highlighted objects in scene
         this.highlightNodes.clear();
         this.selectedNodes.forEach(node => this.highlightNodes.add(node));
@@ -900,8 +902,8 @@ export class TagRoutesView extends ItemView {
         container.addClass("tags-routes")
         const graphContainer = container.createEl('div', { cls: 'graph-container' });
         this.Graph = ForceGraph3D()
-            .width(container.clientWidth)
-            .height(container.clientHeight)
+          //  .width(container.clientWidth)
+          //  .height(container.clientHeight)
             .backgroundColor("#000003")
             .d3Force('link', d3.forceLink().distance((link: any) => {
                 const distance = Math.max(link.source.connections, link.target.connections, link.source.instanceNum || 2, link.target.instanceNum || 2);
