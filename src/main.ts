@@ -123,7 +123,7 @@ export default class TagsRoutes extends Plugin {
 			VIEW_TYPE_TAGS_ROUTES,
 			(leaf) => this.view = new TagRoutesView(leaf, this)
 		);
-		const codeProcess = new codeBlockProcessor(this);
+		const codeProcess = new codeBlockProcessor(this);		
 		this.registerMarkdownCodeBlockProcessor("tagsroutes", codeProcess.codeBlockProcessor);
 		this.registerEvent(
 			this.app.workspace.on('file-open', (file) => {
@@ -172,7 +172,7 @@ export default class TagsRoutes extends Plugin {
 					if (this.isObject(target[key]) && this.isObject(source[key])) {
 						// 递归合并嵌套对象
 						this.mergeDeep(target[key], source[key]);
-					} else if (typeof target[key] === typeof source[key] && typeof target[key] !== 'object') {
+					} else if (typeof target[key] === typeof source[key]) {
 						// 只在类型匹配时更新值
 						target[key] = source[key];
 					}
@@ -319,7 +319,6 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 	plugin: TagsRoutes;
 	toggleEnableSave: ToggleComponent;
 	toggleEnableShow: ToggleComponent;
-	toggleOpenInCurrentTab: ToggleComponent;
 	colors: colorPickerGroup[] = [];
 	constructor(app: App, plugin: TagsRoutes) {
 		super(app, plugin);
@@ -392,14 +391,11 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 			.addToggle((toggle: ToggleComponent) => {
 				toggle
 					.onChange(async (value) => {
-						if (value) {
-							this.toggleOpenInCurrentTab.setValue(value);
-						}
 						this.plugin.settings.openInCurrentTab = value;
 						await this.plugin.saveSettings();
 					})
 					.setValue(this.plugin.settings.openInCurrentTab)
-				this.toggleOpenInCurrentTab = toggle;
+				
 			}
 		)
 

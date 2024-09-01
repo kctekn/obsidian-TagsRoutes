@@ -124,7 +124,8 @@ export class TagRoutesView extends ItemView {
                 node_text_name = partsName.join('.')
             }
        
-        const sprite = new SpriteText("🍕" +node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
+            //const sprite = new SpriteText("🍕" +node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
+            const sprite = new SpriteText(node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
 
 
         sprite.material.depthWrite = true; // make sprite background transparent
@@ -302,7 +303,7 @@ export class TagRoutesView extends ItemView {
                 }
             }
             if (node._Sprite) {
-                if (this.highlightNodes.has(node)&& node.type =='tag') {
+                if (this.highlightNodes.has(node)&& node.type !=='attachment') {
                     node._Sprite.visible = true;
                     node._Sprite.textHeight = 18;
                 } else {
@@ -384,7 +385,7 @@ export class TagRoutesView extends ItemView {
             const obj = node.__threeObj; // 获取节点的 Three.js 对象
             if (obj) {
                 obj.scale.set(scaleValue,scaleValue,scaleValue)
-            }
+            } 
         })
         this.plugin.settings.customSlot[0].node_size = value;
         this.plugin.saveSettings();
@@ -771,8 +772,8 @@ export class TagRoutesView extends ItemView {
                             tagLinks.add(linkKey);
                         }
                     }
-                });
             });
+        });
 
             rootTags.forEach(rootTag => {
                 links.push({ source: filePath, target: rootTag, sourceId: filePath, targetId: rootTag });
@@ -794,7 +795,7 @@ export class TagRoutesView extends ItemView {
                     if (Array.isArray(tags)) {
                         tags.forEach((element: string) => {
                             if (element !== "excalidraw") {
-                                frontmatterTags.push("FMT-" + element);
+                                frontmatterTags.push(element);
                             }
                         });
                     } else {
@@ -833,12 +834,12 @@ export class TagRoutesView extends ItemView {
                             tagLinks.add(linkKey);
                         }
                     }
-                });
+        });
             });
 
-/*             frontmatterRootTags.forEach(rootTag => {
+            frontmatterRootTags.forEach(rootTag => {
                 links.push({ source: filePath, target: rootTag, sourceId: filePath, targetId: rootTag });
-            }); */
+            }); 
 
 
         });
@@ -1012,6 +1013,17 @@ export class TagRoutesView extends ItemView {
 `; // 要写入的新内容
             this.createAndWriteToFile(newFilePath, fileContent1);
         }
+        if (node.type === 'frontmatter-tag') {
+            console.log("handleTagClick::frontmatter tag:", node.id)
+            const sanitizedId = node.id.replace(/\//g, '__');
+            const newFilePath = `TagsRoutes/reports/TagReport_frontmatter-tag_${sanitizedId}.md`; // 新文件的路径和名称
+            const fileContent1 = `---\ntags:\n  - tag-report\n---\n
+\`\`\`tagsroutes
+    frontmatter-tag: ${node.id}
+\`\`\`
+`; // 要写入的新内容
+            this.createAndWriteToFile(newFilePath, fileContent1);
+        }
     }
     // 创建文件并写入内容的函数
     async createAndWriteToFile(filePath: string, content: string) {
@@ -1030,7 +1042,7 @@ export class TagRoutesView extends ItemView {
         // 打开新创建的文件
         const file = vault.getAbstractFileByPath(filePath)
         if (file && file instanceof TFile) {
-            const leaf = this.app.workspace.getLeaf(false);
+            const leaf = this.app.workspace.getLeaf();
             await leaf.openFile(file)
             setViewType(leaf.view, "preview")
         }
@@ -1077,7 +1089,7 @@ export class TagRoutesView extends ItemView {
     async handleNodeClick(node: ExtendedNodeObject) {
         const filePath = node.id;
         const { workspace, vault } = this.app
-        if (node.type !== 'tag') {
+        if (node.type !== 'tag' && node.type !== 'frontmatter-tag') {
             const file = vault.getAbstractFileByPath(filePath);
             if (!file || !(file instanceof TFile)) {
                 //            console.log("file not found ", filePath)
