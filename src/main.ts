@@ -1,6 +1,6 @@
 import { App, WorkspaceLeaf, Notice, Plugin, PluginSettingTab, Setting, ToggleComponent, TextComponent, ColorComponent, ExtraButtonComponent } from 'obsidian';
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
-import { createFolderIfNotExists } from "./util/util"
+import { createFolderIfNotExists,namedColor } from "./util/util"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
 //const versionInfo = require('./version_info.txt');
 type AnyObject = Record<string, any>;
@@ -251,7 +251,7 @@ class colorPickerGroup {
 					.onChange((v) => {
 						if (v === "") return;
 						const colorHex = this.namedColorToHex(v)
-						if (colorHex !== "" && colorHex !== "#0e0e0e") {
+						if (colorHex !== "N/A") {
 							this.isProgrammaticChange = true;
 							this.plugin.settings.customSlot[0].colorMap[keyname].name = v;
 							this.colorC.setValue(colorHex)
@@ -295,22 +295,12 @@ class colorPickerGroup {
 		});
 	}
 	namedColorToHex(color: string): string {
-		const tempDiv = document.createElement('div');
-		tempDiv.style.color = color;
-		document.body.appendChild(tempDiv);
-	
-		const computedColor = window.getComputedStyle(tempDiv).color;
-		document.body.removeChild(tempDiv);
-	
-		const rgb = computedColor.match(/\d+/g)?.map(Number);
-		if (!rgb || rgb.length !== 3) {
-			console.log("not a color")
-			return "";
-			throw new Error(`Invalid color: ${color}`);
+		const ret = namedColor.get(color);
+		if (ret) {
+			return ret;
 		}
-	
-		const hex = rgb.map(c => c.toString(16).padStart(2, '0')).join('');
-		return `#${hex}`;
+
+		return 'N/A';
 	}
 	resetColor(skipSave:boolean) {
 		this.skipSave = skipSave;
