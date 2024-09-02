@@ -49,6 +49,7 @@ export interface TagRoutesSettings {
 	colorMap: colorMap;
 }
 interface Settings {
+	saveSpecVer: number;
 	enableSave: boolean;
 	enableShow: boolean;
 	currentSlot: number;
@@ -69,6 +70,7 @@ export const DEFAULT_DISPLAY_SETTINGS: TagRoutesSettings = {
 	colorMap:defaultolorMap,
 }
 const DEFAULT_SETTINGS: Settings = {
+	saveSpecVer: 109,
 	enableSave: true,
 	enableShow: true,
 	currentSlot: 1,
@@ -192,9 +194,10 @@ export default class TagsRoutes extends Plugin {
 	}
 	async loadSettings() {
 		this.settings = structuredClone(DEFAULT_SETTINGS);
-	//	console.log("settings load default: ", this.settings)
-		this.settings = this.mergeDeep(this.settings, await this.loadData()) as Settings;
-	//	console.log("settings load  merged: ", this.settings)
+		const loadedSettings = await this.loadData() as Settings;
+		if (loadedSettings.saveSpecVer && loadedSettings.saveSpecVer >= 109) {
+			this.settings = this.mergeDeep(this.settings, loadedSettings) as Settings;
+		}
 		this.settings.customSlot[0] = structuredClone(
 			this.settings.customSlot[this.settings.currentSlot]);
 	}
