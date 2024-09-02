@@ -1094,11 +1094,27 @@ export class TagRoutesView extends ItemView {
                 //            console.log("file not found ", filePath)
                 return;
             }
-            const leaf: WorkspaceLeaf = workspace.getLeaf(false);
-            await leaf.openFile(file);
+            const leaves = this.app.workspace.getLeavesOfType("markdown");
+            const existingLeaf = leaves.find(leaf => (leaf.view as MarkdownView).file?.path === filePath);
+
+            if (existingLeaf) {
+
+                this.app.workspace.setActiveLeaf(existingLeaf);
+                console.log("find file, activate it")
+            } else {
+                console.log("open file")
+                const leaf = workspace.getLeaf(false);
+                await leaf.openFile(file);
+                setViewType(leaf.view, "preview");
+            }
             // 切换到阅读模式
             const view = this.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownView;
             setViewType(view, "preview");
+            const activeLeaf = this.app.workspace.activeLeaf;
+/*             if (activeLeaf) {
+                await activeLeaf.openFile(file);
+                //setViewType(activeLeaf.view, "preview");
+            }  */
         } else {
             this.handleTagClick(node);
         }
