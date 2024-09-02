@@ -96,7 +96,7 @@ export class TagRoutesView extends ItemView {
     private selectedNode: ExtendedNodeObject | null;
 
     createNodeThreeObject(node: ExtendedNodeObject) {
-        
+
         const group = new THREE.Group();
 
         let nodeSize = (node.connections || 1)
@@ -108,24 +108,24 @@ export class TagRoutesView extends ItemView {
         const mesh = new THREE.Mesh(geometry, material);
         group.add(mesh)
         const parts = node.id.split('/')
-     //   const node_text_name = parts[parts.length - 1].replace(/.excalidraw.md$/,'').replace(/.md$/,'')
-     //   const sprite = new SpriteText(node_text_name);
+        //   const node_text_name = parts[parts.length - 1].replace(/.excalidraw.md$/,'').replace(/.md$/,'')
+        //   const sprite = new SpriteText(node_text_name);
 
         let node_text_name = "";
 
-            if (node.type == 'tag') {
-                node_text_name = parts[parts.length - 1]
-            } else {
-                let node_full_name = parts[parts.length - 1];
-                let partsName = node_full_name.split('.')
-                if (partsName.length > 1) {
-                    partsName.length = partsName.length - (node.type === 'excalidraw'  ? 2 : 1)
-                }
-                node_text_name = partsName.join('.')
+        if (node.type == 'tag') {
+            node_text_name = parts[parts.length - 1]
+        } else {
+            let node_full_name = parts[parts.length - 1];
+            let partsName = node_full_name.split('.')
+            if (partsName.length > 1) {
+                partsName.length = partsName.length - (node.type === 'excalidraw' ? 2 : 1)
             }
-       
-            //const sprite = new SpriteText("🍕" +node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
-            const sprite = new SpriteText(node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
+            node_text_name = partsName.join('.')
+        }
+
+        //const sprite = new SpriteText("🍕" +node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
+        const sprite = new SpriteText(node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
 
 
         sprite.material.depthWrite = true; // make sprite background transparent
@@ -293,17 +293,17 @@ export class TagRoutesView extends ItemView {
             if (obj) {
                 if (this.plugin.settings.customSlot[0].toggle_global_map) {
                     (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
-                     obj.visible = true;
+                    obj.visible = true;
                 } else {
                     if (this.highlightNodes.has(node)) {
                         (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
                     }
                     obj.visible = this.getNodeVisible(node);
-                   // node._Sprite.visible = obj.visible;
+                    // node._Sprite.visible = obj.visible;
                 }
             }
             if (node._Sprite) {
-                if (this.highlightNodes.has(node)&& node.type !=='attachment') {
+                if (this.highlightNodes.has(node) && node.type !== 'attachment') {
                     node._Sprite.visible = true;
                     node._Sprite.textHeight = 18;
                 } else {
@@ -311,16 +311,16 @@ export class TagRoutesView extends ItemView {
                     node._Sprite.textHeight = 0;
                 }
             }
-            }
+        }
         );
         if (this.hoverNode && this.hoverNode._Sprite) {
             this.hoverNode._Sprite.visible = true;
             this.hoverNode._Sprite.textHeight = 18;
         }
-/*         if (this.selectedNode && this.selectedNode._Sprite) {
-            this.selectedNode._Sprite.visible = true;
-            this.selectedNode._Sprite.textHeight = 18;
-        } */
+        /*         if (this.selectedNode && this.selectedNode._Sprite) {
+                    this.selectedNode._Sprite.visible = true;
+                    this.selectedNode._Sprite.textHeight = 18;
+                } */
 
         // this.Graph.graphData(this.gData);
         this.Graph
@@ -380,12 +380,12 @@ export class TagRoutesView extends ItemView {
     onText(value: string) {
     }
     onNodeSize(value: number) {
-        let scaleValue = (value / 5 -1)*0.6+1; 
+        let scaleValue = (value / 5 - 1) * 0.6 + 1;
         this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
             const obj = node.__threeObj; // 获取节点的 Three.js 对象
             if (obj) {
-                obj.scale.set(scaleValue,scaleValue,scaleValue)
-            } 
+                obj.scale.set(scaleValue, scaleValue, scaleValue)
+            }
         })
         this.plugin.settings.customSlot[0].node_size = value;
         this.plugin.saveSettings();
@@ -428,8 +428,7 @@ export class TagRoutesView extends ItemView {
         // 重新渲染 Graph
         this.Graph.graphData(this.gData);
     }
-    onResetGraph()
-    {
+    onResetGraph() {
         this.clearHightlightNodes();
         this.gData = this.buildGdata();
         this.Graph.graphData(this.gData);
@@ -565,8 +564,8 @@ export class TagRoutesView extends ItemView {
             const brokenNodes = this.gData.nodes.filter(node => node.type === 'broken');
             //      console.log("broken nodes number: ", brokenNodes.length)
             // 将所有 broken 节点连接到新创建的 broken 节点上
-       //     !brokenNode.neighbors && (brokenNode.neighbors = []);
-       //     !brokenNode.links && (brokenNode.links = [])
+            //     !brokenNode.neighbors && (brokenNode.neighbors = []);
+            //     !brokenNode.links && (brokenNode.links = [])
             brokenNodes.forEach(node => {
                 let addLink = { source: brokenNode.id, target: node.id, sourceId: brokenNode.id, targetId: node.id }
                 links.push(addLink);
@@ -575,7 +574,7 @@ export class TagRoutesView extends ItemView {
                 node.neighbors.push(brokenNode)
                 !node.links && (node.links = [])
                 brokenNode.links?.push(addLink)
-                addLink = {source: node.id, target: brokenNode.id, sourceId: node.id, targetId: brokenNode.id }
+                addLink = { source: node.id, target: brokenNode.id, sourceId: node.id, targetId: brokenNode.id }
                 links.push(addLink)
                 node.links?.push(addLink)
 
@@ -585,17 +584,17 @@ export class TagRoutesView extends ItemView {
             const brokenNodes = this.gData.nodes.filter(node => node.type === 'broken');
             //    console.log("broken nodes number: ", brokenNodes.length)
             for (let i = 0; i < brokenNodes.length - 1; i++) {
-                let addLink ={ source: brokenNodes[i].id, target: brokenNodes[i + 1].id, sourceId: brokenNodes[i].id, targetId: brokenNodes[i + 1].id }
+                let addLink = { source: brokenNodes[i].id, target: brokenNodes[i + 1].id, sourceId: brokenNodes[i].id, targetId: brokenNodes[i + 1].id }
                 links.push(addLink);
                 brokenNodes[i].links?.push(addLink)
                 addLink = { target: brokenNodes[i].id, source: brokenNodes[i + 1].id, targetId: brokenNodes[i].id, sourceId: brokenNodes[i + 1].id }
                 links.push(addLink)
-                brokenNodes[i+1].links?.push(addLink)
+                brokenNodes[i + 1].links?.push(addLink)
                 !brokenNodes[i].neighbors && (brokenNodes[i].neighbors = []);
-                !brokenNodes[i+1].neighbors && (brokenNodes[i+1].neighbors = []);
+                !brokenNodes[i + 1].neighbors && (brokenNodes[i + 1].neighbors = []);
                 brokenNodes[i].neighbors?.push(brokenNodes[i + 1])
-                brokenNodes[i+1].neighbors?.push(brokenNodes[i])
-                
+                brokenNodes[i + 1].neighbors?.push(brokenNodes[i])
+
             }
         }
         // 将新创建的 broken 节点添加到节点列表中
@@ -605,15 +604,14 @@ export class TagRoutesView extends ItemView {
         nodes.forEach((node: ExtendedNodeObject) => {
             node.connections = links.filter(link => link.sourceId === node.id || link.targetId === node.id).length;
         });
-    //    this.gData = { nodes: nodes, links: links };
+        //    this.gData = { nodes: nodes, links: links };
         // 重新计算连接数
         //this.calculateConnections();
         // 更新图表数据
         this.Graph.graphData(this.gData);
         this.Graph.refresh();
     }
-    clearHightlightNodes()
-    {
+    clearHightlightNodes() {
         this.selectedNode = null
         this.selectedNodes.clear();
         this.selectedNodesLinks.clear();
@@ -621,7 +619,7 @@ export class TagRoutesView extends ItemView {
         this.hoveredNodes.clear();
         this.hoveredNodesLinks.clear();
         this.highlightLinks.clear();
-        this.highlightNodes.clear(); 
+        this.highlightNodes.clear();
     }
     // 恢复 broken 节点的方法
     resetBrokenNodes() {
@@ -646,7 +644,7 @@ export class TagRoutesView extends ItemView {
         this.gData = { nodes: nodes, links: links }
         this.Graph.graphData(this.gData);
         this.Graph.refresh();
-        
+
     }
     // 计算连接数的方法
     calculateConnections() {
@@ -671,8 +669,8 @@ export class TagRoutesView extends ItemView {
             case 'attachment':
             case 'broken':
             case 'excalidraw':
-                color = this.plugin.settings.customSlot[0].colorMap[node.type].value; 
-              //  console.log("get color: ", color)
+                color = this.plugin.settings.customSlot[0].colorMap[node.type].value;
+                //  console.log("get color: ", color)
                 break;
             case 'frontmatter-tag':
                 color = 'DarkSalmon';
@@ -704,7 +702,7 @@ export class TagRoutesView extends ItemView {
         */
         const resolvedLinks = this.app.metadataCache.resolvedLinks;
         const tagCount: Map<string, number> = new Map(); // 初始化标签计数对象
-        const frontmatterTagCount:Map<string, number> = new Map(); // 初始化标签计数对象
+        const frontmatterTagCount: Map<string, number> = new Map(); // 初始化标签计数对象
         // 添加resolved links来创建文件间的关系，和文件节点
         for (const sourcePath in resolvedLinks) {
             if (!nodes.some(node => node.id == sourcePath)) {
@@ -727,7 +725,7 @@ export class TagRoutesView extends ItemView {
 
         /*
           Add tags
-        */        
+        */
         filesDataMap.forEach((cache, filePath) => {
             if (cache?.frontmatter && cache?.frontmatter?.tags && cache.frontmatter.tags.contains("tag-report"))
                 return;
@@ -735,11 +733,11 @@ export class TagRoutesView extends ItemView {
             if (!nodes.some(node => node.id == filePath)) {
                 nodes.push({ id: filePath, type: 'broken' });
             }
-            
+
             /*
             Add tags in note content
-            */               
-            const fileTags = getTags(cache).map(cache=>cache.tag);
+            */
+            const fileTags = getTags(cache).map(cache => cache.tag);
             const rootTags = new Set<string>();
 
             fileTags.forEach(fileTag => {
@@ -772,8 +770,8 @@ export class TagRoutesView extends ItemView {
                             tagLinks.add(linkKey);
                         }
                     }
+                });
             });
-        });
 
             rootTags.forEach(rootTag => {
                 links.push({ source: filePath, target: rootTag, sourceId: filePath, targetId: rootTag });
@@ -784,27 +782,28 @@ export class TagRoutesView extends ItemView {
             const frontmatterTags: string[] = []
             const frontmatterRootTags = new Set<string>();
             //get frontmatter tags
-            try {
-                if (cache?.frontmatter?.tags != undefined) {
-                    let tags = cache.frontmatter.tags;
 
-                    if (typeof tags === "string") {
-                        tags = [tags];
-                    }
+            if (cache?.frontmatter?.tags != undefined) {
+                let tags = cache.frontmatter.tags;
 
-                    if (Array.isArray(tags)) {
-                        tags.forEach((element: string) => {
-                            if (element !== "excalidraw") {
-                                frontmatterTags.push(element);
-                            }
-                        });
-                    } else {
-                        console.error('Unexpected tags format:', tags);
-                    }
+                if (typeof tags === "string") {
+                    tags = [tags];
                 }
 
+                if (Array.isArray(tags)) {
+                    tags.forEach((element: string) => {
+                        if (element !== "excalidraw") {
+                            frontmatterTags.push(element);
+                        }
+                    });
+                } else {
+                    console.error('Unexpected tags format:', tags);
+                }
+            }
 
-            fileTags.forEach(fileTag => {
+
+            frontmatterTags.forEach(fileTag => {
+
                 const tagParts = fileTag.split('/');
                 let currentTag = '';
 
@@ -834,12 +833,12 @@ export class TagRoutesView extends ItemView {
                             tagLinks.add(linkKey);
                         }
                     }
-        });
+                });
             });
 
             frontmatterRootTags.forEach(rootTag => {
                 links.push({ source: filePath, target: rootTag, sourceId: filePath, targetId: rootTag });
-            }); 
+            });
 
 
         });
@@ -903,8 +902,8 @@ export class TagRoutesView extends ItemView {
         container.addClass("tags-routes")
         const graphContainer = container.createEl('div', { cls: 'graph-container' });
         this.Graph = ForceGraph3D()
-          //  .width(container.clientWidth)
-          //  .height(container.clientHeight)
+            //  .width(container.clientWidth)
+            //  .height(container.clientHeight)
             .backgroundColor("#000003")
             .d3Force('link', d3.forceLink().distance((link: any) => {
                 const distance = Math.max(link.source.connections, link.target.connections, link.source.instanceNum || 2, link.target.instanceNum || 2);
@@ -914,13 +913,13 @@ export class TagRoutesView extends ItemView {
             .nodeVisibility(this.getNodeVisible)
             .linkVisibility(this.getLinkVisible)
             .linkColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot[0].colorMap["linkHighlightColor"].value :
-            this.plugin.settings.customSlot[0].colorMap["linkNormalColor"].value )
+                this.plugin.settings.customSlot[0].colorMap["linkNormalColor"].value)
             .linkWidth((link: any) => this.highlightLinks.has(link) ? 2 : 1)
             .linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? 4 : 2)
             .linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? 3 : 0.5)
             .linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot[0].colorMap["linkParticleHighlightColor"].value :
-            this.plugin.settings.customSlot[0].colorMap["linkParticleColor"].value )
-         //   .nodeLabel((node: any) => node.type == 'tag' ? `${node.id} (${node.instanceNum})` : `${node.id} (${node.connections})`)
+                this.plugin.settings.customSlot[0].colorMap["linkParticleColor"].value)
+            //   .nodeLabel((node: any) => node.type == 'tag' ? `${node.id} (${node.instanceNum})` : `${node.id} (${node.connections})`)
             .nodeOpacity(0.9)
             .nodeThreeObject(this.createNodeThreeObject)
             .onNodeClick((node: ExtendedNodeObject) => {
@@ -971,7 +970,7 @@ export class TagRoutesView extends ItemView {
                     .addButton("Unlink broken", "graph-button", () => { this.resetBrokenNodes() })
                     .addButton("Link Excalidraw orphans", "graph-button", () => { this.connectExcalidrawNodes() })
                     .addButton("Unlink Excalidraw orphans", "graph-button", () => { this.resetUnlinkedExcalidrawNodes() })
-                    .addButton("Reset graph", "graph-button", () => { this.onResetGraph()})
+                    .addButton("Reset graph", "graph-button", () => { this.onResetGraph() })
             })
             .add({
                 arg: (new settingGroup(this.plugin, "control sliders", "Display control"))
@@ -1116,7 +1115,7 @@ export class TagRoutesView extends ItemView {
         //need a delay for scene creation
         setTimeout(() => {
             this.setControlValue("Node size", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "node_size");
+                this.plugin.settings.customSlot[this.currentSlot], "node_size");
         }, 2000);
 
     }
