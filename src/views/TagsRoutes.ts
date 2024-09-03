@@ -2,7 +2,7 @@ import { moment, MarkdownView, Notice, CachedMetadata, ValueComponent } from 'ob
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
 import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile } from "../util/util"
-import ForceGraph3D from "3d-force-graph";
+import ForceGraph3D, { ForceGraph3DInstance } from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "./settings"
@@ -327,7 +327,7 @@ export class TagRoutesView extends ItemView {
                 y: node.y * distRatio,
                 z: node.z * distRatio,
             };
-            this.Graph.cameraPosition(newPos, node, 3000);
+            this.Graph.cameraPosition(newPos, node as any, 3000);
             this.highlightOnNodeClick(node)
         }
     }
@@ -341,7 +341,7 @@ export class TagRoutesView extends ItemView {
         return button;
     }
     onLinkDistance(value: number) {
-        this.Graph.d3Force('link').distance(value * 10);
+        this.Graph.d3Force('link')?.distance(value * 10);
         this.Graph.d3ReheatSimulation();
         this.plugin.settings.customSlot[0].link_distance = value
         this.plugin.saveSettings();
@@ -382,7 +382,7 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.customSlot[0].node_repulsion = value;
         this.plugin.saveSettings();
         if (value === 0) return;
-        this.Graph.d3Force('charge').strength(-30 - value * 300);
+        this.Graph.d3Force('charge')?.strength(-30 - value * 300);
         this.Graph
             .d3Force("x", d3.forceX(0).strength(0.19))
             .d3Force("y", d3.forceY(0).strength(0.19))
