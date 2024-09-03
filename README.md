@@ -27,7 +27,7 @@ Many updates is according to https://github.com/kctekn/obsidian-TagsRoutes/discu
 
 **Feature**
 
-<img width="50%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v109-update.gif">
+<img width="20%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v109-update.gif">
 
 **Usage Demo**
 
