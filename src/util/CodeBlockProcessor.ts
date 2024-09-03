@@ -7,7 +7,7 @@ export class codeBlockProcessor {
         this.plugin = plugin;
         this.codeBlockProcessor = this.codeBlockProcessor.bind(this);
     }
-    private async checkAndGetFrontmatterTag(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext): Promise<string[]> {
+    private async checkAndGetFrontmatterTag(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext){
         const tag = source.replace(/frontmatter-tag:/, '').trim();
         const files = this.plugin.app.vault.getMarkdownFiles();
     
@@ -35,13 +35,9 @@ export class codeBlockProcessor {
 # Total \`${result.length}\` notes with tag \`${tag}\` :
 ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
 `;
-//        this.writeMarkdown("frontmatter-tag: "+tag, result.map(v=>"- [["+v.replace(/.md/,"")+"]]"), el, ctx);
         this.writeMarkdown("frontmatter-tag: "+tag, writeContent, el, ctx);
-       // console.log("got the file list: ", result);
-      //  return result;
     }
     private getTagContent(term: string) {
-      //  console.log("codeblock: process content: ", term)
         const files = this.plugin.app.vault.getMarkdownFiles()
         const arr = files.map(
             async (file) => {
@@ -79,18 +75,15 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
         return arr;
     }
    async  writeMarkdown(term: string, source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
-      // const markDownSource = source.filter(line => line.trim() !== "").join("\n")
        const markDownSource = source;
-        const useDiv: boolean = false;
+        const useDiv: boolean = true;
         if (useDiv) {
-         //   console.log("################## write to file: ", ctx.sourcePath)
             //el.createEl('pre', {text: markDownSource})
             MarkdownRenderer.render(this.plugin.app,
                 markDownSource,
                 el.createEl('div'), ctx.sourcePath, this.plugin.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownView
             )
         } else {
-            //console.log("markdown source is:", markDownSource)
             const fileContent = `---\ntags:\n  - tag-report\n---\n
 \`\`\`tagsroutes
            ${term}
@@ -101,7 +94,6 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
             const { vault } = this.plugin.app;
 
             //need to add only process file under report directory
-        //    console.log("################## write to file: ", ctx.sourcePath)
             const file = vault.getAbstractFileByPath(ctx.sourcePath);
             if (file instanceof TFile) {
                 vault.modify(file, fileContent + markDownSource)
@@ -116,8 +108,6 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
 
         if (source.contains("frontmatter-tag:")) {
             this.checkAndGetFrontmatterTag(source,el,ctx)
-            /* const con = await Promise.all(await this.checkAndGetFrontmatterTag(source,el,ctx))
-            console.log(">>>>>>got the content : ",  con.flat()) */
             return;
         }
         const regstr = '(#[\\w\/_\u4e00-\u9fa5]*)'

@@ -81,7 +81,7 @@ export class TagRoutesView extends ItemView {
         return VIEW_TYPE_TAGS_ROUTES;
     }
     getDisplayText() {
-        return "🤩Tags routes";
+        return "Tags routes";
     }
     getIcon() {
         return "waypoints";
@@ -108,8 +108,6 @@ export class TagRoutesView extends ItemView {
         const mesh = new THREE.Mesh(geometry, material);
         group.add(mesh)
         const parts = node.id.split('/')
-        //   const node_text_name = parts[parts.length - 1].replace(/.excalidraw.md$/,'').replace(/.md$/,'')
-        //   const sprite = new SpriteText(node_text_name);
 
         let node_text_name = "";
 
@@ -124,7 +122,6 @@ export class TagRoutesView extends ItemView {
             node_text_name = partsName.join('.')
         }
 
-        //const sprite = new SpriteText("🍕" +node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
         const sprite = new SpriteText(node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
 
 
@@ -143,10 +140,7 @@ export class TagRoutesView extends ItemView {
         node._ThreeMesh = mesh;
         node._Sprite = sprite;
 
-
         return group;
-
-        //return new THREE.Mesh(geometry, material);
     }
     /**
      * Handle the highlight data change of a clicked node
@@ -299,7 +293,6 @@ export class TagRoutesView extends ItemView {
                         (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
                     }
                     obj.visible = this.getNodeVisible(node);
-                    // node._Sprite.visible = obj.visible;
                 }
             }
             if (node._Sprite) {
@@ -317,12 +310,7 @@ export class TagRoutesView extends ItemView {
             this.hoverNode._Sprite.visible = true;
             this.hoverNode._Sprite.textHeight = 18;
         }
-        /*         if (this.selectedNode && this.selectedNode._Sprite) {
-                    this.selectedNode._Sprite.visible = true;
-                    this.selectedNode._Sprite.textHeight = 18;
-                } */
 
-        // this.Graph.graphData(this.gData);
         this.Graph
             .linkWidth(this.Graph.linkWidth())
             .linkDirectionalParticles(this.Graph.linkDirectionalParticles())
@@ -670,7 +658,6 @@ export class TagRoutesView extends ItemView {
             case 'broken':
             case 'excalidraw':
                 color = this.plugin.settings.customSlot[0].colorMap[node.type].value;
-                //  console.log("get color: ", color)
                 break;
             case 'frontmatter-tag':
                 color = 'DarkSalmon';
@@ -781,8 +768,10 @@ export class TagRoutesView extends ItemView {
             */
             const frontmatterTags: string[] = []
             const frontmatterRootTags = new Set<string>();
+            
             //get frontmatter tags
 
+            // according to bug issue: https://github.com/kctekn/obsidian-TagsRoutes/issues/10
             if (cache?.frontmatter?.tags != undefined) {
                 let tags = cache.frontmatter.tags;
 
@@ -1091,7 +1080,6 @@ export class TagRoutesView extends ItemView {
         if (node.type !== 'tag' && node.type !== 'frontmatter-tag') {
             const file = vault.getAbstractFileByPath(filePath);
             if (!file || !(file instanceof TFile)) {
-                //            console.log("file not found ", filePath)
                 return;
             }
             const leaves = this.app.workspace.getLeavesOfType("markdown");
@@ -1100,9 +1088,7 @@ export class TagRoutesView extends ItemView {
             if (existingLeaf) {
 
                 this.app.workspace.setActiveLeaf(existingLeaf);
-                console.log("find file, activate it")
             } else {
-                console.log("open file")
                 const leaf = workspace.getLeaf(false);
                 await leaf.openFile(file);
                 setViewType(leaf.view, "preview");
@@ -1110,11 +1096,6 @@ export class TagRoutesView extends ItemView {
             // 切换到阅读模式
             const view = this.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownView;
             setViewType(view, "preview");
-            const activeLeaf = this.app.workspace.activeLeaf;
-/*             if (activeLeaf) {
-                await activeLeaf.openFile(file);
-                //setViewType(activeLeaf.view, "preview");
-            }  */
         } else {
             this.handleTagClick(node);
         }
