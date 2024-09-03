@@ -125,7 +125,7 @@ export class TagRoutesView extends ItemView {
         const sprite = new SpriteText(node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
 
 
-        sprite.material.depthWrite = true; // make sprite background transparent
+        sprite.material.depthWrite = false; // make sprite background transparent
         sprite.color = this.getNodeColorByType(node);
         sprite.visible = false;
         if (node.type === 'tag') sprite.color = '#ffffff'
