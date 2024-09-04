@@ -195,7 +195,7 @@ export default class TagsRoutes extends Plugin {
 	async loadSettings() {
 		this.settings = structuredClone(DEFAULT_SETTINGS);
 		const loadedSettings = await this.loadData() as Settings;
-		if (loadedSettings.saveSpecVer && loadedSettings.saveSpecVer >= 109) {
+		if (loadedSettings?.saveSpecVer && loadedSettings.saveSpecVer >= 109) {
 			this.settings = this.mergeDeep(this.settings, loadedSettings) as Settings;
 		}
 		this.settings.customSlot[0] = structuredClone(
