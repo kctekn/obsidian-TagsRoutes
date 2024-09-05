@@ -10,6 +10,7 @@ This is a plugin for obsidian, to visualize files and tags as nodes in 3D graphi
 
 Wiki: [Organize Tags by Timestamp Using the Obsidian Plugin: "Tags Routes"](https://github.com/kctekn/obsidian-TagsRoutes/wiki/Organize-Tags-by-Timestamp-Using-the-Obsidian-Plugin:-%22Tags-Routes%22)
 
+[Organize Tags with Hierarchy Using the Obsidian Plugin "Tags Routes"](https://github.com/kctekn/obsidian-TagsRoutes/wiki/Organize-Tags-with-Hierarchy)
 ## Version 1.0.9/1.0.10 Release Notes:
 
 1. **Support for Named Color Input**: Added support for named color input, making it easier to select the perfect color.
