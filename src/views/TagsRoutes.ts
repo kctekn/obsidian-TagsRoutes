@@ -87,6 +87,7 @@ class darkStyle implements VisualStyle {
     name: string;
     plugin: TagsRoutes;
     container: HTMLElement;
+    bloomPass: UnrealBloomPass;
     // Constructor to initialize properties
     constructor(name: string, plugin: TagsRoutes) {
         this.name = name;
@@ -96,14 +97,15 @@ class darkStyle implements VisualStyle {
     // Implement the addStyle method
     addStyle(container:HTMLElement): void {
         console.log(`Adding style: ${this.name}`);
-        const bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2), 2.0, 1, 0)
-        this.plugin.view.Graph.postProcessingComposer().addPass(bloomPass);
+        this.bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2), 2.0, 1, 0)
+        this.plugin.view.Graph.postProcessingComposer().addPass(this.bloomPass);
+      // 
     }
 
     // Implement the removeStyle method
     removeStyle(container:HTMLElement): void {
         console.log(`Removing style: ${this.name}`);
-
+        this.plugin.view.Graph.postProcessingComposer().removePass(this.bloomPass);
         // Use the plugin property to perform some actions
         //  this.plugin.removeSomePluginMethod(); // Example method call on the plugin
     }
@@ -176,14 +178,19 @@ class lightStyle implements VisualStyle {
 // 创建一个View 
 export class TagRoutesView extends ItemView {
     plugin: TagsRoutes;
-    private Graph: ForceGraph3DInstance;
+    public Graph: ForceGraph3DInstance;
     private gData: GraphData = {
         nodes: [],
         links: []
     };
     _controls: Control[] = [];
+    currentVisual: "dark"|"light" = "dark";
     private currentSlot: number;
     visualStyle: VisualStyle;
+    visuals: {
+        dark: VisualStyle;
+        light: VisualStyle;
+    }
     constructor(leaf: WorkspaceLeaf, plugin: TagsRoutes) {
         super(leaf);
         this.plugin = plugin;
@@ -203,6 +210,10 @@ export class TagRoutesView extends ItemView {
         this.createNodeThreeObjectLight = this.createNodeThreeObjectLight.bind(this);
         this.updateColor = this.updateColor.bind(this);
         this.getNodeColorByType = this.getNodeColorByType.bind(this);
+        this.visuals = {
+            dark: new darkStyle("dark", this.plugin),
+            light: new lightStyle("light", this.plugin)
+        }
     }
     getViewType() {
         return VIEW_TYPE_TAGS_ROUTES;
@@ -223,8 +234,14 @@ export class TagRoutesView extends ItemView {
     private selectedNode: ExtendedNodeObject | null;
 
     initialize() {
-//        this.visualStyle = new darkStyle("dark",this.plugin)
-        this.visualStyle = new lightStyle("light",this.plugin)
+        this.visualStyle = new darkStyle("dark",this.plugin)
+      //  this.visualStyle = new lightStyle("light",this.plugin)
+    }
+    switchTheme(container:HTMLElement) {
+        this.visualStyle.removeStyle(container);
+        this.visualStyle = this.visuals[this.currentVisual]
+        this.visualStyle.addStyle(container);
+       // this.visualStyle = 
     }
     createNodeThreeObjectLight(node: ExtendedNodeObject,) {
 
