@@ -3,6 +3,7 @@ This CSS file will be included with your plugin, and
 available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 */
+
 .tags-routes {
     padding: 0px !important;
     position: relative;
@@ -12,37 +13,46 @@ If your plugin does not need CSS, delete this file.
 }
 
 .tags-routes .tooltip-wrapper {
+    position: absolute;
+    margin-left: 0px;
+    transition: 1s ease-in-out;
+}
+
+.tags-routes .tooltip-wrapper {
     overflow: hidden;
-    align-items: stretch;
     display: flex;
     background-color: #1f1f1f;
-    position: absolute;
+    position: absolute !important;
     left: 0px;
     bottom: 0px;
     border-top-right-radius: 5px;
+    justify-content: center;
+    align-items: center;
 }
 
 .tags-routes .tooltip-flexbox-container {
     display: flex;
+<<<<<<< Updated upstream
     font: 10px white;
+=======
+    position: sticky;
+    font-size: 10px;
+>>>>>>> Stashed changes
     top: 2.5%;
     height: 95%;
+    width: 100%;
+    margin-left: 0%;
 }
 
-/* 
-
 .tags-routes .hidden {
-    transition: ease-in !important;
-    left: -100% !important;
+    position: relative;
+    margin-left: -34.1em !important;
+    transition: 1s ease-in-out;
 } 
-
-This is implemented. It doesn't work, and I can't figure out why.
-
-*/
 
 .tags-routes .tooltip-flexbox-container-hide {
     font: 10px white; 
-    height: 150%;
+    margin-bottom: 0px;
     border-radius: 0px;
     border-top-right-radius: 5px;
 }
@@ -54,6 +64,8 @@ This is implemented. It doesn't work, and I can't figure out why.
 .tags-routes .tooltip-divider {
     border: 0.5px solid #0f0f0f;
     border-radius: 5px;
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
 
 .tags-routes .settings-container {

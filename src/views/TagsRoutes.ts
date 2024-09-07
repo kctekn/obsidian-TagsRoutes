@@ -893,7 +893,11 @@ export class TagRoutesView extends ItemView {
 
         // Tooltips for new users
         const tooltipBar = container.createEl('div', { cls: 'tooltip-wrapper'});
+
+        // do not delete: need this to style the tooltips INSIDE the bar.
         const tooltips = tooltipBar.createEl('div', { cls: 'tooltip-flexbox-container'});
+
+        //simple platform-specific controls. Hello MacOS users!
         const platform = Platform.isMobile ? '0' : Platform.isMacOS ? '1' : '2';  
         const controls = [
             /* cameraPan */ ['Drag', 'Click and Drag', 'Hold LMB + Drag', 'Pan:'],
@@ -904,16 +908,13 @@ export class TagRoutesView extends ItemView {
             tooltips.createEl('p', { cls: 'tooltip-flexbox', text: `${control[3]} ${control[platform]}`});
             tooltips.createEl('div', { cls: 'tooltip-divider'});
         });
-       /*
 
         const hideToolbar = tooltipBar.createEl('button', { text: '<', cls: 'tooltip-flexbox-container-hide'})
         hideToolbar.addEventListener('click', () => {
-            tooltips.classList.toggle('hidden');
+            tooltipBar.classList.toggle('hidden');
+            hideToolbar.innerHTML = tooltipBar.hasClass('hidden') ? '>' : '<';
         })
 
-        this snippet works just fine, meaning the css should be applied - it never is.
-        It's a shame as I want to implement something similar for the on hover toolbar, though if I can't hide it I can't animate a second popout.
-        */
         this.Graph = ForceGraph3D()
             //  .width(container.clientWidth)
             //  .height(container.clientHeight)
