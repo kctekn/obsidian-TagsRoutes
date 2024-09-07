@@ -11,14 +11,40 @@ If your plugin does not need CSS, delete this file.
     overflow: hidden !important;
 }
 
-.tags-routes .tooltip-flexbox-container {
+.tags-routes .tooltip-wrapper {
+    overflow: hidden;
+    align-items: stretch;
     display: flex;
     background-color: #1f1f1f;
-    font-size: 10px;
     position: absolute;
     left: 0px;
     bottom: 0px;
-    border-top-right-radius: 1px;
+    border-top-right-radius: 5px;
+}
+
+.tags-routes .tooltip-flexbox-container {
+    display: flex;
+    font-size: 10px;
+    top: 2.5%;
+    height: 95%;
+}
+
+/* 
+
+.tags-routes .hidden {
+    transition: ease-in !important;
+    left: -100% !important;
+} 
+
+This is implemented. It doesn't work, and I can't figure out why.
+
+*/
+
+.tags-routes .tooltip-flexbox-container-hide {
+    font: 10px white; 
+    height: 150%;
+    border-radius: 0px;
+    border-top-right-radius: 5px;
 }
 
 .tags-routes .tooltip-flexbox {
@@ -27,6 +53,7 @@ If your plugin does not need CSS, delete this file.
 
 .tags-routes .tooltip-divider {
     border: 0.5px solid #0f0f0f;
+    border-radius: 5px;
 }
 
 .tags-routes .settings-container {
