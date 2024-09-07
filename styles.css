@@ -24,7 +24,7 @@ If your plugin does not need CSS, delete this file.
 
 .tags-routes .tooltip-flexbox-container {
     display: flex;
-    font-size: 10px;
+    font: 10px white;
     top: 2.5%;
     height: 95%;
 }
