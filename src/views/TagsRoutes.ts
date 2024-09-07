@@ -49,6 +49,130 @@ interface Node {
 // 创建 filesDataMap
 const filesDataMap: Map<string, CachedMetadata | null> = new Map();
 const logFilePath = 'TagsRoutes/logs/logMessage.md'
+
+export class visualStyle1 {
+    plugin: TagsRoutes
+    name: string
+    constructor(plugin: TagsRoutes, name: string) {
+        this.plugin = plugin;
+        this.name = name;
+    }
+    addVisual() {
+        
+    }
+    removeVisual() {
+
+    }
+}
+
+interface VisualStyle {
+    // Name of the visual style
+    name: string;
+  
+    // Plugin reference
+    plugin: TagsRoutes;
+  
+    container: HTMLElement;
+    // Method to add a visual style
+    addStyle(container:HTMLElement): void;
+  
+    // Method to remove a visual style
+    removeStyle(container:HTMLElement): void;
+
+   // setContainer(container: HTMLElement): void;
+  }
+
+class darkStyle implements VisualStyle {
+    // Define the properties
+    name: string;
+    plugin: TagsRoutes;
+    container: HTMLElement;
+    // Constructor to initialize properties
+    constructor(name: string, plugin: TagsRoutes) {
+        this.name = name;
+        this.plugin = plugin;
+    }
+
+    // Implement the addStyle method
+    addStyle(container:HTMLElement): void {
+        console.log(`Adding style: ${this.name}`);
+        const bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2), 2.0, 1, 0)
+        this.plugin.view.Graph.postProcessingComposer().addPass(bloomPass);
+    }
+
+    // Implement the removeStyle method
+    removeStyle(container:HTMLElement): void {
+        console.log(`Removing style: ${this.name}`);
+
+        // Use the plugin property to perform some actions
+        //  this.plugin.removeSomePluginMethod(); // Example method call on the plugin
+    }
+
+/*     setContainer(container:HTMLElement): void{
+        this.container = container;
+    } */
+}  
+
+class lightStyle implements VisualStyle {
+    // Define the properties
+    name: string;
+    plugin: TagsRoutes;
+    container: HTMLElement;
+    Graph: ForceGraph3DInstance;
+    // Constructor to initialize properties
+    constructor(name: string, plugin: TagsRoutes) {
+        this.name = name;
+        this.plugin = plugin;
+    }
+
+    // Implement the addStyle method
+    addStyle(container:HTMLElement): void {
+        console.log(`Adding style: ${this.name}`);
+        this.Graph = this.plugin.view.Graph;
+        this.Graph.backgroundColor("WHITE")
+   //     this.Graph.backgroundColor("#000003")
+        this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObjectLight)
+        //shadow related
+/*         this.Graph.renderer().shadowMap.enabled = true;
+        this.Graph.renderer().shadowMap.type = THREE.PCFSoftShadowMap;
+        this.Graph.renderer().toneMapping = THREE.ACESFilmicToneMapping;
+        this.Graph.renderer().toneMappingExposure = 1.8; // 调低曝光 */
+
+      //   const light = new THREE.DirectionalLight(0xffffff, 1); // 强度降低
+      //  light.position.set(5, 10, 7.5); // 设置光源位置
+     //   light.castShadow = true;
+        //        light.shadow.mapSize.width = 1024; // 提高阴影分辨率
+        //        light.shadow.mapSize.height = 1024;
+        //        light.shadow.camera.near = 0.5; // 调整阴影相机的近剪裁面
+        //        light.shadow.camera.far = 500;
+     //   this.Graph.scene().add(light);
+
+        this.Graph.lights()[0].intensity = 0.2;// = false;//  = 1;
+      //  this.Graph.lights()[0].visible = true;
+     //   this.Graph.lights()[1].intensity = 0;
+//        this.Graph.lights()[1].visible = true;
+
+        //console.log("current light: ", this.Graph.lights()) 
+
+        
+        //const bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2), 2.0, 1, 0)
+        //this.plugin.view.Graph.postProcessingComposer().addPass(bloomPass);
+    }
+
+    // Implement the removeStyle method
+    removeStyle(container:HTMLElement): void {
+        console.log(`Removing style: ${this.name}`);
+
+        // Use the plugin property to perform some actions
+        //  this.plugin.removeSomePluginMethod(); // Example method call on the plugin
+    }
+
+/*     setContainer(container:HTMLElement): void{
+        this.container = container;
+    } */
+}  
+
+
 // 创建一个View 
 export class TagRoutesView extends ItemView {
     plugin: TagsRoutes;
@@ -59,6 +183,7 @@ export class TagRoutesView extends ItemView {
     };
     _controls: Control[] = [];
     private currentSlot: number;
+    visualStyle: VisualStyle;
     constructor(leaf: WorkspaceLeaf, plugin: TagsRoutes) {
         super(leaf);
         this.plugin = plugin;
@@ -73,9 +198,11 @@ export class TagRoutesView extends ItemView {
         this.getNodeVisible = this.getNodeVisible.bind(this)
         this.getLinkVisible = this.getLinkVisible.bind(this)
         this.onResetGraph = this.onResetGraph.bind(this);
-        this.createNodeThreeObject = this.createNodeThreeObject.bind(this)
+        this.createNodeThreeObject = this.createNodeThreeObject.bind(this);
         this.currentSlot = this.plugin.settings.currentSlot;
+        this.createNodeThreeObjectLight = this.createNodeThreeObjectLight.bind(this);
         this.updateColor = this.updateColor.bind(this);
+        this.getNodeColorByType = this.getNodeColorByType.bind(this);
     }
     getViewType() {
         return VIEW_TYPE_TAGS_ROUTES;
@@ -95,6 +222,67 @@ export class TagRoutesView extends ItemView {
     private hoverNode: ExtendedNodeObject | null;
     private selectedNode: ExtendedNodeObject | null;
 
+    initialize() {
+//        this.visualStyle = new darkStyle("dark",this.plugin)
+        this.visualStyle = new lightStyle("light",this.plugin)
+    }
+    createNodeThreeObjectLight(node: ExtendedNodeObject,) {
+
+        const group = new THREE.Group();
+
+        let nodeSize = (node.connections || 1)
+        if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
+        nodeSize = Math.log2(nodeSize) * 5;
+        const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
+       // console.log("type of this: ", typeof(view))
+        let color = this.getNodeColorByType(node);
+        const material = new THREE.MeshBasicMaterial({ color });
+        const material0 = new THREE.MeshStandardMaterial({
+            color: color,
+        //    blending: THREE.AdditiveBlending,
+            
+            emissive: color,
+            emissiveIntensity: 0.3
+        });
+        material0.opacity = .9; //0.85;
+        material0.transparent = true;
+        const mesh = new THREE.Mesh(geometry, material0);
+        group.add(mesh)
+        const parts = node.id.split('/')
+
+        let node_text_name = "";
+
+        if (node.type == 'tag') {
+            node_text_name = parts[parts.length - 1]
+        } else {
+            let node_full_name = parts[parts.length - 1];
+            let partsName = node_full_name.split('.')
+            if (partsName.length > 1) {
+                partsName.length = partsName.length - (node.type === 'excalidraw' ? 2 : 1)
+            }
+            node_text_name = partsName.join('.')
+        }
+
+        const sprite = new SpriteText(node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
+
+
+        sprite.material.depthWrite = false; // make sprite background transparent
+        sprite.color = this.getNodeColorByType(node);
+        sprite.visible = false;
+        if (node.type === 'tag') sprite.color = '#ffffff'
+        sprite.textHeight = 0;
+        //sprite.scale.set(18, 18, 8); // 设置标签大小
+
+
+        sprite.position.set(0, -nodeSize - 20, 0); // 将标签位置设置在节点上方
+        group.add(sprite);
+
+        node._ThreeGroup = group;
+        node._ThreeMesh = mesh;
+        node._Sprite = sprite;
+
+        return group;
+    }
     createNodeThreeObject(node: ExtendedNodeObject) {
 
         const group = new THREE.Group();
@@ -985,8 +1173,8 @@ export class TagRoutesView extends ItemView {
             .onLinkHover((link: any) => this.onLinkHover(link))
             .cooldownTicks(10000)
         //Graph.onEngineStop(()=>Graph.zoomToFit(4000))  //自动复位
-        const bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2), 2.0, 1, 0)
-        this.Graph.postProcessingComposer().addPass(bloomPass);
+/*         const bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2), 2.0, 1, 0)
+        this.Graph.postProcessingComposer().addPass(bloomPass); */
         // 使用 MutationObserver 监听容器大小变化
         const observer = new MutationObserver(() => {
             const newWidth = container.clientWidth
@@ -1155,6 +1343,8 @@ export class TagRoutesView extends ItemView {
         this.getCache();
         this.gData = this.buildGdata();
         this.createGraph(container as HTMLElement);
+        this.initialize();
+        this.visualStyle.addStyle(container as HTMLElement)
         this.Graph.graphData(this.gData);
         //need a delay for scene creation
         setTimeout(() => {
