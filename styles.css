@@ -10,6 +10,25 @@ If your plugin does not need CSS, delete this file.
 .tags-routes .graph-container{
     overflow: hidden !important;
 }
+
+.tags-routes .tooltip-flexbox-container {
+    display: flex;
+    background-color: #1f1f1f;
+    font-size: 10px;
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    border-top-right-radius: 1px;
+}
+
+.tags-routes .tooltip-flexbox {
+    margin: 5px;
+}
+
+.tags-routes .tooltip-divider {
+    border: 0.5px solid #0f0f0f;
+}
+
 .tags-routes .settings-container {
     position: absolute;
     top: 5px;

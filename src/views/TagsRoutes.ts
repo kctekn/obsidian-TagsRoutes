@@ -1,4 +1,4 @@
-import { moment, MarkdownView, Notice, CachedMetadata, ValueComponent } from 'obsidian';
+import { moment, MarkdownView, Notice, CachedMetadata, ValueComponent, Platform } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
 import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile } from "../util/util"
@@ -890,6 +890,21 @@ export class TagRoutesView extends ItemView {
         // 打印结果
         container.addClass("tags-routes")
         const graphContainer = container.createEl('div', { cls: 'graph-container' });
+
+        // Tooltips for new users
+        const tooltipBar = container.createEl('div', { cls: 'tooltip-flexbox-container'});
+        const platform = Platform.isMobile ? '0' : Platform.isMacOS ? '1' : '2';  
+        const controls = [
+            /* cameraPan */ ['Drag', 'Click and Drag', 'Hold LMB + Drag', 'Pan:'],
+            /* cameraMove */ ['Drag with Two Fingers', 'Click and Drag with Two Fingers', 'Hold RMB + Drag', 'Move:'],
+            /* cameraZoom */ ['Swipe with Two Fingers', 'Swipe Up/Down with Two Fingers', 'Scroll Up/Down', 'Zoom:']
+        ]
+        controls.forEach(control => {
+            tooltipBar.createEl('div', { cls: 'tooltip-divider'});
+            tooltipBar.createEl('p', { cls: 'tooltip-flexbox', text: `${control[3]} ${control[platform]}`});
+        });
+        
+
         this.Graph = ForceGraph3D()
             //  .width(container.clientWidth)
             //  .height(container.clientHeight)
