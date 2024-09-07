@@ -6,7 +6,7 @@ import ForceGraph3D, { ForceGraph3DInstance } from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "./settings"
-import TagsRoutes, { defaultolorMap, DEFAULT_DISPLAY_SETTINGS_DARK, TagRoutesSettings } from '../main';
+import TagsRoutes, { DEFAULT_DISPLAY_SETTINGS_DARK, TagRoutesSettings } from '../main';
 import { Vector2 } from 'three';
 import SpriteText from 'three-spritetext';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
@@ -148,6 +148,7 @@ export class TagRoutesView extends ItemView {
      * 
      */
     highlightOnNodeClick(node: ExtendedNodeObject | null) {
+        if (!this.plugin.settings.customSlot) return; 
         // no state change
         if ((!node && !this.selectedNodes.size) || (node && this.selectedNode === node)) return;
         if (this.plugin.settings.customSlot[0].toggle_global_map) {
@@ -248,6 +249,7 @@ export class TagRoutesView extends ItemView {
         this.updateHighlight();
     }
     getNodeVisible(node: any) {
+        if (!this.plugin.settings.customSlot) return false; 
         if (this.plugin.settings.customSlot[0].toggle_global_map) return true;
         if (this.highlightNodes.size != 0) {
             return this.highlightNodes.has(node) ? true : false
@@ -256,6 +258,7 @@ export class TagRoutesView extends ItemView {
         };
     }
     getLinkVisible(link: any) {
+        if (!this.plugin.settings.customSlot) return true; 
         if (this.plugin.settings.customSlot[0].toggle_global_map) return true;
         if (this.highlightLinks.size != 0 || this.selectedNode || this.hoverNode) {
             return this.highlightLinks.has(link) ? true : false
@@ -275,6 +278,7 @@ export class TagRoutesView extends ItemView {
         this.Graph.linkColor(this.Graph.linkColor());
     }
     updateHighlight() {
+        
         // trigger update of highlighted objects in scene
         this.highlightNodes.clear();
         this.selectedNodes.forEach(node => this.highlightNodes.add(node));
@@ -285,14 +289,16 @@ export class TagRoutesView extends ItemView {
         this.Graph.graphData().nodes.forEach((node: ExtendedNodeObject) => {
             const obj = node._ThreeMesh; // 获取节点的 Three.js 对象
             if (obj) {
-                if (this.plugin.settings.customSlot[0].toggle_global_map) {
-                    (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
-                    obj.visible = true;
-                } else {
-                    if (this.highlightNodes.has(node)) {
+                if (this.plugin.settings.customSlot) {
+                    if (this.plugin.settings.customSlot[0].toggle_global_map) {
                         (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
+                        obj.visible = true;
+                    } else {
+                        if (this.highlightNodes.has(node)) {
+                            (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
+                        }
+                        obj.visible = this.getNodeVisible(node);
                     }
-                    obj.visible = this.getNodeVisible(node);
                 }
             }
             if (node._Sprite) {
@@ -341,33 +347,39 @@ export class TagRoutesView extends ItemView {
         return button;
     }
     onLinkDistance(value: number) {
+        if (!this.plugin.settings.customSlot) return; 
         this.Graph.d3Force('link')?.distance(value * 10);
         this.Graph.d3ReheatSimulation();
         this.plugin.settings.customSlot[0].link_distance = value
         this.plugin.saveSettings();
     }
     onLinkWidth(value: number) {
+        if (!this.plugin.settings.customSlot) return; 
         this.Graph.linkWidth((link: any) => this.highlightLinks.has(link) ? 2 * value : value)
         this.plugin.settings.customSlot[0].link_width = value
         this.plugin.saveSettings();
     }
     onLinkParticleNumber(value: number) {
+        if (!this.plugin.settings.customSlot) return; 
         this.Graph.linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
         this.plugin.settings.customSlot[0].link_particle_number = value
         this.plugin.saveSettings();
     }
     onLinkParticleSize(value: number) {
+        if (!this.plugin.settings.customSlot) return; 
         this.Graph.linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
         this.plugin.settings.customSlot[0].link_particle_size = value
         this.plugin.saveSettings();
     }
     onToggleGlobalMap(value: boolean) {
+        if (!this.plugin.settings.customSlot) return; 
         this.plugin.settings.customSlot[0].toggle_global_map = value;
         this.plugin.saveSettings();
     }
     onText(value: string) {
     }
     onNodeSize(value: number) {
+        if (!this.plugin.settings.customSlot) return; 
         let scaleValue = (value / 5 - 1) * 0.6 + 1;
         this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
             const obj = node.__threeObj; // 获取节点的 Three.js 对象
@@ -379,6 +391,7 @@ export class TagRoutesView extends ItemView {
         this.plugin.saveSettings();
     }
     onNodeRepulsion(value: number) {
+        if (!this.plugin.settings.customSlot) return; 
         this.plugin.settings.customSlot[0].node_repulsion = value;
         this.plugin.saveSettings();
         if (value === 0) return;
@@ -449,6 +462,7 @@ export class TagRoutesView extends ItemView {
         return true;
     }
     onSlotSliderChange(value: number) {
+        if (!this.plugin.settings.customSlot) return; 
         //  console.log("saveing slot: ", value, " : ", this ?.plugin ?.settingsSlots[value]);
         this.currentSlot = value;
         console.log("Tags routes: set current slot: ", this.currentSlot)
@@ -476,6 +490,7 @@ export class TagRoutesView extends ItemView {
         new Notice(`Tags routes: Load slot ${this.currentSlot}`);
     }
     onSave() {
+        if (!this.plugin.settings.customSlot) return; 
         this.plugin.settings.customSlot[this.currentSlot] = structuredClone(this.plugin.settings.customSlot[0]);
         this.plugin.settings.currentSlot = this.currentSlot;
         this.plugin.saveSettings();
@@ -494,6 +509,7 @@ export class TagRoutesView extends ItemView {
         }
     }
     applyChanges() {
+        if (!this.plugin.settings.customSlot) return; 
         this.setControlValue("Node size", this._controls,
             this.plugin.settings.customSlot[this.currentSlot], "node_size");
         this.setControlValue("Node repulsion", this._controls,
@@ -508,6 +524,7 @@ export class TagRoutesView extends ItemView {
             this.plugin.settings.customSlot[this.currentSlot], "link_particle_number");
     }
     onLoad() {
+        if (!this.plugin.settings.customSlot) return; 
         console.log("load from slot: ", this.currentSlot)
         this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlot]);
         this.plugin.settings.currentSlot = this.currentSlot;
@@ -519,6 +536,7 @@ export class TagRoutesView extends ItemView {
         new Notice(`Tags routes: Graph load from slot ${this.currentSlot}`);
     }
     onReset() {
+        if (!this.plugin.settings.customSlot) return; 
         this.plugin.settings.customSlot[0] = structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK);
         this.plugin.settings.customSlot[this.currentSlot] = structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK);
         this.plugin.saveSettings();
@@ -650,6 +668,7 @@ export class TagRoutesView extends ItemView {
             });
     }
     getNodeColorByType(node: Node) {
+        if (!this.plugin.settings.customSlot) return "#ffffff"; 
         let color;
         switch (node.type) {
             case 'markdown':
@@ -887,6 +906,7 @@ export class TagRoutesView extends ItemView {
     }
     distanceFactor: number = 2;
     createGraph(container: HTMLElement) {
+        
         // 打印结果
         container.addClass("tags-routes")
         const graphContainer = container.createEl('div', { cls: 'graph-container' });
@@ -926,13 +946,13 @@ export class TagRoutesView extends ItemView {
             (graphContainer)
             .nodeVisibility(this.getNodeVisible)
             .linkVisibility(this.getLinkVisible)
-            .linkColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot[0].colorMap["linkHighlightColor"].value :
-                this.plugin.settings.customSlot[0].colorMap["linkNormalColor"].value)
+            .linkColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot?.[0].colorMap["linkHighlightColor"].value||"#ffffff" :
+                this.plugin.settings.customSlot?.[0].colorMap["linkNormalColor"].value||"#ffffff")
             .linkWidth((link: any) => this.highlightLinks.has(link) ? 2 : 1)
             .linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? 4 : 2)
             .linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? 3 : 0.5)
-            .linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot[0].colorMap["linkParticleHighlightColor"].value :
-                this.plugin.settings.customSlot[0].colorMap["linkParticleColor"].value)
+            .linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot?.[0].colorMap["linkParticleHighlightColor"].value || "#ffffff":
+                this.plugin.settings.customSlot?.[0].colorMap["linkParticleColor"].value||"#ffffff")
             //   .nodeLabel((node: any) => node.type == 'tag' ? `${node.id} (${node.instanceNum})` : `${node.id} (${node.connections})`)
             .nodeOpacity(0.9)
             .nodeThreeObject(this.createNodeThreeObject)
@@ -1138,6 +1158,7 @@ export class TagRoutesView extends ItemView {
         this.Graph.graphData(this.gData);
         //need a delay for scene creation
         setTimeout(() => {
+            if (!this.plugin.settings.customSlot) return;
             this.setControlValue("Node size", this._controls,
                 this.plugin.settings.customSlot[this.currentSlot], "node_size");
         }, 2000);

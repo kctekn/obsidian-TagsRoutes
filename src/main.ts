@@ -50,6 +50,10 @@ export const defaultolorMapLight: colorMap = {
 	linkParticleHighlightColor: { name: "default", value: "#ff00ff" },
 	backgroundColor:{name:"default",value:"#ffffff"}
 }
+export const defaltColorMap = {
+	dark: defaultolorMapDark,
+	light: defaultolorMapLight
+}
 export interface TagRoutesSettings {
 	node_size: number;
 	node_repulsion: number;
@@ -305,6 +309,7 @@ class colorPickerGroup {
 				this.textC = text
 					.setValue("")
 					.onChange((v) => {
+						if (!this.plugin.settings.customSlot) return;
 						if (v === "") return;
 						const colorHex = this.namedColorToHex(v)
 						if (colorHex !== "N/A") {
@@ -319,12 +324,13 @@ class colorPickerGroup {
 
 			 }
 		).setName(name)
-		.setDesc(this.plugin.settings.customSlot[0].colorMap[keyname].name||this.plugin.settings.customSlot[0].colorMap[keyname].value)
+		.setDesc(this.plugin.settings.customSlot?.[0].colorMap[keyname].name||this.plugin.settings.customSlot?.[0].colorMap[keyname].value||"")
 		this.colorPicker = new Setting(holder.createEl("span")).addColorPicker(
 			(c) => {
 				this.colorC = c
-					.setValue(this.plugin.settings.customSlot[0].colorMap[keyname].value)
+					.setValue(this.plugin.settings.customSlot?.[0].colorMap[keyname].value||"")
 					.onChange((v) => {
+						if (!this.plugin.settings.customSlot) return;
 						this.textC.setValue("")
 						if (this.isProgrammaticChange == false) {
 							this.text.setDesc(v)
@@ -352,7 +358,8 @@ class colorPickerGroup {
 
 		return 'N/A';
 	}
-	resetColor(skipSave:boolean) {
+	resetColor(skipSave: boolean) {
+		if (!this.plugin.settings.customSlot) return;
 		this.skipSave = skipSave;
 		this.colorC.setValue(this.plugin.settings.customSlot[0].colorMap[this.keyname].value)
 		this.skipSave = false;
@@ -433,8 +440,9 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		new ExtraButtonComponent(colorTitle.createEl('span', { cls: 'group-bar-button' }))
 		.setIcon("reset")
 		.setTooltip("Reset color of current slot ")
-		.onClick(() => {
-			this.plugin.settings.customSlot[0].colorMap = structuredClone(defaultolorMap);
+			.onClick(() => {
+			if (!this.plugin.settings.customSlot) return;
+			this.plugin.settings.customSlot[0].colorMap = structuredClone(defaltColorMap[this.plugin.settings.currentTheme]);
 			this.plugin.view.onSave();
 			this.plugin.view.updateColor();
 			this.colors.forEach(v => v.resetColor(true))
