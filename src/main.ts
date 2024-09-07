@@ -20,8 +20,9 @@ export interface colorMap {
 	linkNormalColor: colorSpec;
 	linkParticleColor: colorSpec;
 	linkParticleHighlightColor: colorSpec;
+	backgroundColor: colorSpec;
 }
-export const defaultolorMap: colorMap = {
+export const defaultolorMapDark: colorMap = {
 	markdown: {name:"default", value: "#00ff00"},
 	attachment: {name:"default",  value: "#ffff00" },
 	broken: {name:"default",  value: "#ff0000"},
@@ -32,13 +33,24 @@ export const defaultolorMap: colorMap = {
 	linkHighlightColor: {name:"default",  value: "#ffffff"},
 	linkNormalColor: {name:"default",  value: "#ffffff"},
 	linkParticleColor: {name:"default",  value: "#ffffff"},
-	linkParticleHighlightColor: {name:"default",  value: "#ff00ff"},
-	
-	
+	linkParticleHighlightColor: { name: "default", value: "#ff00ff" },
+	backgroundColor:{name:"default",value:"#000003"}
+}
+export const defaultolorMapLight: colorMap = {
+	markdown: {name:"default", value: "#00ff00"},
+	attachment: {name:"default",  value: "#ffff00" },
+	broken: {name:"default",  value: "#ff0000"},
+	excalidraw: {name:"default",  value: "#00ffff"},
+	tag: {name:"default",  value: "#ff00ff"},
+	nodeHighlightColor: {name:"default",  value: "#3333ff"},
+	nodeFocusColor: {name:"default",  value: "#FF3333"},
+	linkHighlightColor: {name:"default",  value: "#ffffff"},
+	linkNormalColor: {name:"default",  value: "#ffffff"},
+	linkParticleColor: {name:"default",  value: "#ffffff"},
+	linkParticleHighlightColor: { name: "default", value: "#ff00ff" },
+	backgroundColor:{name:"default",value:"#ffffff"}
 }
 export interface TagRoutesSettings {
-	broken_file_link_center: string;
-	broken_file_link_line: string;
 	node_size: number;
 	node_repulsion: number;
 	link_distance: number;
@@ -48,18 +60,20 @@ export interface TagRoutesSettings {
 	toggle_global_map: boolean;
 	colorMap: colorMap;
 }
+type ThemeSlots = [TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings];
 interface Settings {
 	saveSpecVer: number;
 	enableSave: boolean;
 	enableShow: boolean;
 	currentSlot: number;
 	openInCurrentTab: boolean;
-	customSlot: [TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings]
+	currentTheme: "dark"|"light";
+	customSlot: ThemeSlots | null ;
+	dark: ThemeSlots;
+	light: ThemeSlots;
 }
 
-export const DEFAULT_DISPLAY_SETTINGS: TagRoutesSettings = {
-	broken_file_link_center: 'true',
-	broken_file_link_line: 'false',
+export const DEFAULT_DISPLAY_SETTINGS_DARK: TagRoutesSettings = {
 	node_size: 5,
 	node_repulsion: 0,
 	// where is min an max set?
@@ -68,15 +82,42 @@ export const DEFAULT_DISPLAY_SETTINGS: TagRoutesSettings = {
 	link_particle_size: 2,
 	link_particle_number: 2,
 	toggle_global_map: false,
-	colorMap:defaultolorMap,
+	colorMap:defaultolorMapDark,
+}
+export const DEFAULT_DISPLAY_SETTINGS_LIGHT: TagRoutesSettings = {
+	node_size: 5,
+	node_repulsion: 0,
+	link_distance: 5,
+	link_width: 1,
+	link_particle_size: 2,
+	link_particle_number: 2,
+	toggle_global_map: false,
+	colorMap:defaultolorMapLight,
 }
 const DEFAULT_SETTINGS: Settings = {
-	saveSpecVer: 109,
+	saveSpecVer: 10100,
 	enableSave: true,
 	enableShow: true,
 	currentSlot: 1,
 	openInCurrentTab: false,
-	customSlot: [DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS, DEFAULT_DISPLAY_SETTINGS]
+	currentTheme: "dark",
+	customSlot:null,
+	dark: [
+		structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK),
+		structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK),
+		structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK),
+		structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK),
+		structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK),
+		structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK),
+	],
+	light: [
+		structuredClone(DEFAULT_DISPLAY_SETTINGS_LIGHT),
+		structuredClone(DEFAULT_DISPLAY_SETTINGS_LIGHT),
+		structuredClone(DEFAULT_DISPLAY_SETTINGS_LIGHT),
+		structuredClone(DEFAULT_DISPLAY_SETTINGS_LIGHT),
+		structuredClone(DEFAULT_DISPLAY_SETTINGS_LIGHT),
+		structuredClone(DEFAULT_DISPLAY_SETTINGS_LIGHT),
+	]
 }
 // plugin 主体
 export default class TagsRoutes extends Plugin {
@@ -175,9 +216,19 @@ export default class TagsRoutes extends Plugin {
 					if (this.isObject(target[key]) && this.isObject(source[key])) {
 						// 递归合并嵌套对象
 						this.mergeDeep(target[key], source[key]);
-					} else if (typeof target[key] === typeof source[key]) {
+					} else if (typeof target[key] === typeof source[key] && typeof target[key] !== 'object') {
 						// 只在类型匹配时更新值
 						target[key] = source[key];
+					} else if (Array.isArray(target[key]) && Array.isArray(source[key])) {
+						for (let i: number = 0; i < target[key].length; i++) {
+							//only deal with an array which have only objects	
+							if (this.isObject(target[key][i]) && this.isObject(source[key][i])) {
+								this.mergeDeep(target[key][i], source[key][i])
+							}
+
+						}
+
+
 					}
 					// 如果类型不匹配，保留 target 的值
 				}
@@ -195,15 +246,19 @@ export default class TagsRoutes extends Plugin {
 	}
 	async loadSettings() {
 		this.settings = structuredClone(DEFAULT_SETTINGS);
-		const loadedSettings = await this.loadData() as Settings;
+		const loadedSettings = await this.loadData() //as Settings;
 		if (loadedSettings?.saveSpecVer && loadedSettings.saveSpecVer >= 109) {
-			this.settings = this.mergeDeep(this.settings, loadedSettings) as Settings;
+			this.mergeDeep(this.settings, loadedSettings) 
 		}
+		this.settings.customSlot = this.settings[this.settings.currentTheme];
 		this.settings.customSlot[0] = structuredClone(
 			this.settings.customSlot[this.settings.currentSlot]);
+		this.settings.saveSpecVer = DEFAULT_SETTINGS.saveSpecVer;
 	}
 	async saveSettings() {
-		await this.saveData(this.settings);
+		this.settings.customSlot = null;  //don't save the duplicated object
+		this.saveData(this.settings);  //maybe need await here
+		this.settings.customSlot = this.settings[this.settings.currentTheme];
 	}
 	async activateView() {
 		const { workspace } = this.app;

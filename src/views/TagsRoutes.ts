@@ -6,7 +6,7 @@ import ForceGraph3D, { ForceGraph3DInstance } from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "./settings"
-import TagsRoutes, { defaultolorMap, DEFAULT_DISPLAY_SETTINGS, TagRoutesSettings } from '../main';
+import TagsRoutes, { defaultolorMap, DEFAULT_DISPLAY_SETTINGS_DARK, TagRoutesSettings } from '../main';
 import { Vector2 } from 'three';
 import SpriteText from 'three-spritetext';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
@@ -467,7 +467,7 @@ export class TagRoutesView extends ItemView {
         console.log("load from slot: ", this.currentSlot)
         this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlot]);
         this.plugin.settings.currentSlot = this.currentSlot;
-        this.plugin.saveData(this.plugin.settings);
+        this.plugin.saveSettings();
         //   console.log("_control num: ", this._controls.length);
         //   console.log("_controls: ", this._controls);
         // 使用辅助函数
@@ -478,7 +478,7 @@ export class TagRoutesView extends ItemView {
     onSave() {
         this.plugin.settings.customSlot[this.currentSlot] = structuredClone(this.plugin.settings.customSlot[0]);
         this.plugin.settings.currentSlot = this.currentSlot;
-        this.plugin.saveData(this.plugin.settings);
+        this.plugin.saveSettings();
         console.log("save to slot: ", this.currentSlot)
         new Notice(`Tags routes: Graph save to slot ${this.currentSlot}`);
     }
@@ -511,7 +511,7 @@ export class TagRoutesView extends ItemView {
         console.log("load from slot: ", this.currentSlot)
         this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlot]);
         this.plugin.settings.currentSlot = this.currentSlot;
-        this.plugin.saveData(this.plugin.settings);
+        this.plugin.saveSettings();
         // 使用辅助函数
         this.applyChanges();
         this.updateColor();
@@ -519,9 +519,9 @@ export class TagRoutesView extends ItemView {
         new Notice(`Tags routes: Graph load from slot ${this.currentSlot}`);
     }
     onReset() {
-        this.plugin.settings.customSlot[0] = structuredClone(DEFAULT_DISPLAY_SETTINGS);
-        this.plugin.settings.customSlot[this.currentSlot] = structuredClone(DEFAULT_DISPLAY_SETTINGS);
-        this.plugin.saveData(this.plugin.settings);
+        this.plugin.settings.customSlot[0] = structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK);
+        this.plugin.settings.customSlot[this.currentSlot] = structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK);
+        this.plugin.saveSettings();
         this.applyChanges();
         this.updateColor();
         new Notice(`Graph reset on slot ${this.currentSlot}`);
@@ -976,6 +976,8 @@ export class TagRoutesView extends ItemView {
         observer.observe(container, { attributes: true, childList: true, subtree: true });
         // 清理 observer
         this.register(() => observer.disconnect());
+        //this.plugin.settings.customSlot = this.plugin.settings[this.plugin.settings.currentTheme];
+        if (!this.plugin.settings.customSlot) return;  //make sure it has value and avoid typescript error report
         new settingGroup(this.plugin, "Tags' route settings", "Tags' route settings", "root").hide()
             .add({
                 arg: (new settingGroup(this.plugin, "commands", "Node commands"))
