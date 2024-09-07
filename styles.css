@@ -21,7 +21,7 @@ If your plugin does not need CSS, delete this file.
 .tags-routes .tooltip-wrapper {
     overflow: hidden;
     display: flex;
-    background-color: #1f1f1f;
+    background-color: var(--background-secondary);
     position: absolute !important;
     left: 0px;
     bottom: 0px;
@@ -32,12 +32,7 @@ If your plugin does not need CSS, delete this file.
 
 .tags-routes .tooltip-flexbox-container {
     display: flex;
-<<<<<<< Updated upstream
-    font: 10px white;
-=======
-    position: sticky;
-    font-size: 10px;
->>>>>>> Stashed changes
+    font: var(--text-normal);
     top: 2.5%;
     height: 95%;
     width: 100%;
@@ -51,7 +46,8 @@ If your plugin does not need CSS, delete this file.
 } 
 
 .tags-routes .tooltip-flexbox-container-hide {
-    font: 10px white; 
+    font: var(--text-normal);
+    font-size: 10px;
     margin-bottom: 0px;
     border-radius: 0px;
     border-top-right-radius: 5px;
@@ -59,10 +55,11 @@ If your plugin does not need CSS, delete this file.
 
 .tags-routes .tooltip-flexbox {
     margin: 5px;
+    font-size: 10px;
 }
 
 .tags-routes .tooltip-divider {
-    border: 0.5px solid #0f0f0f;
+    border: 0.5px solid var(--background-secondary-alt);
     border-radius: 5px;
     margin-top: 2px;
     margin-bottom: 2px;
