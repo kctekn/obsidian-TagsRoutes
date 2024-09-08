@@ -69,7 +69,7 @@ If your plugin does not need CSS, delete this file.
     position: absolute;
     top: 5px;
     right: 5px;
-    background-color: var( --background-primary );
+    background-color: var(--background-primary);
     /*   text-align : center;*/
     border-radius: 5px;
 }
@@ -131,6 +131,8 @@ If your plugin does not need CSS, delete this file.
     margin-bottom: 5px;
     margin-left: 5px;
     margin-right: 5px;
+    padding: 0px;
+    border-top: 0px;
 }
 .tags-routes .setting-flex-box {
     display: flex;
@@ -139,6 +141,7 @@ If your plugin does not need CSS, delete this file.
 .tags-routes .setting-item-inline {
     display: flex;
     justify-content: space-between;
+    border-top: 0px;
 }
 .tags-routes .setting-item-inline .setting-item-info {
     flex: 0 1 auto;
@@ -150,7 +153,9 @@ If your plugin does not need CSS, delete this file.
 }
 .tags-routes .setting-item-control input[type="range"] {
     width: 100%;
-    margin-top: 0.5em;
+    height: 1px;
+    margin-top: 0.6em;
+    margin-bottom: 0.6em;
     /* 确保滑动条的input元素也占据100%宽度 */
 }
 .tags-routes .setting-item-control input[type="text"] {

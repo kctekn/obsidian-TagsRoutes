@@ -126,7 +126,7 @@ export class settingGroup {
         let _slider: SliderComponent | undefined;
         const slider = new Setting(this.holdContainer)
             .setName(name)
-            .setClass("mod-slider")
+          //  .setClass("mod-slider")
             .addSlider(slider =>
                 _slider = slider
                     .setLimits(min, max, step)
