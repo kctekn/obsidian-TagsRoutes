@@ -6,7 +6,7 @@ import ForceGraph3D, { ForceGraph3DInstance } from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "./settings"
-import TagsRoutes, { defaltColorMap, DEFAULT_DISPLAY_SETTINGS_DARK, TagRoutesSettings } from '../main';
+import TagsRoutes, { defaltColorMap, DEFAULT_DISPLAY_SETTINGS, TagRoutesSettings } from '../main';
 import { Vector2 } from 'three';
 import SpriteText from 'three-spritetext';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
@@ -706,8 +706,8 @@ export class TagRoutesView extends ItemView {
     }
     onSettingsReset() {
         if (!this.plugin.settings.customSlot) return; 
-        this.plugin.settings.customSlot[0] = structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK);
-        this.plugin.settings.customSlot[this.currentSlotNum] = structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK);
+        this.plugin.settings.customSlot[0] = structuredClone(DEFAULT_DISPLAY_SETTINGS[this.plugin.settings.currentTheme]);
+        this.plugin.settings.customSlot[this.currentSlotNum] = structuredClone(DEFAULT_DISPLAY_SETTINGS[this.plugin.settings.currentTheme]);
         this.plugin.saveSettings();
         this.applyChanges();
         this.updateColor();

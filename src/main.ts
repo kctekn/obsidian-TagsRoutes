@@ -102,6 +102,10 @@ export const DEFAULT_DISPLAY_SETTINGS_LIGHT: TagRoutesSettings = {
 	toggle_global_map: false,
 	colorMap:defaultolorMapLight,
 }
+export const DEFAULT_DISPLAY_SETTINGS = {
+	dark: DEFAULT_DISPLAY_SETTINGS_DARK,
+	light: DEFAULT_DISPLAY_SETTINGS_LIGHT
+}
 const DEFAULT_SETTINGS: Settings = {
 	saveSpecVer: 10100,
 	enableSave: true,
