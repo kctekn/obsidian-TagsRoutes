@@ -242,7 +242,7 @@ export class TagRoutesView extends ItemView {
         sprite.material.depthWrite = false; // make sprite background transparent
         sprite.color = this.getNodeColorByType(node);
         sprite.visible = false;
-     //   if (node.type === 'tag') sprite.color = '#ffffff'
+        if (node.type === 'tag') sprite.color = '#CCCCCC'
         sprite.textHeight = 0;
         //sprite.scale.set(18, 18, 8); // 设置标签大小
 
@@ -463,15 +463,21 @@ export class TagRoutesView extends ItemView {
                     }
                 }
             }
-            if (node._Sprite) {
-                if (this.highlightNodes.has(node) && node.type !== 'attachment') {
+            if (node._Sprite && node._Sprite.visible) {
+
+                node._Sprite.visible = false;
+                node._Sprite.textHeight = 0;
+            }
+            const showSpriteText = false; 
+            if (this.highlightNodes.has(node) && node.type !== 'attachment' && node.type !== 'broken') {
+                if (showSpriteText && node._Sprite) {
                     node._Sprite.visible = true;
                     node._Sprite.textHeight = 18;
-                } else {
-                    node._Sprite.visible = false;
-                    node._Sprite.textHeight = 0;
                 }
+            } else {
+
             }
+            
         }
         );
         if (this.hoverNode && this.hoverNode._Sprite) {
