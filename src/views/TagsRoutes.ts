@@ -6,7 +6,7 @@ import ForceGraph3D, { ForceGraph3DInstance } from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "./settings"
-import TagsRoutes, { DEFAULT_DISPLAY_SETTINGS_DARK, TagRoutesSettings } from '../main';
+import TagsRoutes, { defaltColorMap, DEFAULT_DISPLAY_SETTINGS_DARK, TagRoutesSettings } from '../main';
 import { Vector2 } from 'three';
 import SpriteText from 'three-spritetext';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
@@ -50,21 +50,6 @@ interface Node {
 const filesDataMap: Map<string, CachedMetadata | null> = new Map();
 const logFilePath = 'TagsRoutes/logs/logMessage.md'
 
-export class visualStyle1 {
-    plugin: TagsRoutes
-    name: string
-    constructor(plugin: TagsRoutes, name: string) {
-        this.plugin = plugin;
-        this.name = name;
-    }
-    addVisual() {
-        
-    }
-    removeVisual() {
-
-    }
-}
-
 interface VisualStyle {
     // Name of the visual style
     name: string;
@@ -79,7 +64,6 @@ interface VisualStyle {
     // Method to remove a visual style
     removeStyle(container:HTMLElement): void;
 
-   // setContainer(container: HTMLElement): void;
   }
 
 class darkStyle implements VisualStyle {
@@ -88,31 +72,28 @@ class darkStyle implements VisualStyle {
     plugin: TagsRoutes;
     container: HTMLElement;
     bloomPass: UnrealBloomPass;
+    Graph: ForceGraph3DInstance;
     // Constructor to initialize properties
     constructor(name: string, plugin: TagsRoutes) {
         this.name = name;
         this.plugin = plugin;
     }
-
     // Implement the addStyle method
     addStyle(container:HTMLElement): void {
         console.log(`Adding style: ${this.name}`);
+        this.Graph = this.plugin.view.Graph;
+        this.Graph.backgroundColor(this.plugin.settings.customSlot?.[0].colorMap.backgroundColor.value||"#000003")
+        this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObject)
+        this.Graph.lights()[0].intensity = 1.0;
         this.bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2), 2.0, 1, 0)
         this.plugin.view.Graph.postProcessingComposer().addPass(this.bloomPass);
-      // 
     }
 
     // Implement the removeStyle method
     removeStyle(container:HTMLElement): void {
         console.log(`Removing style: ${this.name}`);
         this.plugin.view.Graph.postProcessingComposer().removePass(this.bloomPass);
-        // Use the plugin property to perform some actions
-        //  this.plugin.removeSomePluginMethod(); // Example method call on the plugin
     }
-
-/*     setContainer(container:HTMLElement): void{
-        this.container = container;
-    } */
 }  
 
 class lightStyle implements VisualStyle {
@@ -128,50 +109,18 @@ class lightStyle implements VisualStyle {
     }
 
     // Implement the addStyle method
-    addStyle(container:HTMLElement): void {
+    addStyle(container: HTMLElement): void {
         console.log(`Adding style: ${this.name}`);
         this.Graph = this.plugin.view.Graph;
-        this.Graph.backgroundColor("WHITE")
-   //     this.Graph.backgroundColor("#000003")
+        this.Graph.backgroundColor(this.plugin.settings.customSlot?.[0].colorMap.backgroundColor.value || "#ffffff")
         this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObjectLight)
-        //shadow related
-/*         this.Graph.renderer().shadowMap.enabled = true;
-        this.Graph.renderer().shadowMap.type = THREE.PCFSoftShadowMap;
-        this.Graph.renderer().toneMapping = THREE.ACESFilmicToneMapping;
-        this.Graph.renderer().toneMappingExposure = 1.8; // 调低曝光 */
-
-      //   const light = new THREE.DirectionalLight(0xffffff, 1); // 强度降低
-      //  light.position.set(5, 10, 7.5); // 设置光源位置
-     //   light.castShadow = true;
-        //        light.shadow.mapSize.width = 1024; // 提高阴影分辨率
-        //        light.shadow.mapSize.height = 1024;
-        //        light.shadow.camera.near = 0.5; // 调整阴影相机的近剪裁面
-        //        light.shadow.camera.far = 500;
-     //   this.Graph.scene().add(light);
-
         this.Graph.lights()[0].intensity = 0.2;// = false;//  = 1;
-      //  this.Graph.lights()[0].visible = true;
-     //   this.Graph.lights()[1].intensity = 0;
-//        this.Graph.lights()[1].visible = true;
-
-        //console.log("current light: ", this.Graph.lights()) 
-
-        
-        //const bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2), 2.0, 1, 0)
-        //this.plugin.view.Graph.postProcessingComposer().addPass(bloomPass);
     }
 
     // Implement the removeStyle method
-    removeStyle(container:HTMLElement): void {
+    removeStyle(container: HTMLElement): void {
         console.log(`Removing style: ${this.name}`);
-
-        // Use the plugin property to perform some actions
-        //  this.plugin.removeSomePluginMethod(); // Example method call on the plugin
     }
-
-/*     setContainer(container:HTMLElement): void{
-        this.container = container;
-    } */
 }  
 
 
@@ -184,9 +133,10 @@ export class TagRoutesView extends ItemView {
         links: []
     };
     _controls: Control[] = [];
-    currentVisual: "dark"|"light" = "dark";
-    private currentSlot: number;
-    visualStyle: VisualStyle;
+    container = this.containerEl.children[1];
+    currentVisualString: "dark"|"light"|"" = "";
+    currentSlotNum: number;
+    visualProcessor: VisualStyle;
     visuals: {
         dark: VisualStyle;
         light: VisualStyle;
@@ -206,10 +156,11 @@ export class TagRoutesView extends ItemView {
         this.getLinkVisible = this.getLinkVisible.bind(this)
         this.onResetGraph = this.onResetGraph.bind(this);
         this.createNodeThreeObject = this.createNodeThreeObject.bind(this);
-        this.currentSlot = this.plugin.settings.currentSlot;
+        this.currentSlotNum = this.plugin.settings.currentSlotNum;
         this.createNodeThreeObjectLight = this.createNodeThreeObjectLight.bind(this);
         this.updateColor = this.updateColor.bind(this);
         this.getNodeColorByType = this.getNodeColorByType.bind(this);
+        this.switchTheme = this.switchTheme.bind(this);
         this.visuals = {
             dark: new darkStyle("dark", this.plugin),
             light: new lightStyle("light", this.plugin)
@@ -233,15 +184,18 @@ export class TagRoutesView extends ItemView {
     private hoverNode: ExtendedNodeObject | null;
     private selectedNode: ExtendedNodeObject | null;
 
-    initialize() {
-        this.visualStyle = new darkStyle("dark",this.plugin)
-      //  this.visualStyle = new lightStyle("light",this.plugin)
-    }
-    switchTheme(container:HTMLElement) {
-        this.visualStyle.removeStyle(container);
-        this.visualStyle = this.visuals[this.currentVisual]
-        this.visualStyle.addStyle(container);
-       // this.visualStyle = 
+    /*
+        Make sure the customSlot has been swtiched to wanted theme before call this
+    */
+    switchTheme(visual: 'dark' | 'light'):boolean {
+        if (this.currentVisualString !== visual) {
+            this.visualProcessor?.removeStyle(this.container as HTMLElement);
+            this.visualProcessor = this.visuals[visual]
+            this.visualProcessor.addStyle(this.container as HTMLElement);
+            this.currentVisualString = visual
+            return true;
+        }
+        return false;
     }
     createNodeThreeObjectLight(node: ExtendedNodeObject,) {
 
@@ -286,7 +240,7 @@ export class TagRoutesView extends ItemView {
         sprite.material.depthWrite = false; // make sprite background transparent
         sprite.color = this.getNodeColorByType(node);
         sprite.visible = false;
-        if (node.type === 'tag') sprite.color = '#ffffff'
+     //   if (node.type === 'tag') sprite.color = '#ffffff'
         sprite.textHeight = 0;
         //sprite.scale.set(18, 18, 8); // 设置标签大小
 
@@ -480,6 +434,7 @@ export class TagRoutesView extends ItemView {
                 return;
             }
         })
+        this.Graph.backgroundColor(this.plugin.settings?.customSlot?.[0].colorMap.backgroundColor.value||defaltColorMap[this.plugin.settings.currentTheme].backgroundColor.value)
         this.Graph.linkColor(this.Graph.linkColor());
     }
     updateHighlight() {
@@ -669,38 +624,39 @@ export class TagRoutesView extends ItemView {
     onSlotSliderChange(value: number) {
         if (!this.plugin.settings.customSlot) return; 
         //  console.log("saveing slot: ", value, " : ", this ?.plugin ?.settingsSlots[value]);
-        this.currentSlot = value;
-        console.log("Tags routes: set current slot: ", this.currentSlot)
+        this.currentSlotNum = value;
+        console.log("Tags routes: set current slot: ", this.currentSlotNum)
         //   console.log(" slot 0", this.plugin.settings.customSlot[0]);
         //   console.log(" slot ", this.plugin.settings.currentSlot, ":", this.plugin.settings.customSlot[this.plugin.settings.currentSlot])
-        if (!this.deepEqual(this.plugin.settings.customSlot[0], this.plugin.settings.customSlot[this.plugin.settings.currentSlot])) {
+        if (!this.deepEqual(this.plugin.settings.customSlot[0], this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum])) {
             // not load, just return
             console.log("           setting changed, wait for save")
             console.log("slot 0", this.plugin.settings.customSlot[0])
-            console.log("slot ", this.currentSlot, this.plugin.settings.customSlot[this.plugin.settings.currentSlot])
-            new Notice(`Tags routes: Settings changed, click 'Save' to save to slot ${this.currentSlot}`, 5000);
+            console.log("slot ", this.currentSlotNum, this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum])
+            new Notice(`Tags routes: Settings changed, click 'Save' to save to slot ${this.currentSlotNum}`, 5000);
             return;
         } else {
             console.log("it is the same, go to load effects")
         }
-        console.log("load from slot: ", this.currentSlot)
-        this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlot]);
-        this.plugin.settings.currentSlot = this.currentSlot;
+        console.log("load from slot: ", this.currentSlotNum)
+        this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlotNum]);
+        this.plugin.settings.currentSlotNum = this.currentSlotNum;
         this.plugin.saveSettings();
         //   console.log("_control num: ", this._controls.length);
         //   console.log("_controls: ", this._controls);
         // 使用辅助函数
         this.applyChanges();
         this.updateColor();
-        new Notice(`Tags routes: Load slot ${this.currentSlot}`);
+        new Notice(`Tags routes: Load slot ${this.currentSlotNum}`);
     }
-    onSave() {
+    onSettingsSave() {
         if (!this.plugin.settings.customSlot) return; 
-        this.plugin.settings.customSlot[this.currentSlot] = structuredClone(this.plugin.settings.customSlot[0]);
-        this.plugin.settings.currentSlot = this.currentSlot;
+        this.plugin.settings.customSlot[this.currentSlotNum] = structuredClone(this.plugin.settings.customSlot[0]);
+        this.plugin.settings.currentSlotNum = this.currentSlotNum;
+        this.plugin.settings.themeSlotNum[this.plugin.settings.currentTheme] = this.currentSlotNum;
         this.plugin.saveSettings();
-        console.log("save to slot: ", this.currentSlot)
-        new Notice(`Tags routes: Graph save to slot ${this.currentSlot}`);
+        console.log("save to slot: ", this.currentSlotNum)
+        new Notice(`Tags routes: Graph save to slot ${this.currentSlotNum}`);
     }
     setControlValue<K extends keyof TagRoutesSettings>(
         controlId: string,
@@ -716,38 +672,38 @@ export class TagRoutesView extends ItemView {
     applyChanges() {
         if (!this.plugin.settings.customSlot) return; 
         this.setControlValue("Node size", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "node_size");
+            this.plugin.settings.customSlot[this.currentSlotNum], "node_size");
         this.setControlValue("Node repulsion", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "node_repulsion");
+            this.plugin.settings.customSlot[this.currentSlotNum], "node_repulsion");
         this.setControlValue("Link distance", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "link_distance");
+            this.plugin.settings.customSlot[this.currentSlotNum], "link_distance");
         this.setControlValue("Link width", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "link_width");
+            this.plugin.settings.customSlot[this.currentSlotNum], "link_width");
         this.setControlValue("Link particle size", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "link_particle_size");
-        this.setControlValue("Link particle number", this._controls,
-            this.plugin.settings.customSlot[this.currentSlot], "link_particle_number");
+            this.plugin.settings.customSlot[this.currentSlotNum], "link_particle_size");
+            this.setControlValue("Link particle number", this._controls,
+        this.plugin.settings.customSlot[this.currentSlotNum], "link_particle_number");
     }
-    onLoad() {
+    onSettingsLoad() {
         if (!this.plugin.settings.customSlot) return; 
-        console.log("load from slot: ", this.currentSlot)
-        this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlot]);
-        this.plugin.settings.currentSlot = this.currentSlot;
+        console.log("load from slot: ", this.currentSlotNum)
+        this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlotNum]);
+        this.plugin.settings.currentSlotNum = this.currentSlotNum;
         this.plugin.saveSettings();
         // 使用辅助函数
         this.applyChanges();
         this.updateColor();
         //new Notice('Graph load on slot ', this.currentSlot);
-        new Notice(`Tags routes: Graph load from slot ${this.currentSlot}`);
+        new Notice(`Tags routes: Graph load from slot ${this.currentSlotNum}`);
     }
-    onReset() {
+    onSettingsReset() {
         if (!this.plugin.settings.customSlot) return; 
         this.plugin.settings.customSlot[0] = structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK);
-        this.plugin.settings.customSlot[this.currentSlot] = structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK);
+        this.plugin.settings.customSlot[this.currentSlotNum] = structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK);
         this.plugin.saveSettings();
         this.applyChanges();
         this.updateColor();
-        new Notice(`Graph reset on slot ${this.currentSlot}`);
+        new Notice(`Graph reset on slot ${this.currentSlotNum}`);
     }
     // 连接所有 broken 节点的方法
     connectBrokenNodes(linkStar: boolean) {
@@ -1225,12 +1181,12 @@ export class TagRoutesView extends ItemView {
             })
             .add({
                 arg: (new settingGroup(this.plugin, "save-load", "Save and load"))
-                    .addSlider("Slot #", 1, 5, 1, this.plugin.settings.currentSlot, this.onSlotSliderChange)
+                    .addSlider("Slot #", 1, 5, 1, this.plugin.settings.currentSlotNum, this.onSlotSliderChange)
                     .add({
                         arg: (new settingGroup(this.plugin, "button-box", "button-box", "flex-box")
-                            .addButton("Save", "graph-button", () => { this.onSave() })
-                            .addButton("Load", "graph-button", () => { this.onLoad() })
-                            .addButton("Reset", "graph-button", () => { this.onReset() })
+                            .addButton("Save", "graph-button", () => { this.onSettingsSave() })
+                            .addButton("Load", "graph-button", () => { this.onSettingsLoad() })
+                            .addButton("Reset", "graph-button", () => { this.onSettingsReset() })
                         )
                     })
             })
@@ -1355,19 +1311,17 @@ export class TagRoutesView extends ItemView {
     // view的open 事件
     async onOpen() {
         //    console.log("On open tag routes view")
-        const container = this.containerEl.children[1];
-        container.empty();
+        this.container.empty();
         this.getCache();
         this.gData = this.buildGdata();
-        this.createGraph(container as HTMLElement);
-        this.initialize();
-        this.visualStyle.addStyle(container as HTMLElement)
+        this.createGraph(this.container as HTMLElement);
+        this.switchTheme(this.plugin.settings.currentTheme)
         this.Graph.graphData(this.gData);
         //need a delay for scene creation
         setTimeout(() => {
             if (!this.plugin.settings.customSlot) return;
             this.setControlValue("Node size", this._controls,
-                this.plugin.settings.customSlot[this.currentSlot], "node_size");
+                this.plugin.settings.customSlot[this.currentSlotNum], "node_size");
         }, 2000);
 
     }

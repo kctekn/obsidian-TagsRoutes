@@ -69,7 +69,11 @@ interface Settings {
 	saveSpecVer: number;
 	enableSave: boolean;
 	enableShow: boolean;
-	currentSlot: number;
+	currentSlotNum: number;
+	themeSlotNum: {
+		dark: number;
+		light: number;
+	}
 	openInCurrentTab: boolean;
 	currentTheme: "dark"|"light";
 	customSlot: ThemeSlots | null ;
@@ -102,7 +106,11 @@ const DEFAULT_SETTINGS: Settings = {
 	saveSpecVer: 10100,
 	enableSave: true,
 	enableShow: true,
-	currentSlot: 1,
+	currentSlotNum: 1,
+	themeSlotNum: {
+		dark: 1,
+		light: 1,
+	},
 	openInCurrentTab: false,
 	currentTheme: "dark",
 	customSlot:null,
@@ -255,8 +263,9 @@ export default class TagsRoutes extends Plugin {
 			this.mergeDeep(this.settings, loadedSettings) 
 		}
 		this.settings.customSlot = this.settings[this.settings.currentTheme];
+		this.settings.currentSlotNum = this.settings.themeSlotNum[this.settings.currentTheme];
 		this.settings.customSlot[0] = structuredClone(
-			this.settings.customSlot[this.settings.currentSlot]);
+			this.settings.customSlot[this.settings.currentSlotNum]);
 		this.settings.saveSpecVer = DEFAULT_SETTINGS.saveSpecVer;
 	}
 	async saveSettings() {
@@ -340,7 +349,7 @@ class colorPickerGroup {
 							this.plugin.settings.customSlot[0].colorMap[keyname].value = v;
 						}
 						if (!this.skipSave) {
-							this.plugin.view.onSave();
+							this.plugin.view.onSettingsSave();
 						}
 						this.plugin.view.updateColor();
                        // setTimeout(() => this.colorPicker.setDesc(v), 0);
@@ -361,8 +370,11 @@ class colorPickerGroup {
 	resetColor(skipSave: boolean) {
 		if (!this.plugin.settings.customSlot) return;
 		this.skipSave = skipSave;
+		this.isProgrammaticChange = true;
 		this.colorC.setValue(this.plugin.settings.customSlot[0].colorMap[this.keyname].value)
+		this.text.setDesc(this.plugin.settings.customSlot[0].colorMap[this.keyname].name || this.plugin.settings.customSlot[0].colorMap[this.keyname].value)
 		this.skipSave = false;
+		this.isProgrammaticChange = false;
 	}
 }
 class TagsroutesSettingsTab extends PluginSettingTab {
@@ -387,7 +399,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Log Node/Link Count')
-			.setDesc('Enable or disable logging the number of nodes and links when the graph loads')
+			.setDesc('Enable or disable logging the number of nodes and links when the graph loads.')
 			.addToggle((toggle: ToggleComponent) => {
 				toggle
 				.setValue(this.plugin.settings.enableSave)
@@ -403,7 +415,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 			)
 		new Setting(containerEl)
 			.setName('Show Log File on Startup')
-			.setDesc('Automatically display the log file after the graph loads')
+			.setDesc('Automatically display the log file after the graph loads.')
 			.addToggle((toggle: ToggleComponent) => {
 				toggle
 					.onChange(async (value) => {
@@ -419,7 +431,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		)
 		new Setting(containerEl)
 			.setName('Open graph in current tab')
-			.setDesc('Toggle to open graph within current tab')
+			.setDesc('Toggle to open graph within current tab.')
 			.addToggle((toggle: ToggleComponent) => {
 				toggle
 					.onChange(async (value) => {
@@ -431,9 +443,46 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 			}
 		)
 
+		const themeTitle = containerEl.createEl("div", {cls: 'tags-routes-settings-title'}); 
+		themeTitle.createEl("h1", { text: "Theme" });
 
+		new Setting(containerEl)
+			.setName('Theme selection')
+			.setDesc('Toggel to use light or dark theme, the default and recommended is dark.')
+			.addToggle((toggle: ToggleComponent) => {
+				toggle
+					.onChange(async (value) => {
+						if (value === true) {
+							this.plugin.settings.currentTheme = 'light'
+						} else {
+							this.plugin.settings.currentTheme = 'dark';
+						}
+						if (this.plugin.view.currentVisualString === this.plugin.settings.currentTheme)
+							return;
+						// switch save slot
+						this.plugin.settings.customSlot = this.plugin.settings[this.plugin.settings.currentTheme];
+						this.plugin.settings.currentSlotNum = this.plugin.settings.themeSlotNum[this.plugin.settings.currentTheme];
+						this.plugin.view.currentSlotNum = this.plugin.settings.currentSlotNum;
+						this.plugin.settings.customSlot[0] = structuredClone(
+							this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum]);
 
-		const colorTitle = containerEl.createEl("div", {cls: 'tags-routes-settings-title'}); 
+						if (this.plugin.view.switchTheme(this.plugin.settings.currentTheme)) {
+							this.plugin.view.onSettingsLoad();
+							const entry = this.plugin.view._controls.find(v => v.id === "Slot #");
+							if (entry) {
+								entry.control.setValue(this.plugin.settings.currentSlotNum)
+
+							}
+						}
+						this.colors.forEach(v => v.resetColor(true))
+
+					})
+					.setValue(this.plugin.settings.currentTheme === 'dark' ? false : true)
+
+			}
+			)
+
+		const colorTitle = containerEl.createEl("div", { cls: 'tags-routes-settings-title' }); 
 		colorTitle.createEl("h1", { text: "Color" });
 
 
@@ -443,10 +492,10 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 			.onClick(() => {
 			if (!this.plugin.settings.customSlot) return;
 			this.plugin.settings.customSlot[0].colorMap = structuredClone(defaltColorMap[this.plugin.settings.currentTheme]);
-			this.plugin.view.onSave();
+			this.plugin.view.onSettingsSave();
 			this.plugin.view.updateColor();
 			this.colors.forEach(v => v.resetColor(true))
-			new Notice(`Color reset on slot ${this.plugin.settings.currentSlot}`);
+			new Notice(`Color reset on slot ${this.plugin.settings.currentSlotNum}`);
 		});
 
 		const desc = containerEl.createEl("div", { text: "You can enter css named colors here, like 'blue', 'lightblue' etc." }); 
@@ -464,7 +513,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Attachment","attachment"));
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Broken", "broken"));
 
-		new Setting(colorSettingsGroup).setName("Node state").setHeading().setDesc("Effects in global map mode").settingEl.addClass("tg-settingtab-heading")
+		new Setting(colorSettingsGroup).setName("Node state").setHeading().setDesc("Effects in global map mode.").settingEl.addClass("tg-settingtab-heading")
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Highlight", "nodeHighlightColor"));
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Focus", "nodeFocusColor"));
 
