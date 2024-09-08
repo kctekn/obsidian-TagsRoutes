@@ -81,6 +81,7 @@ class darkStyle implements VisualStyle {
     // Implement the addStyle method
     addStyle(container:HTMLElement): void {
         console.log(`Adding style: ${this.name}`);
+        this.plugin.view.clearHightlightNodes();
         this.Graph = this.plugin.view.Graph;
         this.Graph.backgroundColor(this.plugin.settings.customSlot?.[0].colorMap.backgroundColor.value||"#000003")
         this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObject)
@@ -111,6 +112,7 @@ class lightStyle implements VisualStyle {
     // Implement the addStyle method
     addStyle(container: HTMLElement): void {
         console.log(`Adding style: ${this.name}`);
+        this.plugin.view.clearHightlightNodes();
         this.Graph = this.plugin.view.Graph;
         this.Graph.backgroundColor(this.plugin.settings.customSlot?.[0].colorMap.backgroundColor.value || "#ffffff")
         this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObjectLight)
