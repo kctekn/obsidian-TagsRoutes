@@ -62,7 +62,8 @@ export const DEFAULT_DISPLAY_SETTINGS: TagRoutesSettings = {
 	broken_file_link_line: 'false',
 	node_size: 5,
 	node_repulsion: 0,
-	link_distance: 5,
+	// where is min an max set?
+	link_distance: 17,
 	link_width: 1,
 	link_particle_size: 2,
 	link_particle_number: 2,

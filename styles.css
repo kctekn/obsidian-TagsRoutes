@@ -3,6 +3,7 @@ This CSS file will be included with your plugin, and
 available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 */
+
 .tags-routes {
     padding: 0px !important;
     position: relative;
@@ -10,6 +11,60 @@ If your plugin does not need CSS, delete this file.
 .tags-routes .graph-container{
     overflow: hidden !important;
 }
+
+.tags-routes .tooltip-wrapper {
+    position: absolute;
+    margin-left: 0px;
+    transition: 1s ease-in-out;
+}
+
+.tags-routes .tooltip-wrapper {
+    overflow: hidden;
+    display: flex;
+    background-color: var(--background-secondary);
+    position: absolute !important;
+    left: 0px;
+    bottom: 0px;
+    border-top-right-radius: 5px;
+    justify-content: center;
+    align-items: center;
+}
+
+.tags-routes .tooltip-flexbox-container {
+    display: flex;
+    font: var(--text-normal);
+    top: 2.5%;
+    height: 95%;
+    width: 100%;
+    margin-left: 0%;
+}
+
+.tags-routes .hidden {
+    position: relative;
+    margin-left: -34.1em !important;
+    transition: 1s ease-in-out;
+} 
+
+.tags-routes .tooltip-flexbox-container-hide {
+    font: var(--text-normal);
+    font-size: 10px;
+    margin-bottom: 0px;
+    border-radius: 0px;
+    border-top-right-radius: 5px;
+}
+
+.tags-routes .tooltip-flexbox {
+    margin: 5px;
+    font-size: 10px;
+}
+
+.tags-routes .tooltip-divider {
+    border: 0.5px solid var(--background-secondary-alt);
+    border-radius: 5px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
 .tags-routes .settings-container {
     position: absolute;
     top: 5px;
