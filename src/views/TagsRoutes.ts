@@ -189,7 +189,7 @@ export class TagRoutesView extends ItemView {
     /*
         Make sure the customSlot has been swtiched to wanted theme before call this
     */
-    switchTheme(visual: 'dark' | 'light'):boolean {
+    async switchTheme(visual: 'dark' | 'light'):Promise<boolean> {
         if (this.currentVisualString !== visual) {
             this.visualProcessor?.removeStyle(this.container as HTMLElement);
             this.visualProcessor = this.visuals[visual]
