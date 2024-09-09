@@ -631,30 +631,34 @@ export class TagRoutesView extends ItemView {
     }
     onSlotSliderChange(value: number) {
         if (!this.plugin.settings.customSlot) return; 
+        if (this.currentSlotNum == value) return;
         //  console.log("saveing slot: ", value, " : ", this ?.plugin ?.settingsSlots[value]);
         this.currentSlotNum = value;
-        console.log("Tags routes: set current slot: ", this.currentSlotNum)
+        //console.log("Tags routes: set current slot: ", this.currentSlotNum)
         //   console.log(" slot 0", this.plugin.settings.customSlot[0]);
         //   console.log(" slot ", this.plugin.settings.currentSlot, ":", this.plugin.settings.customSlot[this.plugin.settings.currentSlot])
         if (!this.deepEqual(this.plugin.settings.customSlot[0], this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum])) {
             // not load, just return
-            console.log("           setting changed, wait for save")
-            console.log("slot 0", this.plugin.settings.customSlot[0])
-            console.log("slot ", this.currentSlotNum, this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum])
+            console.log(`Tags routes: Settings changed, click 'Save' to save to slot ${this.currentSlotNum}`)
+            //console.log("slot 0", this.plugin.settings.customSlot[0])
+            //console.log("slot ", this.currentSlotNum, this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum])
             new Notice(`Tags routes: Settings changed, click 'Save' to save to slot ${this.currentSlotNum}`, 5000);
             return;
         } else {
-            console.log("it is the same, go to load effects")
+          //  console.log("it is the same, go to load effects")
         }
-        console.log("load from slot: ", this.currentSlotNum)
+        console.log("Load from slot: ", this.currentSlotNum)
         this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlotNum]);
         this.plugin.settings.currentSlotNum = this.currentSlotNum;
+        this.plugin.settings.themeSlotNum[this.plugin.settings.currentTheme] = this.currentSlotNum;
         this.plugin.saveSettings();
         //   console.log("_control num: ", this._controls.length);
         //   console.log("_controls: ", this._controls);
         // 使用辅助函数
+        this.plugin.skipSave = true;
         this.applyChanges();
         this.updateColor();
+        this.plugin.skipSave = false;
         new Notice(`Tags routes: Load slot ${this.currentSlotNum}`);
     }
     onSettingsSave() {
@@ -663,7 +667,7 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.currentSlotNum = this.currentSlotNum;
         this.plugin.settings.themeSlotNum[this.plugin.settings.currentTheme] = this.currentSlotNum;
         this.plugin.saveSettings();
-        console.log("save to slot: ", this.currentSlotNum)
+        console.log("[onSettingsSave] Save to slot: ", this.currentSlotNum)
         new Notice(`Tags routes: Graph save to slot ${this.currentSlotNum}`);
     }
     setControlValue<K extends keyof TagRoutesSettings>(
@@ -694,13 +698,16 @@ export class TagRoutesView extends ItemView {
     }
     onSettingsLoad() {
         if (!this.plugin.settings.customSlot) return; 
-        console.log("load from slot: ", this.currentSlotNum)
+        console.log("Load from slot: ", this.currentSlotNum)
         this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlotNum]);
         this.plugin.settings.currentSlotNum = this.currentSlotNum;
         this.plugin.saveSettings();
+        
+        this.plugin.skipSave = true;
         // 使用辅助函数
         this.applyChanges();
         this.updateColor();
+        this.plugin.skipSave = false;
         //new Notice('Graph load on slot ', this.currentSlot);
         new Notice(`Tags routes: Graph load from slot ${this.currentSlotNum}`);
     }
@@ -1167,6 +1174,7 @@ export class TagRoutesView extends ItemView {
         this.register(() => observer.disconnect());
         //this.plugin.settings.customSlot = this.plugin.settings[this.plugin.settings.currentTheme];
         if (!this.plugin.settings.customSlot) return;  //make sure it has value and avoid typescript error report
+        this.plugin.skipSave = true;
         new settingGroup(this.plugin, "Tags' route settings", "Tags' route settings", "root").hide()
             .add({
                 arg: (new settingGroup(this.plugin, "commands", "Node commands"))
@@ -1204,6 +1212,7 @@ export class TagRoutesView extends ItemView {
             //   })
             .attachEl(graphContainer.createEl('div', { cls: 'settings-container' }))
             .hideAll();
+        this.plugin.skipSave = false;
     }
     // 点击节点后的处理函数
     handleTagClick(node: ExtendedNodeObject) {

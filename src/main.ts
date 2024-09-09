@@ -29,7 +29,7 @@ export const defaultolorMapDark: colorMap = {
 	excalidraw: {name:"default",  value: "#00ffff"},
 	tag: {name:"default",  value: "#ff00ff"},
 	nodeHighlightColor: {name:"default",  value: "#3333ff"},
-	nodeFocusColor: {name:"default",  value: "#FF3333"},
+	nodeFocusColor: {name:"default",  value: "#ff3333"},
 	linkHighlightColor: {name:"default",  value: "#ffffff"},
 	linkNormalColor: {name:"default",  value: "#ffffff"},
 	linkParticleColor: {name:"default",  value: "#ffffff"},
@@ -43,7 +43,7 @@ export const defaultolorMapLight: colorMap = {
 	excalidraw: {name:"default",  value: "#00ffff"},
 	tag: {name:"default",  value: "#ff00ff"},
 	nodeHighlightColor: {name:"default",  value: "#3333ff"},
-	nodeFocusColor: {name:"default",  value: "#FF3333"},
+	nodeFocusColor: {name:"default",  value: "#ff3333"},
 	linkHighlightColor: {name:"default",  value: "#ffffff"},
 	linkNormalColor: {name:"default",  value: "#ffffff"},
 	linkParticleColor: {name:"default",  value: "#ffffff"},
@@ -139,6 +139,7 @@ const DEFAULT_SETTINGS: Settings = {
 export default class TagsRoutes extends Plugin {
 	public settings: Settings;
 	public view: TagRoutesView;
+	public skipSave: boolean = true;
 	onFileClick(filePath: string) {
 		// 传递文件路径给 Graph 并聚焦到相应的节点
 		for (let leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
@@ -273,6 +274,8 @@ export default class TagsRoutes extends Plugin {
 		this.settings.saveSpecVer = DEFAULT_SETTINGS.saveSpecVer;
 	}
 	async saveSettings() {
+		if (this.skipSave) return;
+		console.log("[TagsRoutes: Save settings]")
 		this.settings.customSlot = null;  //don't save the duplicated object
 		this.saveData(this.settings);  //maybe need await here
 		this.settings.customSlot = this.settings[this.settings.currentTheme];
@@ -396,6 +399,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 	}
 
 	display(): void {
+		this.plugin.skipSave = true;
 		const { containerEl } = this;
 		containerEl.empty();
 	//	containerEl.addClass("tags-routes")
@@ -528,5 +532,6 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		new Setting(colorSettingsGroup).setName("Particle state").setHeading().settingEl.addClass("tg-settingtab-heading")
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Normal", "linkParticleColor"));
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Highlight", "linkParticleHighlightColor"));
+		this.plugin.skipSave = false;
 	}
 }
