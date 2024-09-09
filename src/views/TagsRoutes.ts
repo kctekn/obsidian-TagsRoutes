@@ -1332,7 +1332,9 @@ export class TagRoutesView extends ItemView {
         this.getCache();
         this.gData = this.buildGdata();
         this.createGraph(this.container as HTMLElement);
-        this.switchTheme(this.plugin.settings.currentTheme)
+        setTimeout(() => {
+            this.plugin.view.switchTheme(this.plugin.settings.currentTheme);
+          }, 0);
         this.Graph.graphData(this.gData);
         //need a delay for scene creation
         setTimeout(() => {

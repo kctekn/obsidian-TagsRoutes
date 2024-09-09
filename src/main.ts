@@ -474,14 +474,14 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 						this.plugin.settings.customSlot[0] = structuredClone(
 							this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum]);
 
-						if (await this.plugin.view.switchTheme(this.plugin.settings.currentTheme)) {
-							this.plugin.view.onSettingsLoad();
-							const entry = this.plugin.view._controls.find(v => v.id === "Slot #");
-							if (entry) {
-								entry.control.setValue(this.plugin.settings.currentSlotNum)
-
-							}
-						}
+						this.plugin.view.switchTheme(this.plugin.settings.currentTheme).then((result) => {
+							if (result) {
+								const entry = this.plugin.view._controls.find(v => v.id === "Slot #");
+								if (entry) {
+									entry.control.setValue(this.plugin.settings.currentSlotNum)
+								}
+							} 
+						  });
 						this.colors.forEach(v => v.resetColor(true))
 
 					})
