@@ -117,11 +117,16 @@ class lightStyle implements VisualStyle {
         this.Graph.backgroundColor(this.plugin.settings.customSlot?.[0].colorMap.backgroundColor.value || "#ffffff")
         this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObjectLight)
         this.Graph.lights()[0].intensity = 0.2;// = false;//  = 1;
+        const light = new THREE.DirectionalLight(0xffffff, 2); // 强度降低
+        light.position.set(5, 10, 7.5); // 设置光源位置
+        light.castShadow = true;
+        this.Graph.scene().add(light);
     }
 
     // Implement the removeStyle method
     removeStyle(container: HTMLElement): void {
         console.log(`Removing style: ${this.name}`);
+        this.Graph.scene().remove(this.Graph.lights()[1]);
     }
 }  
 
@@ -302,6 +307,16 @@ export class TagRoutesView extends ItemView {
         node._Sprite = sprite;
 
         return group;
+    }
+    getCameraDistance(node: ExtendedNodeObject):number {
+        let nodeSize = (node.connections || 1)
+        const maxdistance = 640
+        const minDistance = 50
+        let distance = 640
+        if (nodeSize < 10) {
+          distance = minDistance + nodeSize/10  * (maxdistance - minDistance)
+        }
+        return distance
     }
     /**
      * Handle the highlight data change of a clicked node
@@ -494,7 +509,7 @@ export class TagRoutesView extends ItemView {
         // 获取 Graph 中的相应节点，并将视图聚焦到该节点
         const node = this.gData.nodes.find((node: ExtendedNodeObject) => node.id === filePath);
         if (node && node.x && node.y && node.z) {
-            const distance = 640;
+            const distance = this.getCameraDistance(node)
             const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
             const newPos = {
                 x: node.x * distRatio,
@@ -1133,7 +1148,7 @@ export class TagRoutesView extends ItemView {
             .nodeOpacity(0.9)
             .nodeThreeObject(this.createNodeThreeObject)
             .onNodeClick((node: ExtendedNodeObject) => {
-                const distance = 640;
+                const distance = this.getCameraDistance(node);
                 const distRatio = 1 + distance / Math.hypot(node.x ?? 0, node.y ?? 0, node.z ?? 0);
                 const newPos = node.x || node.y || node.z
                     ? { x: (node.x ?? 0) * distRatio, y: (node.y ?? 0) * distRatio, z: (node.z ?? 0) * distRatio }
