@@ -1,4 +1,4 @@
-import { CachedMetadata, TagCache, View } from 'obsidian';
+import { CachedMetadata, MarkdownView, TagCache, View, WorkspaceLeaf } from 'obsidian';
 import { TFile } from "obsidian";
 export const setViewType = (view: View, mode: "source" | "preview" | "live") => {
 	if (view && view.getViewType() === 'markdown') {
@@ -78,12 +78,20 @@ export async function showFile(filePath: string) {
 	}
 	clearTimeout(timeout);
 	if (file && file instanceof TFile) {
-		const leaf = this.app.workspace.getLeaf(false);
-		await leaf.openFile(file)
-		//	console.log("log file is ready for show")
-		setViewType(leaf.view, "preview")
-	} else {
-		//	console.log("log file is not ready for show")
+
+		const leaves = this.app.workspace.getLeavesOfType("markdown");
+		const existingLeaf = leaves.find((leaf: WorkspaceLeaf) => (leaf.view as MarkdownView).file?.path === filePath);
+
+		if (existingLeaf) {
+
+			this.app.workspace.setActiveLeaf(existingLeaf);
+			await existingLeaf.openFile(file);
+			setViewType(existingLeaf.view, "preview");
+		} else {
+			const leaf = this.app.workspace.getLeaf(false);
+			await leaf.openFile(file);
+			setViewType(leaf.view, "preview");
+		}
 	}
 }
 export function getLineTime(line:string) {

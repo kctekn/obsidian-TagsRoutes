@@ -200,23 +200,41 @@ export default class TagsRoutes extends Plugin {
 		// 在 Obsidian 插件的 onload 方法中注册事件
 		this.registerDomEvent(document, 'click', (e: MouseEvent) => {
 			const target = e.target as HTMLElement;
-			if (target) { 
+			if (target) {
+				// 检查是否点击在标签内容上
 				let tag = "";
 				if (target.hasClass('tag')) {
 					tag = target.innerText; // 获取标签内容
 				}
 				if (target.hasClass('cm-hashtag')) {
-					tag = '#'+target.innerText; // 获取标签内容
+					tag = '#' + target.innerText; // 获取标签内容
 				}
 				if (tag) {
-				// 传递文件路径给 Graph 并聚焦到相应的节点
-				for (let leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
-					if (leaf.view instanceof TagRoutesView) {
-						leaf.view.focusGraphTag(tag)
+					// 传递文件路径给 Graph 并聚焦到相应的节点
+					for (let leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
+						if (leaf.view instanceof TagRoutesView) {
+							leaf.view.focusGraphTag(tag)
+						}
 					}
+					return;
 				}
-			}
-				//	this.focusGraphTag(tag); // 在图形中聚焦到对应的节点
+				if (target && target.closest('.multi-select-pill-content')) {
+					// 查找父容器，确保是包含frontmatter的标签
+					const parent = target.closest('[data-property-key="tags"]');
+
+					if (parent) {
+						// 获取点击的标签内容
+						const tagContent = target.textContent || target.innerText;
+						// 传递文件路径给 Graph 并聚焦到相应的节点
+						for (let leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
+							if (leaf.view instanceof TagRoutesView) {
+								leaf.view.focusGraphTag(tagContent)
+							}
+						}
+					}
+					return
+				}
+
 			}
 		});
 	}
