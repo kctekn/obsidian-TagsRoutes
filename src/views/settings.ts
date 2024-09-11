@@ -1,6 +1,5 @@
 import { Setting, ExtraButtonComponent, SliderComponent, ToggleComponent } from 'obsidian';
 import  TagsRoutes  from '../main';
-import { stringify } from 'querystring';
 export class settingGroup {
     public readonly id: string;
     public readonly rootContainer: HTMLElement;
@@ -31,10 +30,7 @@ export class settingGroup {
             return this;
         }
         this.headContainer = this.rootContainer.createEl('div')//, { cls: 'title-bar' })
-      //  this.addColorPicker = this.addColorPicker.bind(this)
-      //  this.addToggle = this.addToggle.bind(this)
         this.holdContainer = this.rootContainer.createDiv('div')
-        //this.holdContainer.addClass('group-holder')
         if (type === "group") {
             this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('div', { cls: 'tree-item-icon collapse-icon' }))
                 .setIcon("chevron-down")
@@ -51,14 +47,12 @@ export class settingGroup {
                     }
                 });
             this.headContainer.createEl('div', { cls: 'tree-item-inner' }).textContent = name;
-            this.headContainer.addClass("tree-item-self")// mod-collapsible")
+            this.headContainer.addClass("tree-item-self")
             this.headContainer.addClass("mod-collapsible")
             this.holdContainer.addClass("tree-item-children")
-//            this.headContainer.addClasses()
         } else if (type === "root") {
 
-            // use a solid style for root container
-            this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('div', { cls: 'root-title-bar' }))
+            this.handleButton = new ExtraButtonComponent(this.headContainer)
                 .setTooltip("Open " + name)
                 .onClick(() => {
                     if (!this._goAction && this.holdContainer.style.display == 'none' &&
@@ -96,7 +90,6 @@ export class settingGroup {
                 this.handleButton.setIcon("x")
             } else {
                 this.handleButton.setIcon("settings")
-                //this._baseContainer.addClass("is-close")
             }
             this.handleButton.extraSettingsEl.style.justifyContent = 'flex-end';
         }
@@ -119,7 +112,7 @@ export class settingGroup {
         return this
     }
     public hideAll() {
-        const subholders = Array.from(this.rootContainer.getElementsByClassName('group-holder'));
+        const subholders = Array.from(this.rootContainer.getElementsByClassName('tree-item-children'));
         subholders.forEach(element => {
             if (element instanceof HTMLElement) {
                 (element as HTMLElement).style.display = 'none';
