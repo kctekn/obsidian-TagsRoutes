@@ -46,8 +46,8 @@ export class settingGroup {
                         this.handleButton.setIcon("chevron-down")
                     }
                 });
-            this.headContainer.createEl('div', { cls: 'tree-item-inner' }).textContent = name;
-            this.headContainer.addClass("tree-item-self")
+                this.headContainer.createEl('div', { cls: 'tree-item-inner graph-control-section-header' }).textContent = name;
+                this.headContainer.addClass("tree-item-self")
             this.headContainer.addClass("mod-collapsible")
             this.holdContainer.addClass("tree-item-children")
         } else if (type === "root") {
