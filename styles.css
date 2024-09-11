@@ -71,7 +71,7 @@ If your plugin does not need CSS, delete this file.
     right: 5px;
     background-color: var(--background-primary);
     /*   text-align : center;*/
-    border-radius: 5px;
+   /* border-radius: 5px;*/
 }
 .tags-routes .slider-container {
     display: block;
