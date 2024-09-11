@@ -21,18 +21,22 @@ export class settingGroup {
         this.plugin = plugin
         this.rootContainer = document.createElement('div')
         this.rootContainer.id = id;
+        if (type === "group") {
+            this.rootContainer.addClass("tree-item")
+            this.rootContainer.addClass("graph-control-section")
+        }
         if (type === "flex-box") {
             this.holdContainer = this.rootContainer.createDiv('div')
             this.holdContainer.addClass('setting-flex-box')
             return this;
         }
-        this.headContainer = this.rootContainer.createEl('div', { cls: 'title-bar' })
+        this.headContainer = this.rootContainer.createEl('div')//, { cls: 'title-bar' })
       //  this.addColorPicker = this.addColorPicker.bind(this)
       //  this.addToggle = this.addToggle.bind(this)
         this.holdContainer = this.rootContainer.createDiv('div')
-        this.holdContainer.addClass('group-holder')
+        //this.holdContainer.addClass('group-holder')
         if (type === "group") {
-            this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('span', { cls: 'group-bar-button' }))
+            this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('div', { cls: 'tree-item-icon collapse-icon' }))
                 .setIcon("chevron-down")
                 .setTooltip("Close " + name)
                 .onClick(() => {
@@ -46,8 +50,13 @@ export class settingGroup {
                         this.handleButton.setIcon("chevron-down")
                     }
                 });
-            this.headContainer.createEl('span', { cls: 'group-bar-text' }).textContent = name;
+            this.headContainer.createEl('div', { cls: 'tree-item-inner' }).textContent = name;
+            this.headContainer.addClass("tree-item-self")// mod-collapsible")
+            this.headContainer.addClass("mod-collapsible")
+            this.holdContainer.addClass("tree-item-children")
+//            this.headContainer.addClasses()
         } else if (type === "root") {
+
             // use a solid style for root container
             this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('div', { cls: 'root-title-bar' }))
                 .setTooltip("Open " + name)
@@ -55,6 +64,7 @@ export class settingGroup {
                     if (!this._goAction && this.holdContainer.style.display == 'none' &&
                         this._baseContainer.style.opacity == '100') {
                         this._baseContainer.style.opacity = '0'
+                        this._baseContainer.addClass("is-close")
                         this.handleButton.setTooltip("Show settings button");
                         return;
                     }
@@ -70,10 +80,12 @@ export class settingGroup {
                         this.holdContainer.style.display = 'block';
                         this.handleButton.setTooltip("Close " + name);
                         this.handleButton.setIcon("x")
+                        this._baseContainer.removeClass("is-close")
                         this._goAction = false
                     } else {
                         this.holdContainer.style.display = 'none';
                         this.handleButton.setTooltip("Open " + name);
+                        this._baseContainer.addClass("is-close")
                         if (this._goAction == false) {
                             this.handleButton.setTooltip("Hide this button");
                         }
@@ -84,6 +96,7 @@ export class settingGroup {
                 this.handleButton.setIcon("x")
             } else {
                 this.handleButton.setIcon("settings")
+                //this._baseContainer.addClass("is-close")
             }
             this.handleButton.extraSettingsEl.style.justifyContent = 'flex-end';
         }
@@ -112,6 +125,9 @@ export class settingGroup {
                 (element as HTMLElement).style.display = 'none';
             }
         });
+        this._baseContainer.addClass("is-close")
+        this._baseContainer.style.padding = '0px'
+
     }
     public show() {
         this.holdContainer.style.display = 'block'
@@ -119,6 +135,7 @@ export class settingGroup {
     }
     public addButton(buttonText: string, buttonClass: string, buttonCallback: () => void) {
         const button = this.holdContainer.createEl('div').createEl('button', { text: buttonText, cls: buttonClass });
+        button.addClass("mod-cta")
         button.addEventListener('click', buttonCallback);
         return this;
     }

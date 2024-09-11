@@ -117,7 +117,7 @@ class lightStyle implements VisualStyle {
         this.Graph.backgroundColor(this.plugin.settings.customSlot?.[0].colorMap.backgroundColor.value || "#ffffff")
         this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObjectLight)
         this.Graph.lights()[0].intensity = 0.2;// = false;//  = 1;
-        const light = new THREE.DirectionalLight(0xffffff, 2); // 强度降低
+        const light = new THREE.DirectionalLight(0xffffff, 1); // 强度降低
         light.position.set(5, 10, 7.5); // 设置光源位置
         light.castShadow = true;
         this.Graph.scene().add(light);
@@ -311,7 +311,7 @@ export class TagRoutesView extends ItemView {
     getCameraDistance(node: ExtendedNodeObject):number {
         let nodeSize = (node.connections || 1)
         const maxdistance = 640
-        const minDistance = 50
+        const minDistance = 150
         let distance = 640
         if (nodeSize < 10) {
           distance = minDistance + nodeSize/10  * (maxdistance - minDistance)
@@ -1225,7 +1225,8 @@ export class TagRoutesView extends ItemView {
             //       arg: (new settingGroup("file filter", "File filter"))
             //           .addText("Filter path1", this.onText)
             //   })
-            .attachEl(graphContainer.createEl('div', { cls: 'settings-container' }))
+//            .attachEl(graphContainer.createEl('div', { cls: 'settings-container' }))
+            .attachEl(graphContainer.createEl('div', { cls: 'graph-controls' }))
             .hideAll();
         this.plugin.skipSave = false;
     }
