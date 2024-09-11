@@ -73,6 +73,16 @@ If your plugin does not need CSS, delete this file.
     /*   text-align : center;*/
    /* border-radius: 5px;*/
 }
+.tags-routes .narrow-icon-style {
+    padding: 0px;
+    border-radius: 2px;
+}
+.tags-routes .mod-close {
+    position: absolute;
+    top: var(--size-4-1);
+    inset-inline-end: var(--size-4-2);
+    padding: var(--size-2-2);
+}
 .tags-routes .slider-container {
     display: block;
     margin-left: 5px;

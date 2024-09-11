@@ -76,6 +76,7 @@ export class settingGroup {
                         this.handleButton.setIcon("x")
                         this._baseContainer.removeClass("is-close")
                         this.headContainer.addClasses(["graph-controls-button", "mod-close"])
+                        this.handleButton.extraSettingsEl.addClass("narrow-icon-style")
                         this._goAction = false
                     } else {
                         this.holdContainer.style.display = 'none';
@@ -84,6 +85,7 @@ export class settingGroup {
                         if (this._goAction == false) {
                             this.handleButton.setTooltip("Hide this button");
                             this.headContainer.removeClasses(["graph-controls-button", "mod-close"])
+                            this.handleButton.extraSettingsEl.removeClass("narrow-icon-style")
                         }
                         this.handleButton.setIcon("settings")
                     }
@@ -94,7 +96,6 @@ export class settingGroup {
                 this.handleButton.setIcon("settings")
             }
             this.handleButton.extraSettingsEl.style.justifyContent = 'flex-end';
-            this.handleButton.extraSettingsEl.style.padding='0px'
         }
         return this
     }
