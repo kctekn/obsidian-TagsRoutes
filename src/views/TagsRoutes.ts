@@ -191,6 +191,55 @@ export class TagRoutesView extends ItemView {
     private hoverNode: ExtendedNodeObject | null;
     private selectedNode: ExtendedNodeObject | null;
 
+    applyThemeColor() {
+        if (!this.plugin.settings.customSlot) return;
+        this.plugin.settings.customSlot[0].colorMap["markdown"] = {
+            name: "theme", value:
+                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--graph-node")  //--text-accent?
+        }
+        this.plugin.settings.customSlot[0].colorMap["tag"] = {
+            name: "theme", value:
+                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--graph-node-tag")
+        }
+        this.plugin.settings.customSlot[0].colorMap["attachment"] = {
+            name: "theme", value:
+                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--graph-node-attachment")
+        }
+        this.plugin.settings.customSlot[0].colorMap["nodeFocusColor"] = {
+            name: "theme", value:
+                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--graph-node-focused")
+        }
+        this.plugin.settings.customSlot[0].colorMap["nodeHighlightColor"] = {
+            name: "theme", value:
+                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--interactive-accent")
+        }
+        this.plugin.settings.customSlot[0].colorMap["linkHighlightColor"] = {
+            name: "theme", value:
+                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--interactive-accent")
+        }
+        this.plugin.settings.customSlot[0].colorMap["linkNormalColor"] = {
+            name: "theme", value:
+                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--graph-line")
+        }
+        this.plugin.settings.customSlot[0].colorMap["broken"] = {
+            name: "theme", value:
+                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--graph-node-unresolved")
+        }
+        if (this.currentVisualString === "light") {
+            this.plugin.settings.customSlot[0].colorMap["backgroundColor"] = {
+                name: "theme", value:
+                    getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--background-primary")
+            }
+            this.Graph.backgroundColor(this.plugin.settings.customSlot[0].colorMap["backgroundColor"].value)
+            this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObjectLight)
+        } else if (this.currentVisualString === "dark") {
+            this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObject)
+        }
+        //canvas background: --background-primary
+        //this.updateHighlight();
+        
+    }
+
     /*
         Make sure the customSlot has been swtiched to wanted theme before call this
     */
@@ -447,10 +496,14 @@ export class TagRoutesView extends ItemView {
     updateColor() {
         //console.log("update color")
         this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
+            const color = this.getNodeColorByType(node);
             const obj = node._ThreeMesh; // 获取节点的 Three.js 对象
             if (obj) {
-                (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
+                (obj.material as THREE.MeshBasicMaterial).color.set(color);
                 return;
+            }
+            if (node._Sprite) {
+                node._Sprite.color = color;
             }
         })
         this.Graph.backgroundColor(this.plugin.settings?.customSlot?.[0].colorMap.backgroundColor.value||defaltColorMap[this.plugin.settings.currentTheme].backgroundColor.value)
@@ -1215,6 +1268,11 @@ export class TagRoutesView extends ItemView {
             .add({
                 arg: (new settingGroup(this.plugin, "save-load", "Save and load"))
                     .addSlider("Slot #", 1, 5, 1, this.plugin.settings.currentSlotNum, this.onSlotSliderChange)
+                    .add({
+                        arg: (new settingGroup(this.plugin, "button-box", "button-box", "flex-box")
+                            .addButton("Apply theme color", "graph-button", () => { this.applyThemeColor() })
+                        )
+                    })
                     .add({
                         arg: (new settingGroup(this.plugin, "button-box", "button-box", "flex-box")
                             .addButton("Save", "graph-button", () => { this.onSettingsSave() })

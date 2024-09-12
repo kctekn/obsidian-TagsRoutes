@@ -498,6 +498,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 								if (entry) {
 									entry.control.setValue(this.plugin.settings.currentSlotNum)
 								}
+								this.plugin.saveSettings();
 							} 
 						  });
 						this.colors.forEach(v => v.resetColor(true))
