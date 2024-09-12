@@ -192,53 +192,82 @@ export class TagRoutesView extends ItemView {
     private hoverNode: ExtendedNodeObject | null;
     private selectedNode: ExtendedNodeObject | null;
 
+
+    getComputedColorForSelector(selector: string): string {
+        // Create a temporary element
+        const tempElement: HTMLElement = document.createElement('div');
+        tempElement.style.display = 'none';
+        
+        // Apply the selector as a class name
+        tempElement.className = selector.replace(/^\./, '').replace(/\./g,' '); // Remove leading dot if present
+        // Append to body
+        document.body.appendChild(tempElement);
+        
+        // Get computed style
+        const computedStyle = window.getComputedStyle(tempElement);
+        const color = computedStyle.color;
+        
+        // Remove the temporary element
+        document.body.removeChild(tempElement);
+        
+        // Convert to hex and return
+        return this.rgbToHex(color);
+    }
+    
+    rgbToHex(color: string): string {
+        if (color.startsWith('#')) {
+            return color.slice(0, 7);
+        }
+        
+        const parts = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(?:\d+(?:\.\d+)?))?\)$/);
+        
+        if (!parts) {
+            throw new Error("Invalid color format");
+        }
+    
+        const r = parseInt(parts[1]).toString(16).padStart(2, '0');
+        const g = parseInt(parts[2]).toString(16).padStart(2, '0');
+        const b = parseInt(parts[3]).toString(16).padStart(2, '0');
+        
+        return `#${r}${g}${b}`;
+    }
+
     applyThemeColor() {
         if (!this.plugin.settings.customSlot) return;
         this.plugin.settings.customSlot[0].colorMap["markdown"] = {
-            name: "theme", value:
-                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--graph-node")  //--text-accent?
+            name: "theme", value: this.getComputedColorForSelector(".graph-view.color-fill")
         }
         this.plugin.settings.customSlot[0].colorMap["tag"] = {
-            name: "theme", value:
-                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--graph-node-tag")
+            name: "theme", value: this.getComputedColorForSelector(".graph-view.color-fill-tag")
         }
         this.plugin.settings.customSlot[0].colorMap["attachment"] = {
-            name: "theme", value:
-                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--graph-node-attachment")
+            name: "theme", value: this.getComputedColorForSelector(".graph-view.color-fill-attachment")
         }
         this.plugin.settings.customSlot[0].colorMap["nodeFocusColor"] = {
-            name: "theme", value:
-                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--graph-node-focused")
+            name: "theme", value: this.getComputedColorForSelector(".graph-view.color-fill-focused")
         }
         this.plugin.settings.customSlot[0].colorMap["nodeHighlightColor"] = {
-            name: "theme", value:
-                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--interactive-accent")
+            name: "theme", value: this.getComputedColorForSelector(".graph-view.color-fill-highlight")
         }
         this.plugin.settings.customSlot[0].colorMap["linkHighlightColor"] = {
-            name: "theme", value:
-                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--interactive-accent")
+            name: "theme", value: this.getComputedColorForSelector(".graph-view.color-line-highlight")
         }
         this.plugin.settings.customSlot[0].colorMap["linkNormalColor"] = {
-            name: "theme", value:
-                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--graph-line")
+            name: "theme", value: this.getComputedColorForSelector(".graph-view.color-line")
         }
         this.plugin.settings.customSlot[0].colorMap["broken"] = {
-            name: "theme", value:
-                getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--graph-node-unresolved")
+            name: "theme", value: this.getComputedColorForSelector(".graph-view.color-fill-unresolved")
         }
         if (this.currentVisualString === "light") {
             this.plugin.settings.customSlot[0].colorMap["backgroundColor"] = {
                 name: "theme", value:
-                    getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--background-primary")
+                    getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--background-primary").toLowerCase()
             }
             this.Graph.backgroundColor(this.plugin.settings.customSlot[0].colorMap["backgroundColor"].value)
             this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObjectLight)
         } else if (this.currentVisualString === "dark") {
             this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObject)
         }
-        //canvas background: --background-primary
-        //this.updateHighlight();
-        
     }
 
     /*
@@ -717,8 +746,8 @@ export class TagRoutesView extends ItemView {
         if (!this.deepEqual(this.plugin.settings.customSlot[0], this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum])) {
             // not load, just return
             console.log(`Tags routes: Settings changed, click 'Save' to save to slot ${this.currentSlotNum}`)
-            //console.log("slot 0", this.plugin.settings.customSlot[0])
-            //console.log("slot ", this.currentSlotNum, this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum])
+           // console.log("slot 0", this.plugin.settings.customSlot[0])
+           // console.log("slot ", this.currentSlotNum, this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum])
             new Notice(`Tags routes: Settings changed, click 'Save' to save to slot ${this.currentSlotNum}`, 5000);
             return;
         } else {
