@@ -21,7 +21,7 @@ I'm excited to announce the release of Version 1.1.0, which includes several new
 1. **Light Theme Added**:
     
     - Introduced a new light theme with a bright background and distinct visual elements, offering an alternative to the dark theme.
-  <img width="20%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.1.0-defaultLightTheme.gif">
+  <img width="40%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.1.0-defaultLightTheme.gif">
       
 2. **Node Color Synchronization with Obsidian**:
     
@@ -54,7 +54,7 @@ These updates significantly enhance customization options, improve user experien
 
 _**You can check the simple usage demo here:**_
 
-<img width="30%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.1.0-usage.gif">
+<img width="50%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.1.0-usage.gif">
 
 
 
