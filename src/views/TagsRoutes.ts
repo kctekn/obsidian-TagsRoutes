@@ -525,19 +525,16 @@ export class TagRoutesView extends ItemView {
     }
     updateColor() {
         //console.log("update color")
-        this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
-            const color = this.getNodeColorByType(node);
-            const obj = node._ThreeMesh; // 获取节点的 Three.js 对象
-            if (obj) {
-                (obj.material as THREE.MeshBasicMaterial).color.set(color);
-                return;
-            }
-            if (node._Sprite) {
-                node._Sprite.color = color;
-            }
-        })
-        this.Graph.backgroundColor(this.plugin.settings?.customSlot?.[0].colorMap.backgroundColor.value||defaltColorMap[this.plugin.settings.currentTheme].backgroundColor.value)
+        if (!this.plugin.settings.customSlot) return;
+        this.plugin.view.clearHightlightNodes();
+        if (this.currentVisualString === "light") {
+            this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObjectLight)
+        } else if (this.currentVisualString === "dark") {
+            this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObject)
+        }
+        this.Graph.backgroundColor(this.plugin.settings.customSlot[0].colorMap["backgroundColor"].value)
         this.Graph.linkColor(this.Graph.linkColor());
+        return;
     }
     updateHighlight() {
         
