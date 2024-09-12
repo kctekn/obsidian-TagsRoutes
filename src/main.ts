@@ -62,6 +62,7 @@ export interface TagRoutesSettings {
 	link_particle_size: number;
 	link_particle_number: number;
 	toggle_global_map: boolean;
+	toggle_label_display: boolean;
 	colorMap: colorMap;
 }
 type ThemeSlots = [TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings];
@@ -90,6 +91,7 @@ export const DEFAULT_DISPLAY_SETTINGS_DARK: TagRoutesSettings = {
 	link_particle_size: 2,
 	link_particle_number: 2,
 	toggle_global_map: false,
+	toggle_label_display: false,
 	colorMap:defaultolorMapDark,
 }
 export const DEFAULT_DISPLAY_SETTINGS_LIGHT: TagRoutesSettings = {
@@ -100,6 +102,7 @@ export const DEFAULT_DISPLAY_SETTINGS_LIGHT: TagRoutesSettings = {
 	link_particle_size: 2,
 	link_particle_number: 2,
 	toggle_global_map: false,
+	toggle_label_display: false,
 	colorMap:defaultolorMapLight,
 }
 export const DEFAULT_DISPLAY_SETTINGS = {

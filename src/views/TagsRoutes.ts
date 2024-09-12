@@ -168,6 +168,7 @@ export class TagRoutesView extends ItemView {
         this.updateColor = this.updateColor.bind(this);
         this.getNodeColorByType = this.getNodeColorByType.bind(this);
         this.switchTheme = this.switchTheme.bind(this);
+        this.onToggleLabelDisplay = this.onToggleLabelDisplay.bind(this);
         this.visuals = {
             dark: new darkStyle("dark", this.plugin),
             light: new lightStyle("light", this.plugin)
@@ -538,7 +539,7 @@ export class TagRoutesView extends ItemView {
                 node._Sprite.visible = false;
                 node._Sprite.textHeight = 0;
             }
-            const showSpriteText = true; 
+            const showSpriteText = this.plugin.settings.customSlot?.[0].toggle_label_display || false;
             if (this.highlightNodes.has(node) && node.type !== 'attachment' && node.type !== 'broken') {
                 if (showSpriteText && node._Sprite) {
                     node._Sprite.visible = true;
@@ -608,6 +609,12 @@ export class TagRoutesView extends ItemView {
         this.Graph.linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
         this.plugin.settings.customSlot[0].link_particle_size = value
         this.plugin.saveSettings();
+    }
+    onToggleLabelDisplay(value: boolean) {
+        if (!this.plugin.settings.customSlot) return; 
+        this.plugin.settings.customSlot[0].toggle_label_display = value;
+        this.plugin.saveSettings();
+        this.updateHighlight();
     }
     onToggleGlobalMap(value: boolean) {
         if (!this.plugin.settings.customSlot) return; 
@@ -1264,6 +1271,7 @@ export class TagRoutesView extends ItemView {
                     .addSlider("Link particle size", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_size, this.onLinkParticleSize)
                     .addSlider("Link particle number", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_number, this.onLinkParticleNumber)
                     .addToggle("Toggle global map", this.plugin.settings.customSlot[0].toggle_global_map, this.onToggleGlobalMap)
+                    .addToggle("Toggle label display", this.plugin.settings.customSlot[0].toggle_label_display, this.onToggleLabelDisplay)
             })
             .add({
                 arg: (new settingGroup(this.plugin, "save-load", "Save and load"))
