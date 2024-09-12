@@ -11,6 +11,53 @@ This is a plugin for obsidian, to visualize files and tags as nodes in 3D graphi
 Wiki: [Organize Tags by Timestamp Using the Obsidian Plugin: "Tags Routes"](https://github.com/kctekn/obsidian-TagsRoutes/wiki/Organize-Tags-by-Timestamp-Using-the-Obsidian-Plugin:-%22Tags-Routes%22)
 
 [Organize Tags with Hierarchy Using the Obsidian Plugin "Tags Routes"](https://github.com/kctekn/obsidian-TagsRoutes/wiki/Organize-Tags-with-Hierarchy-Using-the-Obsidian-Plugin-%22Tags-Routes%22)
+
+## Version 1.1.0 Release Notes
+
+I'm excited to announce the release of Version 1.1.0, which includes several new features and improvements to enhance your experience:
+
+### Major Updates:
+
+1. **Light Theme Added**:
+    
+    - Introduced a new light theme with a bright background and distinct visual elements, offering an alternative to the dark theme.
+  <img width="20%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.1.0-defaultLightTheme.gif">
+      
+2. **Node Color Synchronization with Obsidian**:
+    
+    - You can now import node colors directly from Obsidian:
+        1. Node colors will sync with Obsidian's graph view.
+        2. You can switch between different Obsidian themes and:
+            - **Apply Theme Colors**: Import the color scheme of the selected theme.
+            - **Save Slot**: Save the imported color scheme into a slot for future use.
+        3. The saved color schemes can be reused across different modes (light/dark) and themes, as long as the corresponding slot is loaded.
+
+### New Features:
+
+3. **Enhanced Node Interaction**:
+    
+    - Clicking on frontmatter tags within a note will now focus on the corresponding node in the scene, consistent with other clickable elements.
+4. **User-Friendly Tooltip Bar**:
+    
+    - A new tooltip bar has been added to guide new users on how to navigate and operate the interface. Special thanks to @RealSourceOfficial for his support in this addition.
+5. **Node Label Display Toggle**:
+    
+    - A new toggle in the settings allows you to turn off node label displays. This is particularly useful if there are too many labels cluttering the view or if you don't need to see note labels constantly.
+6. **Improved Node Label Interaction**:
+    
+    - Node labels will no longer respond to mouse clicks, making it easier to interact directly with the nodes.
+7. **Settings Box Style Update**:
+    
+    - The settings box style has been updated to match the current Obsidian theme, ensuring a more cohesive visual experience.
+
+These updates significantly enhance customization options, improve user experience, and provide better integration with Obsidian's theming system. I hope you enjoy the new features and improvements!
+
+_**You can check the simple usage demo here:**_
+
+<img width="30%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.1.0-usage.gif">
+
+
+
 ## Version 1.0.9/1.0.10 Release Notes:
 
 1. **Support for Named Color Input**: Added support for named color input, making it easier to select the perfect color.
