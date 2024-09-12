@@ -254,6 +254,7 @@ export class TagRoutesView extends ItemView {
 
         sprite.position.set(0, -nodeSize - 20, 0); // 将标签位置设置在节点上方
         group.add(sprite);
+        sprite.raycast = () => { };
 
         node._ThreeGroup = group;
         node._ThreeMesh = mesh;
@@ -301,6 +302,7 @@ export class TagRoutesView extends ItemView {
 
         sprite.position.set(0, -nodeSize - 20, 0); // 将标签位置设置在节点上方
         group.add(sprite);
+        sprite.raycast = () => { };
 
         node._ThreeGroup = group;
         node._ThreeMesh = mesh;
@@ -483,7 +485,7 @@ export class TagRoutesView extends ItemView {
                 node._Sprite.visible = false;
                 node._Sprite.textHeight = 0;
             }
-            const showSpriteText = false; 
+            const showSpriteText = true; 
             if (this.highlightNodes.has(node) && node.type !== 'attachment' && node.type !== 'broken') {
                 if (showSpriteText && node._Sprite) {
                     node._Sprite.visible = true;
