@@ -12,6 +12,8 @@ Wiki: [Organize Tags by Timestamp Using the Obsidian Plugin: "Tags Routes"](http
 
 [Organize Tags with Hierarchy Using the Obsidian Plugin "Tags Routes"](https://github.com/kctekn/obsidian-TagsRoutes/wiki/Organize-Tags-with-Hierarchy-Using-the-Obsidian-Plugin-%22Tags-Routes%22)
 
+And you can show up your beautiful vault pictures here: [Share & showcase](https://github.com/kctekn/obsidian-TagsRoutes/discussions/17)
+
 ## Version 1.1.0 Release Notes
 
 I'm excited to announce the release of Version 1.1.0, which includes several new features and improvements to enhance your experience:
