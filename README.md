@@ -89,66 +89,8 @@ Fixed a parsing tag issue: if the tag in frontmatter is wrote in a single line, 
 
 refer to https://github.com/kctekn/obsidian-TagsRoutes/issues/10 for detail
 
-## Version 1.0.7 Release Notes
-**1. Enhanced Tag Processing**
-- Tags in the note's frontmatter are now processed identically to tags within the note content, ensuring consistent tag handling throughout.
-
-**2. Comprehensive Color Customization**
-- Introduced full color customization for nodes, links, and particles via the plugin settings tab.
-- Implemented a color scheme slot system, allowing users to:
-  - Save multiple color schemes to different slots.
-  - Easily switch between color schemes with a simple drag on the slider.
-  - Set unique color schemes for each slot, enhancing visual customization.
-
- _**Watch this short demo to learn how to use these new features:**_
- 
- **Setup Color**
- 
-<img width="50%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/setup-color.gif">
-
-**Switch Settings**
-
-<img width="50%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/switch-settings.gif">
-
-## Version 1.0.6 Release Notes
-
-This release brings two key improvements to enhance your user experience:
-
-**1. Focused Node View:**
-
-- You can now toggle between a global and local view while focusing on a specific node.
-- **Local view:**  Hides non-focused nodes, allowing you to concentrate on the selected node and its immediate connections. This declutters the scene and provides a clearer picture of the focused area.
-- **Global view:** Displays all nodes as usual.
--  Switch between these views easily to analyze your data from different perspectives.
-
-**2. Streamlined Interface:**
-
-- The settings icon in the top right corner has been replaced with a more intuitive cycling button. 
-- Click the button repeatedly to cycle through four different stages or functionalities. This change simplifies the interface and reduces visual clutter.
-
-
-These updates aim to provide a more focused and efficient user experience. We hope you enjoy the improvements!
-
-
- _**Watch this short demo to learn how to use these new features:**_ 
- 
-<img width="50%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/node-highlight.gif">
-
-
-## What's New on version 1.0.5
-
-1. **Multiple Slots for Display Settings**
-   - You now have 5 slots to save your display settings. This allows you to quickly switch between them by dragging the slider.
-     - So it likes that you have 5 themes to switch for better showing the graph in instance.
-2. **Improved Query Function**
-   - The query function is now handled by a custom code block processor, eliminating the need for DataviewJS.
-     - You can now delete the `scripts/tag-report.js` file and the `scripts` folder from your vault.
-
-3. **Enhanced Tag Interaction**
-   - Clicking on a tag to focus on a node in the graph now works in edit mode as well.
-
-4. **Other Fixes**
-   - Fix a ficker issue might occure, Refer here: https://github.com/kctekn/obsidian-TagsRoutes/issues/2  Thanks @ShaneNZ for the feecback.
+# More
+**Full version history please refer to [What's-new-history](https://github.com/kctekn/obsidian-TagsRoutes/wiki/What's-new-history)**
 
 # How to operate:
 https://github.com/kctekn/obsidian-TagsRoutes/assets/32674595/2c37676c-f307-4a74-9dae-0679067cbae7
@@ -234,9 +176,7 @@ This allows you to clearly understand the status of files and tags through:
 	- Download the release file, and extract to your obsidian's: valut/.obsidian/plugin/tags-routes.
 - Enable it in obsidian settings tab.
 
-# Acknowledgements
+# More
 
-I would like to extend my sincere gratitude to the following projects, which provided invaluable resources and inspiration for this plugin:
+**For more information,please refer to [What's-new-history](https://github.com/kctekn/obsidian-TagsRoutes/wiki/What's-new-history) and [Discussions](https://github.com/kctekn/obsidian-TagsRoutes/discussions)**
 
-- [obsidian-3d-graph](https://github.com/AlexW00/obsidian-3d-graph/tree/master) by AlexW00
-- [3d-force-graph](https://github.com/vasturiano/3d-force-graph) by vasturiano
