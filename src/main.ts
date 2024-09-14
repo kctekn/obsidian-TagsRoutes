@@ -63,6 +63,7 @@ export interface TagRoutesSettings {
 	link_particle_number: number;
 	toggle_global_map: boolean;
 	toggle_label_display: boolean;
+	colorMapSource: string;
 	colorMap: colorMap;
 }
 type ThemeSlots = [TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings];
@@ -92,6 +93,7 @@ export const DEFAULT_DISPLAY_SETTINGS_DARK: TagRoutesSettings = {
 	link_particle_number: 2,
 	toggle_global_map: false,
 	toggle_label_display: false,
+	colorMapSource:"Default dark",
 	colorMap:defaultolorMapDark,
 }
 export const DEFAULT_DISPLAY_SETTINGS_LIGHT: TagRoutesSettings = {
@@ -103,6 +105,7 @@ export const DEFAULT_DISPLAY_SETTINGS_LIGHT: TagRoutesSettings = {
 	link_particle_number: 2,
 	toggle_global_map: false,
 	toggle_label_display: false,
+	colorMapSource:"Defalt light",
 	colorMap:defaultolorMapLight,
 }
 export const DEFAULT_DISPLAY_SETTINGS = {
@@ -532,6 +535,9 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		desc.createEl("br")
 		desc.appendText("For the supported css named colors, please refer to: ")
 		desc.createEl("a", { href: "https://www.w3.org/wiki/CSS/Properties/color/keywords", text: "Css color keywords" })
+		desc.createEl("br")
+		desc.createEl("br")
+		desc.appendText("Current color map source: " + this.plugin.settings.customSlot?.[0]?.colorMapSource||"Defalt")
 		desc.addClass("setting-item-description");
 
 		const colorSettingsGroup = containerEl.createEl("div", { cls: "tags-routes" })
