@@ -185,3 +185,6 @@ If your plugin does not need CSS, delete this file.
     align-items: center;
     justify-content: space-between;
 }
+.tags-routes .need-save {
+    border-bottom: 5px solid var(--input-focus-border-color);
+}

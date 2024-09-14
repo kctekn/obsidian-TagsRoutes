@@ -148,6 +148,7 @@ export class TagRoutesView extends ItemView {
         dark: VisualStyle;
         light: VisualStyle;
     }
+    saveButtonRef= { value: null as HTMLElement | null };
     constructor(leaf: WorkspaceLeaf, plugin: TagsRoutes) {
         super(leaf);
         this.plugin = plugin;
@@ -169,6 +170,7 @@ export class TagRoutesView extends ItemView {
         this.getNodeColorByType = this.getNodeColorByType.bind(this);
         this.switchTheme = this.switchTheme.bind(this);
         this.onToggleLabelDisplay = this.onToggleLabelDisplay.bind(this);
+        this.setSaveButton = this.setSaveButton.bind(this);
         this.visuals = {
             dark: new darkStyle("dark", this.plugin),
             light: new lightStyle("light", this.plugin)
@@ -273,8 +275,20 @@ export class TagRoutesView extends ItemView {
     const colorMapSource = `'${(this.app.vault as any)?.config?.cssTheme || "Obsidian"}' - ${isDarkMode ? 'dark' : 'light'} `
         this.plugin.settings.customSlot[0].colorMapSource = colorMapSource;
         console.log("current colormap: ", colorMapSource)
+        new Notice(`Tags routes: Color imported from  ${colorMapSource}`);
+        new Notice(`Tags routes: Use 'Save' to make the changes effective next time.`);
+        this.setSaveButton(true)
     }
-
+    setSaveButton(needSave: boolean) {
+        if (this.saveButtonRef.value) {
+            if (needSave) {
+                this.saveButtonRef.value.addClass("need-save")
+            }
+            else {
+                this.saveButtonRef.value.removeClass("need-save")
+            }
+        }
+    }
     /*
         Make sure the customSlot has been swtiched to wanted theme before call this
     */
@@ -751,6 +765,7 @@ export class TagRoutesView extends ItemView {
            // console.log("slot 0", this.plugin.settings.customSlot[0])
            // console.log("slot ", this.currentSlotNum, this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum])
             new Notice(`Tags routes: Settings changed, click 'Save' to save to slot ${this.currentSlotNum}`, 5000);
+            this.setSaveButton(true)
             return;
         } else {
           //  console.log("it is the same, go to load effects")
@@ -777,6 +792,7 @@ export class TagRoutesView extends ItemView {
         this.plugin.saveSettings();
         console.log("[onSettingsSave] Save to slot: ", this.currentSlotNum)
         new Notice(`Tags routes: Graph save to slot ${this.currentSlotNum}`);
+        this.setSaveButton(false)
     }
     setControlValue<K extends keyof TagRoutesSettings>(
         controlId: string,
@@ -1314,7 +1330,7 @@ export class TagRoutesView extends ItemView {
                     })
                     .add({
                         arg: (new settingGroup(this.plugin, "button-box", "button-box", "flex-box")
-                            .addButton("Save", "graph-button", () => { this.onSettingsSave() })
+                            .addButton("Save", "graph-button", () => { this.onSettingsSave() }).getLastElement(this.saveButtonRef)
                             .addButton("Load", "graph-button", () => { this.onSettingsLoad() })
                             .addButton("Reset", "graph-button", () => { this.onSettingsReset() })
                         )

@@ -136,6 +136,10 @@ export class settingGroup {
         button.addEventListener('click', buttonCallback);
         return this;
     }
+    public getLastElement(ref: { value: HTMLElement | null }) {
+        ref.value = this.holdContainer.lastChild?.firstChild as HTMLElement
+        return this
+    }
     addSlider(name: string, min: number, max: number, step: number, defaultNum: number, cb: (v: number) => void, cls: string = "setting-item-block") {
         let _slider: SliderComponent | undefined;
         const slider = new Setting(this.holdContainer)
