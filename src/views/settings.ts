@@ -137,7 +137,7 @@ export class settingGroup {
         return this;
     }
     public getLastElement(ref: { value: HTMLElement | null }) {
-        ref.value = this.holdContainer.lastChild?.firstChild as HTMLElement
+        ref.value = this.holdContainer.lastChild as HTMLElement
         return this
     }
     addSlider(name: string, min: number, max: number, step: number, defaultNum: number, cb: (v: number) => void, cls: string = "setting-item-block") {
