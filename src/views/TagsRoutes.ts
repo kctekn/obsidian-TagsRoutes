@@ -267,10 +267,11 @@ export class TagRoutesView extends ItemView {
                     getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--background-primary").toLowerCase()
             }
             this.Graph.backgroundColor(this.plugin.settings.customSlot[0].colorMap["backgroundColor"].value)
-            this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObjectLight)
+          //  this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObjectLight)
         } else if (this.currentVisualString === "dark") {
-            this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObject)
+          //  this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObject)
         }
+        this.updateColor();
         const isDarkMode = document.body.classList.contains('theme-dark');
         //    const colorMapSource = `'${(this.app.vault as any)?.config?.cssTheme || "Obsidian"}${(this.app.vault as any)?.config?.cssTheme?" - "+(this.app.vault as any)?.config?.theme || "Unknow":""}' - ${isDarkMode ? 'dark' : 'light'} `
         const colorMapSource = `'${(this.app.vault as any)?.config?.cssTheme || "Obsidian"}' - ${isDarkMode ? 'dark' : 'light'} `
@@ -543,7 +544,7 @@ export class TagRoutesView extends ItemView {
             return true
         }
     }
-    updateColor() {
+    updateColor1() {
         //console.log("update color")
         if (!this.plugin.settings.customSlot) return;
         this.plugin.view.clearHightlightNodes();
@@ -555,6 +556,29 @@ export class TagRoutesView extends ItemView {
         this.Graph.backgroundColor(this.plugin.settings.customSlot[0].colorMap["backgroundColor"].value)
         this.Graph.linkColor(this.Graph.linkColor());
         return;
+    }
+    updateColor() {
+        //console.log("update color")
+        if (!this.plugin.settings.customSlot) return;
+        this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
+            const color = this.getNodeColorByType(node);
+            const obj = node._ThreeMesh; // 获取节点的 Three.js 对象
+            if (obj) {
+                if (this.currentVisualString === "dark") {
+                    (obj.material as THREE.MeshBasicMaterial).color.set(color);
+                } else {
+                    (obj.material as THREE.MeshStandardMaterial).color.set(color);
+                    (obj.material as THREE.MeshStandardMaterial).emissive.set(color);
+                }
+              //  return;
+            }
+            if (node._Sprite) {
+                node._Sprite.color = color;
+            }
+        })
+        this.Graph.backgroundColor(this.plugin.settings.customSlot[0].colorMap["backgroundColor"].value)
+        //this.Graph.backgroundColor(this.plugin.settings?.customSlot?.[0].colorMap.backgroundColor.value||defaltColorMap[this.plugin.settings.currentTheme].backgroundColor.value)
+        this.Graph.linkColor(this.Graph.linkColor());
     }
     updateHighlight() {
         
