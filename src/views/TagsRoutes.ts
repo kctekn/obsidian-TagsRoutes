@@ -260,6 +260,7 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.customSlot[0].colorMap["broken"] = {
             name: "theme", value: this.getComputedColorForSelector(".graph-view.color-fill-unresolved")
         }
+        this.clearHightlightNodes();
         if (this.currentVisualString === "light") {
             this.plugin.settings.customSlot[0].colorMap["backgroundColor"] = {
                 name: "theme", value:
@@ -271,8 +272,8 @@ export class TagRoutesView extends ItemView {
             this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObject)
         }
         const isDarkMode = document.body.classList.contains('theme-dark');
-    //    const colorMapSource = `'${(this.app.vault as any)?.config?.cssTheme || "Obsidian"}${(this.app.vault as any)?.config?.cssTheme?" - "+(this.app.vault as any)?.config?.theme || "Unknow":""}' - ${isDarkMode ? 'dark' : 'light'} `
-    const colorMapSource = `'${(this.app.vault as any)?.config?.cssTheme || "Obsidian"}' - ${isDarkMode ? 'dark' : 'light'} `
+        //    const colorMapSource = `'${(this.app.vault as any)?.config?.cssTheme || "Obsidian"}${(this.app.vault as any)?.config?.cssTheme?" - "+(this.app.vault as any)?.config?.theme || "Unknow":""}' - ${isDarkMode ? 'dark' : 'light'} `
+        const colorMapSource = `'${(this.app.vault as any)?.config?.cssTheme || "Obsidian"}' - ${isDarkMode ? 'dark' : 'light'} `
         this.plugin.settings.customSlot[0].colorMapSource = colorMapSource;
         console.log("current colormap: ", colorMapSource)
         new Notice(`Tags routes: Color imported from  ${colorMapSource}`);
