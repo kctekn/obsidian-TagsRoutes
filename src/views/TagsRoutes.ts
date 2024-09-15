@@ -29,7 +29,7 @@ interface nodeThreeObject extends ExtendedNodeObject {
     __threeObj?: THREE.Mesh
 }
 interface ExtendedNodeObject extends Node {
-    type: 'markdown' | 'tag' | 'attachment' | 'broken' | 'excalidraw' | 'frontmatter-tag';
+    type: 'markdown' | 'tag' | 'attachment' | 'broken' | 'pdf' | 'excalidraw' | 'other' | 'frontmatter-tag';
     x?: number;
     y?: number;
     z?: number;
@@ -37,6 +37,7 @@ interface ExtendedNodeObject extends Node {
     instanceNum?: number;
     size?: number;
     neighbors?: ExtendedNodeObject[];
+    orphan?: boolean;
     links?: LinkObject[];
     _ThreeGroup?: THREE.Group;
     _ThreeMesh?: THREE.Mesh;
@@ -175,6 +176,16 @@ export class TagRoutesView extends ItemView {
             dark: new darkStyle("dark", this.plugin),
             light: new lightStyle("light", this.plugin)
         }
+
+        this.onDropdown = this.onDropdown.bind(this)
+     //   this.createNodeThreeObject = this.createNodeThreeObject.bind(this)
+        this.onLinkButton = this.onLinkButton.bind(this)
+        this.onUnlinkButton = this.onUnlinkButton.bind(this)
+        this.linkNodeByType = this.linkNodeByType.bind(this)
+        this.unlinkNodeByType = this.unlinkNodeByType.bind(this)
+     //   this.currentSlot = this.plugin.settings.currentSlot;
+        this.applyNodeSize = this.applyNodeSize.bind(this)
+        this.onToggleLabelDisplay = this.onToggleLabelDisplay.bind(this)
     }
     getViewType() {
         return VIEW_TYPE_TAGS_ROUTES;
@@ -193,6 +204,7 @@ export class TagRoutesView extends ItemView {
     private highlightLinks = new Set();
     private hoverNode: ExtendedNodeObject | null;
     private selectedNode: ExtendedNodeObject | null;
+    private orphanToLink: string = 'broken';
 
 
     getComputedColorForSelector(selector: string): string {
@@ -331,15 +343,19 @@ export class TagRoutesView extends ItemView {
 
         let node_text_name = "";
 
-        if (node.type == 'tag') {
-            node_text_name = parts[parts.length - 1]
+        if (node.type == 'other') {
+            node_text_name = node.id
         } else {
-            let node_full_name = parts[parts.length - 1];
-            let partsName = node_full_name.split('.')
-            if (partsName.length > 1) {
-                partsName.length = partsName.length - (node.type === 'excalidraw' ? 2 : 1)
+            if (node.type == 'tag') {
+                node_text_name = parts[parts.length - 1]
+            } else {
+                let node_full_name = parts[parts.length - 1];
+                let partsName = node_full_name.split('.')
+                if (partsName.length > 1) {
+                    partsName.length = partsName.length - (node.type === 'excalidraw' ? 2 : 1)
+                }
+                node_text_name = partsName.join('.')
             }
-            node_text_name = partsName.join('.')
         }
 
         const sprite = new SpriteText(node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
@@ -379,15 +395,19 @@ export class TagRoutesView extends ItemView {
 
         let node_text_name = "";
 
-        if (node.type == 'tag') {
-            node_text_name = parts[parts.length - 1]
+        if (node.type == 'other') {
+            node_text_name = node.id
         } else {
-            let node_full_name = parts[parts.length - 1];
-            let partsName = node_full_name.split('.')
-            if (partsName.length > 1) {
-                partsName.length = partsName.length - (node.type === 'excalidraw' ? 2 : 1)
+            if (node.type == 'tag') {
+                node_text_name = parts[parts.length - 1]
+            } else {
+                let node_full_name = parts[parts.length - 1];
+                let partsName = node_full_name.split('.')
+                if (partsName.length > 1) {
+                    partsName.length = partsName.length - (node.type === 'excalidraw' ? 2 : 1)
+                }
+                node_text_name = partsName.join('.')
             }
-            node_text_name = partsName.join('.')
         }
 
         const sprite = new SpriteText(node_text_name + " (" + (node.type == 'tag' ? node.instanceNum : node.connections) + ')');
@@ -694,6 +714,26 @@ export class TagRoutesView extends ItemView {
     }
     onText(value: string) {
     }
+    applyNodeSize() {
+        if (!this.plugin.settings.customSlot) return; 
+        const value = this.plugin.settings.customSlot[0].node_size
+        let scaleValue = (value / 5 - 1) * 0.6 + 1;
+        this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
+            const obj = node.__threeObj; // 获取节点的 Three.js 对象
+            if (obj) {
+                obj.scale.set(scaleValue, scaleValue, scaleValue)
+            }
+        })
+    }
+    onNodeSize_import(value: number) {
+        if (!this.plugin.settings.customSlot) return; 
+        this.clearHightlightNodes();
+        this.Graph.nodeThreeObject((node: ExtendedNodeObject) => {
+            return this.createNodeThreeObject(node)//, value)
+        })
+        this.plugin.settings.customSlot[0].node_size = value;
+        this.plugin.saveSettings();
+    }
     onNodeSize(value: number) {
         if (!this.plugin.settings.customSlot) return; 
         let scaleValue = (value / 5 - 1) * 0.6 + 1;
@@ -719,6 +759,121 @@ export class TagRoutesView extends ItemView {
         this.Graph.d3ReheatSimulation();
         return;
     }
+
+    onLinkButton(linkStar: boolean) {
+        this.linkNodeByType(this.orphanToLink as any, linkStar)
+    }
+    onUnlinkButton() {
+        this.unlinkNodeByType(this.orphanToLink as any)
+    }
+    linkNodeByType(fileType: 'markdown' | 'tag' | 'attachment' | 'broken' | 'pdf' | 'excalidraw' | 'other' | 'frontmatter-tag', linkStar: boolean = true) {
+        this.clearHightlightNodes()
+
+        let links: LinkObject[] = this.gData.links;
+        let nodes: ExtendedNodeObject[] = this.gData.nodes;
+        if (nodes.filter(node => node.id === fileType).length != 0) {
+            //    console.log(" has had type node, return.")
+            return;
+        }
+        // 创建一个新的 type 节点
+        const typeNode: ExtendedNodeObject = {
+            id: fileType,
+            type: fileType,
+            x: 0,
+            y: 0,
+            z: 0,
+            connections: 0,
+            neighbors: [],
+            links: []
+        };
+        if (linkStar) {
+            // 找到所有 type 为 filetype 的节点
+            const typeNodes = this.gData.nodes.filter(node => node.type === fileType && node.connections == 0);
+            if (typeNodes.length == 0) return;
+            // 将所有 type 节点连接到新创建的 broken 节点上
+            typeNodes.forEach(node => {
+                let addLink = { source: typeNode.id, target: node.id, sourceId: typeNode.id, targetId: node.id }
+                links.push(addLink);
+                !node.neighbors && (node.neighbors = []);
+                typeNode.neighbors?.push(node)
+                node.neighbors.push(typeNode)
+                !node.links && (node.links = [])
+                typeNode.links?.push(addLink)
+                addLink = { source: node.id, target: typeNode.id, sourceId: node.id, targetId: typeNode.id }
+                links.push(addLink)
+                node.links?.push(addLink)
+                node.orphan = true;
+
+            });
+        // 将新创建的 broken 节点添加到节点列表中
+        nodes.push(typeNode);
+        } else {
+            // 将所有 type 节点以一条线连接起来
+            const typeNodes = this.gData.nodes.filter(node => node.type === fileType && node.connections == 0)
+            if (typeNodes.length == 0) return;
+            typeNodes.forEach(node => { node.orphan = true });
+            for (let i = 0; i < typeNodes.length - 1; i++) {
+                let addLink = { source: typeNodes[i].id, target: typeNodes[i + 1].id, sourceId: typeNodes[i].id, targetId: typeNodes[i + 1].id }
+                links.push(addLink);
+                typeNodes[i].links?.push(addLink)
+                addLink = { target: typeNodes[i].id, source: typeNodes[i + 1].id, targetId: typeNodes[i].id, sourceId: typeNodes[i + 1].id }
+                links.push(addLink)
+                typeNodes[i + 1].links?.push(addLink)
+                !typeNodes[i].neighbors && (typeNodes[i].neighbors = []);
+                !typeNodes[i + 1].neighbors && (typeNodes[i + 1].neighbors = []);
+                typeNodes[i].neighbors?.push(typeNodes[i + 1])
+                typeNodes[i + 1].neighbors?.push(typeNodes[i])
+
+
+            }
+        }
+        //统计connections数量 
+        // 计算每个节点的连接数
+        nodes.forEach((node: ExtendedNodeObject) => {
+            node.connections = links.filter(link => link.sourceId === node.id || link.targetId === node.id).length;
+        });
+        //    this.gData = { nodes: nodes, links: links };
+        // 重新计算连接数
+        //this.calculateConnections();
+        // 更新图表数据
+        this.Graph.graphData(this.gData);
+        this.Graph.refresh();
+    }
+    unlinkNodeByType(fileType: string) {
+        this.clearHightlightNodes()
+        // 移除所有连接到 type 节点的链接
+        let links: LinkObject[] = [];
+        let nodes: ExtendedNodeObject[] = [];
+        if (0) {
+            links = this.gData.links.filter(link => link.sourceId !== fileType && link.targetId !== fileType);
+        } else {
+            links = this.gData.links.filter((link: LinkObject) => {
+                const linkSource = link.source as ExtendedNodeObject
+                const linkTarget = link.target as ExtendedNodeObject
+                if (!(
+                    (linkSource.type == fileType || linkTarget.type == fileType) &&
+                    (linkSource.orphan == true || linkTarget.orphan == true))) {
+                    return true;
+                }
+
+            })
+        }
+        if (links.length == 0) return;
+        // 移除 type 节点
+        nodes = this.gData.nodes.filter(node => node.id !== fileType);
+        //统计connections数量 
+        // 计算每个节点的连接数
+        nodes.forEach((node: ExtendedNodeObject) => {
+            node.connections = links.filter(link => link.sourceId === node.id || link.targetId === node.id).length;
+        });
+        // 重新计算连接数
+        // 更新图表数据
+        this.gData = { nodes: nodes, links: links }
+        this.Graph.graphData(this.gData);
+        this.Graph.refresh();
+    }
+/*
+
     connectExcalidrawNodes() {
         // 提取所有未连接的 excalidraw 类型节点
         const unconnectedExcalidrawNodes = this.gData.nodes.filter(
@@ -744,13 +899,14 @@ export class TagRoutesView extends ItemView {
         });
         // 重新渲染 Graph
         this.Graph.graphData(this.gData);
-    }
+    }*/
     onResetGraph() {
         this.clearHightlightNodes();
         this.gData = this.buildGdata();
         this.Graph.graphData(this.gData);
         this.Graph.refresh();
     }
+    /*
     // 恢复 UnlinkedExcalidrawNodes 节点的方法
     resetUnlinkedExcalidrawNodes() {
         // 移除所有连接到 broken 节点的链接
@@ -761,7 +917,7 @@ export class TagRoutesView extends ItemView {
         this.calculateConnections();
         // 更新图表数据
         this.Graph.graphData(this.gData);
-    }
+    }*/
     deepEqual(obj1: any, obj2: any): boolean {
         if (obj1 === obj2) return true;
         if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null) {
@@ -870,6 +1026,10 @@ export class TagRoutesView extends ItemView {
         this.updateColor();
         new Notice(`Graph reset on slot ${this.currentSlotNum}`);
     }
+    onDropdown(value: string) {
+        this.orphanToLink = value;
+        console.log(value, "selected")
+    }/*
     // 连接所有 broken 节点的方法
     connectBrokenNodes(linkStar: boolean) {
         this.clearHightlightNodes()
@@ -942,7 +1102,7 @@ export class TagRoutesView extends ItemView {
         // 更新图表数据
         this.Graph.graphData(this.gData);
         this.Graph.refresh();
-    }
+    }*/
     clearHightlightNodes() {
         this.selectedNode = null
         this.selectedNodes.clear();
@@ -953,6 +1113,7 @@ export class TagRoutesView extends ItemView {
         this.highlightLinks.clear();
         this.highlightNodes.clear();
     }
+    /*
     // 恢复 broken 节点的方法
     resetBrokenNodes() {
         this.clearHightlightNodes()
@@ -977,7 +1138,7 @@ export class TagRoutesView extends ItemView {
         this.Graph.graphData(this.gData);
         this.Graph.refresh();
 
-    }
+    }*/
     // 计算连接数的方法
     calculateConnections() {
         const nodes: ExtendedNodeObject[] = this.gData.nodes;
@@ -1063,7 +1224,15 @@ export class TagRoutesView extends ItemView {
                 return;
             // 确保目标文件也在图中
             if (!nodes.some(node => node.id == filePath)) {
-                nodes.push({ id: filePath, type: 'broken' });
+                let fileType = getFileType(filePath)
+                /* 
+                    Unresolved attachment is a broken file 
+                */
+                if (fileType == 'attachment') fileType = 'broken'
+                nodes.push({ id: filePath, type: fileType });
+
+
+             //   nodes.push({ id: filePath, type: 'broken' });
             }
 
             /*
@@ -1230,6 +1399,18 @@ export class TagRoutesView extends ItemView {
         }
         return { nodes: nodes, links: links };
     }
+    getOrphanNodes(nodes: ExtendedNodeObject[]): Record<string, string> {
+        const orphanNodes: Record<string, string> = {};
+    
+        nodes.forEach((node) => {
+            if (node.connections === 0) {
+                const extension = node.type; // Assuming 'type' represents the extension here
+                orphanNodes[extension] = extension; // Assuming 'id' is a unique identifier for each node
+            }
+        });
+    
+        return orphanNodes;
+    }
     distanceFactor: number = 2;
     createGraph(container: HTMLElement) {
         
@@ -1328,12 +1509,24 @@ export class TagRoutesView extends ItemView {
         new settingGroup(this.plugin, "Tags' route settings", "Tags' route settings", "root").hide()
             .add({
                 arg: (new settingGroup(this.plugin, "commands", "Node commands"))
-                    .addButton("Link broken as star", "graph-button", () => { this.connectBrokenNodes(true) })
+                .addDropdown("Select orphan", this.getOrphanNodes(this.gData.nodes)/* { broken: "broken", pdf: "pdf", excalidraw: "excalidraw" }*/, "broken", this.onDropdown)
+                .add({
+                    arg: (new settingGroup(this.plugin, "link-box", "link-box", "flex-box")
+                        /*                             .addButton("Star", "graph-button", () => { this.onLinkButton() })
+                                                    .addButton("Line", "graph-button", () => { this.onLinkButton() })
+                                                    .addButton("Unlink", "graph-button", () => { this.onUnlinkButton() }) */
+                        .addExButton("circle-dashed", "Link orphan type as a star", () => this.onLinkButton(true))
+                        .addExButton("spline", "Link orphan type as a line", () => this.onLinkButton(false))
+                        .addExButton("unlink-2", "Unlink orphans", this.onUnlinkButton)
+                        .addExButton("corner-up-left", "Reset graph", this.onResetGraph)
+                    )
+                })
+                  /*  .addButton("Link broken as star", "graph-button", () => { this.connectBrokenNodes(true) })
                     .addButton("Link broken as line", "graph-button", () => { this.connectBrokenNodes(false) })
                     .addButton("Unlink broken", "graph-button", () => { this.resetBrokenNodes() })
                     .addButton("Link Excalidraw orphans", "graph-button", () => { this.connectExcalidrawNodes() })
                     .addButton("Unlink Excalidraw orphans", "graph-button", () => { this.resetUnlinkedExcalidrawNodes() })
-                    .addButton("Reset graph", "graph-button", () => { this.onResetGraph() })
+                    .addButton("Reset graph", "graph-button", () => { this.onResetGraph() })*/
             })
             .add({
                 arg: (new settingGroup(this.plugin, "control sliders", "Display control"))

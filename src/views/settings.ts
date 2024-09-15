@@ -1,4 +1,4 @@
-import { Setting, ExtraButtonComponent, SliderComponent, ToggleComponent } from 'obsidian';
+import { Setting, ExtraButtonComponent, SliderComponent, ToggleComponent, DropdownComponent } from 'obsidian';
 import  TagsRoutes  from '../main';
 export class settingGroup {
     public readonly id: string;
@@ -130,6 +130,13 @@ export class settingGroup {
         this.holdContainer.style.display = 'block'
         return this
     }
+    public addExButton(buttonIcon:string,buttonDesc:string,buttonCallback:()=>void) {
+        new ExtraButtonComponent(this.holdContainer.createEl('div', { cls: 'group-link-button' }))
+            .setIcon(buttonIcon)
+            .setTooltip(buttonDesc)
+            .onClick(buttonCallback)
+        return this;
+    }
     public addButton(buttonText: string, buttonClass: string, buttonCallback: () => void) {
         const button = this.holdContainer.createEl('div').createEl('button', { text: buttonText, cls: buttonClass });
         button.addClass("mod-cta")
@@ -139,6 +146,28 @@ export class settingGroup {
     public getLastElement(ref: { value: HTMLElement | null }) {
         ref.value = this.holdContainer.lastChild as HTMLElement
         return this
+    }
+    addDropdown(name: string, options:Record<string,string>, defaultValue: string, cb: (v: string) => void, cls: string = ".setting-item-inline") {
+        let _dropdwon: DropdownComponent | undefined;
+        const dropdwon = new Setting(this.holdContainer)
+            .setName(name)
+            .addDropdown(dropDown => _dropdwon = dropDown
+                .addOptions(options
+                    /* {
+                    broken: "broken",
+                    md: "md",
+                    pdf:"pdf"
+                } */
+)
+                .setValue("broken")
+                .onChange(async value => cb(value))
+        )
+        dropdwon.setClass(cls)
+        if (_dropdwon !== undefined) {
+            _dropdwon.setValue("broken")
+            this.plugin.view._controls.push({ id: name, control: _dropdwon });
+        }
+        return this;
     }
     addSlider(name: string, min: number, max: number, step: number, defaultNum: number, cb: (v: number) => void, cls: string = "setting-item-block") {
         let _slider: SliderComponent | undefined;
