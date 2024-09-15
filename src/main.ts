@@ -537,7 +537,9 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		desc.createEl("a", { href: "https://www.w3.org/wiki/CSS/Properties/color/keywords", text: "Css color keywords" })
 		desc.createEl("br")
 		desc.createEl("br")
-		desc.appendText("Current color map source: " + this.plugin.settings.customSlot?.[0]?.colorMapSource||"Defalt")
+		desc.createEl("div").createEl("span", { text: "Current color map source: " })
+			.createEl("span", { text:  this.plugin.settings.customSlot?.[0]?.colorMapSource || "Defalt"	}).addClass("need-save")
+		desc.addClass("tags-routes");
 		desc.addClass("setting-item-description");
 
 		const colorSettingsGroup = containerEl.createEl("div", { cls: "tags-routes" })
