@@ -786,45 +786,47 @@ export class TagRoutesView extends ItemView {
             neighbors: [],
             links: []
         };
+        // 找到所有 type 为 filetype 的节点
+        const typeNodes = this.gData.nodes.filter(node => node.type === fileType && node.connections == 0);
+        if (typeNodes.length == 0) return;
+        typeNodes.forEach(node => {
+            node.orphan = true
+            node.links = [];
+            node.neighbors = [];
+        });
         if (linkStar) {
-            // 找到所有 type 为 filetype 的节点
-            const typeNodes = this.gData.nodes.filter(node => node.type === fileType && node.connections == 0);
-            if (typeNodes.length == 0) return;
-            // 将所有 type 节点连接到新创建的 broken 节点上
+        // 将所有 type 节点连接到新创建的 broken 节点上
             typeNodes.forEach(node => {
+                //add link from created node to type node
                 let addLink = { source: typeNode.id, target: node.id, sourceId: typeNode.id, targetId: node.id }
                 links.push(addLink);
-                !node.neighbors && (node.neighbors = []);
+                
+            /* process neighbors */
                 typeNode.neighbors?.push(node)
-                node.neighbors.push(typeNode)
-                !node.links && (node.links = [])
-                typeNode.links?.push(addLink)
-                addLink = { source: node.id, target: typeNode.id, sourceId: node.id, targetId: typeNode.id }
-                links.push(addLink)
-                node.links?.push(addLink)
-                node.orphan = true;
+                node.neighbors?.push(typeNode)
 
+            /* process links */
+                typeNode.links?.push(addLink)
+                node.links?.push(addLink)
             });
         // 将新创建的 broken 节点添加到节点列表中
         nodes.push(typeNode);
-        } else {
-            // 将所有 type 节点以一条线连接起来
-            const typeNodes = this.gData.nodes.filter(node => node.type === fileType && node.connections == 0)
-            if (typeNodes.length == 0) return;
-            typeNodes.forEach(node => { node.orphan = true });
+        } else { 
+        // 将所有 type 节点以一条线连接起来
             for (let i = 0; i < typeNodes.length - 1; i++) {
                 let addLink = { source: typeNodes[i].id, target: typeNodes[i + 1].id, sourceId: typeNodes[i].id, targetId: typeNodes[i + 1].id }
                 links.push(addLink);
+
+            /* process links */
+                // for node: i    
                 typeNodes[i].links?.push(addLink)
-                addLink = { target: typeNodes[i].id, source: typeNodes[i + 1].id, targetId: typeNodes[i].id, sourceId: typeNodes[i + 1].id }
-                links.push(addLink)
+                
+                // for node: i + 1
                 typeNodes[i + 1].links?.push(addLink)
-                !typeNodes[i].neighbors && (typeNodes[i].neighbors = []);
-                !typeNodes[i + 1].neighbors && (typeNodes[i + 1].neighbors = []);
+
+            /* process neighbors */
                 typeNodes[i].neighbors?.push(typeNodes[i + 1])
                 typeNodes[i + 1].neighbors?.push(typeNodes[i])
-
-
             }
         }
         //统计connections数量 
@@ -832,33 +834,38 @@ export class TagRoutesView extends ItemView {
         nodes.forEach((node: ExtendedNodeObject) => {
             node.connections = links.filter(link => link.sourceId === node.id || link.targetId === node.id).length;
         });
-        //    this.gData = { nodes: nodes, links: links };
-        // 重新计算连接数
-        //this.calculateConnections();
         // 更新图表数据
         this.Graph.graphData(this.gData);
         this.Graph.refresh();
     }
     unlinkNodeByType(fileType: string) {
-        this.clearHightlightNodes()
         // 移除所有连接到 type 节点的链接
         let links: LinkObject[] = [];
         let nodes: ExtendedNodeObject[] = [];
-        if (0) {
-            links = this.gData.links.filter(link => link.sourceId !== fileType && link.targetId !== fileType);
-        } else {
-            links = this.gData.links.filter((link: LinkObject) => {
-                const linkSource = link.source as ExtendedNodeObject
-                const linkTarget = link.target as ExtendedNodeObject
-                if (!(
-                    (linkSource.type == fileType || linkTarget.type == fileType) &&
-                    (linkSource.orphan == true || linkTarget.orphan == true))) {
-                    return true;
-                }
 
-            })
-        }
-        if (links.length == 0) return;
+        const linksOriginalCount = this.gData.links.length;
+        links = this.gData.links.filter((link: LinkObject) => {
+            const linkSource = link.source as ExtendedNodeObject
+            const linkTarget = link.target as ExtendedNodeObject
+            if (!(
+                (linkSource.type == fileType || linkTarget.type == fileType) &&
+                (linkSource.orphan == true || linkTarget.orphan == true))) {
+                return true;
+            } else if (
+                // restore node stage
+                (linkSource.type == fileType || linkTarget.type == fileType) &&
+                (linkSource.orphan == true || linkTarget.orphan == true)) {
+                linkSource.links = [];
+                linkSource.neighbors = [];
+                linkTarget.links = [];
+                linkTarget.neighbors = [];
+            }
+
+        })
+
+        if (links.length == linksOriginalCount) return;
+
+        this.clearHightlightNodes()
         // 移除 type 节点
         nodes = this.gData.nodes.filter(node => node.id !== fileType);
         //统计connections数量 
@@ -872,52 +879,13 @@ export class TagRoutesView extends ItemView {
         this.Graph.graphData(this.gData);
         this.Graph.refresh();
     }
-/*
 
-    connectExcalidrawNodes() {
-        // 提取所有未连接的 excalidraw 类型节点
-        const unconnectedExcalidrawNodes = this.gData.nodes.filter(
-            (node: ExtendedNodeObject) => node.type === 'excalidraw' && !this.gData.links.some(link => link.sourceId === node.id || link.targetId === node.id)
-        );
-        if (unconnectedExcalidrawNodes.length === 0) return;
-        // 创建一个新的 excalidraw 节点
-        const newExcalidrawNode: ExtendedNodeObject = {
-            id: 'excalidraw',
-            type: 'excalidraw',
-            x: 0,
-            y: 0,
-            z: 0,
-            connections: 0
-        };
-        // 将新节点添加到节点列表中
-        this.gData.nodes.push(newExcalidrawNode);
-        // 将未连接的 excalidraw 节点连接到新节点
-        unconnectedExcalidrawNodes.forEach((node: ExtendedNodeObject) => {
-            this.gData.links.push({ source: newExcalidrawNode.id, target: node.id, sourceId: newExcalidrawNode.id, targetId: node.id });
-            newExcalidrawNode.connections! += 1;
-            node.connections = (node.connections || 0) + 1;
-        });
-        // 重新渲染 Graph
-        this.Graph.graphData(this.gData);
-    }*/
     onResetGraph() {
         this.clearHightlightNodes();
         this.gData = this.buildGdata();
         this.Graph.graphData(this.gData);
         this.Graph.refresh();
     }
-    /*
-    // 恢复 UnlinkedExcalidrawNodes 节点的方法
-    resetUnlinkedExcalidrawNodes() {
-        // 移除所有连接到 broken 节点的链接
-        this.gData.links = this.gData.links.filter(link => link.sourceId !== 'excalidraw' && link.targetId !== 'excalidraw');
-        // 移除 broken 节点
-        this.gData.nodes = this.gData.nodes.filter(node => node.id !== 'excalidraw');
-        // 重新计算连接数
-        this.calculateConnections();
-        // 更新图表数据
-        this.Graph.graphData(this.gData);
-    }*/
     deepEqual(obj1: any, obj2: any): boolean {
         if (obj1 === obj2) return true;
         if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null) {
@@ -1029,80 +997,7 @@ export class TagRoutesView extends ItemView {
     onDropdown(value: string) {
         this.orphanToLink = value;
         console.log(value, "selected")
-    }/*
-    // 连接所有 broken 节点的方法
-    connectBrokenNodes(linkStar: boolean) {
-        this.clearHightlightNodes()
-
-        let links: LinkObject[] = this.gData.links;
-        let nodes: ExtendedNodeObject[] = this.gData.nodes;
-        if (nodes.filter(node => node.id === 'broken').length != 0) {
-            //    console.log(" has had broken node, return.")
-            return;
-        }
-        // 创建一个新的 broken 节点
-        const brokenNode: ExtendedNodeObject = {
-            id: 'broken',
-            type: 'broken',
-            x: 0,
-            y: 0,
-            z: 0,
-            connections: 0,
-            neighbors: [],
-            links: []
-        };
-        if (linkStar) {
-            // 找到所有 type 为 broken 的节点
-            const brokenNodes = this.gData.nodes.filter(node => node.type === 'broken');
-            //      console.log("broken nodes number: ", brokenNodes.length)
-            // 将所有 broken 节点连接到新创建的 broken 节点上
-            //     !brokenNode.neighbors && (brokenNode.neighbors = []);
-            //     !brokenNode.links && (brokenNode.links = [])
-            brokenNodes.forEach(node => {
-                let addLink = { source: brokenNode.id, target: node.id, sourceId: brokenNode.id, targetId: node.id }
-                links.push(addLink);
-                !node.neighbors && (node.neighbors = []);
-                brokenNode.neighbors?.push(node)
-                node.neighbors.push(brokenNode)
-                !node.links && (node.links = [])
-                brokenNode.links?.push(addLink)
-                addLink = { source: node.id, target: brokenNode.id, sourceId: node.id, targetId: brokenNode.id }
-                links.push(addLink)
-                node.links?.push(addLink)
-
-            });
-        } else {
-            // 将所有 broken 节点以一条线连接起来
-            const brokenNodes = this.gData.nodes.filter(node => node.type === 'broken');
-            //    console.log("broken nodes number: ", brokenNodes.length)
-            for (let i = 0; i < brokenNodes.length - 1; i++) {
-                let addLink = { source: brokenNodes[i].id, target: brokenNodes[i + 1].id, sourceId: brokenNodes[i].id, targetId: brokenNodes[i + 1].id }
-                links.push(addLink);
-                brokenNodes[i].links?.push(addLink)
-                addLink = { target: brokenNodes[i].id, source: brokenNodes[i + 1].id, targetId: brokenNodes[i].id, sourceId: brokenNodes[i + 1].id }
-                links.push(addLink)
-                brokenNodes[i + 1].links?.push(addLink)
-                !brokenNodes[i].neighbors && (brokenNodes[i].neighbors = []);
-                !brokenNodes[i + 1].neighbors && (brokenNodes[i + 1].neighbors = []);
-                brokenNodes[i].neighbors?.push(brokenNodes[i + 1])
-                brokenNodes[i + 1].neighbors?.push(brokenNodes[i])
-
-            }
-        }
-        // 将新创建的 broken 节点添加到节点列表中
-        nodes.push(brokenNode);
-        //统计connections数量 
-        // 计算每个节点的连接数
-        nodes.forEach((node: ExtendedNodeObject) => {
-            node.connections = links.filter(link => link.sourceId === node.id || link.targetId === node.id).length;
-        });
-        //    this.gData = { nodes: nodes, links: links };
-        // 重新计算连接数
-        //this.calculateConnections();
-        // 更新图表数据
-        this.Graph.graphData(this.gData);
-        this.Graph.refresh();
-    }*/
+    }
     clearHightlightNodes() {
         this.selectedNode = null
         this.selectedNodes.clear();
@@ -1113,32 +1008,6 @@ export class TagRoutesView extends ItemView {
         this.highlightLinks.clear();
         this.highlightNodes.clear();
     }
-    /*
-    // 恢复 broken 节点的方法
-    resetBrokenNodes() {
-        this.clearHightlightNodes()
-        // 移除所有连接到 broken 节点的链接
-        let links: LinkObject[] = [];
-        let nodes: ExtendedNodeObject[] = [];
-        if (0) {
-            this.gData.links = this.gData.links.filter(link => link.sourceId !== 'broken' && link.targetId !== 'broken');
-        } else {
-            links = this.gData.links.filter((link: LinkObject) => (link.source as ExtendedNodeObject).type !== 'broken');
-        }
-        // 移除 broken 节点
-        nodes = this.gData.nodes.filter(node => node.id !== 'broken');
-        //统计connections数量 
-        // 计算每个节点的连接数
-        nodes.forEach((node: ExtendedNodeObject) => {
-            node.connections = links.filter(link => link.sourceId === node.id || link.targetId === node.id).length;
-        });
-        // 重新计算连接数
-        // 更新图表数据
-        this.gData = { nodes: nodes, links: links }
-        this.Graph.graphData(this.gData);
-        this.Graph.refresh();
-
-    }*/
     // 计算连接数的方法
     calculateConnections() {
         const nodes: ExtendedNodeObject[] = this.gData.nodes;
