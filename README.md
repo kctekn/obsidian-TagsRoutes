@@ -5,7 +5,7 @@
 </div>
 
 This is a plugin for obsidian, to visualize files and tags as nodes in 3D graphic.
-![title](https://github.com/user-attachments/assets/184e88f7-95da-4ebf-8c50-d4a3df1ae69a)
+![title](https://github.com/user-attachments/assets/673c3955-1516-4d54-b4df-0868a49e0661)
 
 
 <img1 width="40%" src="https://github.com/user-attachments/assets/27d000e5-fc97-4b53-ac6f-a5ed9a14aea0">
