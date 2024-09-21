@@ -185,6 +185,72 @@ If your plugin does not need CSS, delete this file.
     align-items: center;
     justify-content: space-between;
 }
+
+.tags-routes .group-link-button .clickable-icon {
+    /*  color: var(--interactive-accent);*/
+}
+
 .tags-routes .need-save {
     border-bottom: 5px solid var(--interactive-accent-hover);
+}
+
+
+/*
+.tags-routes .graph-control-section{
+    padding: var(--size-2-3) var(--size-4-3)
+}*/
+
+.container-fluid {
+    /*height: 100px;*/
+    /*background: linear-gradient(45deg, #2d2a6c 1%,#5b81ea 83%,#9393f2 100%);*/
+    background: linear-gradient(45deg, var(--background-primary) 1%, var(--background-secondary) 83%, var(--background-secondary-alt) 100%);
+    text-align: center;
+    padding-top: 10px;
+    overflow: hidden !important;
+    position: relative;
+}
+
+.tg-alert {
+    color: var(--text-accent);
+    font-size: 2em;
+    animation: interference 3s infinite;
+}
+
+@keyframes interference {
+    0% {
+        transform: skewX(0)
+    }
+    31% {
+        transform: skewX(-2deg)
+    }
+    31.5% {
+        transform: skewX(89deg)
+    }
+    32% {
+        transform: skewX(89deg)
+    }
+    32.1% {
+        transform: skewX(0)
+    }
+    33% {
+        transform: skewX(2deg)
+    }
+    54% {
+        transform: skewX(0deg)
+    }
+    94% {
+        transform: skewX(2deg)
+    }
+    95.1% {
+        transform: skewX(-3deg)
+    }
+    95.2% {
+        transform: skewX(-89deg)
+    }
+    95.3% {
+        transform: skewX(2deg)
+    }
+    100% {
+        transform: skewX(0)
+    }
 }

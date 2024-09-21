@@ -6,7 +6,7 @@ import ForceGraph3D, { ForceGraph3DInstance } from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "./settings"
-import TagsRoutes, { defaltColorMap, DEFAULT_DISPLAY_SETTINGS, TagRoutesSettings } from '../main';
+import TagsRoutes, { defaltColorMap, DEFAULT_DISPLAY_SETTINGS, globalProgramControl, TagRoutesSettings } from '../main';
 import { Vector2 } from 'three';
 import SpriteText from 'three-spritetext';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
@@ -487,6 +487,8 @@ export class TagRoutesView extends ItemView {
                         });
                     }
                 }
+            }else {
+                this.selectedNode = node;
             }
 
 
@@ -616,10 +618,16 @@ export class TagRoutesView extends ItemView {
                 if (this.plugin.settings.customSlot) {
                     if (this.plugin.settings.customSlot[0].toggle_global_map) {
                         (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
+                        if (this.currentVisualString === "light") {
+                            (obj.material as THREE.MeshStandardMaterial).emissive.set(this.getNodeColorByType(node));
+                        }
                         obj.visible = true;
                     } else {
                         if (this.highlightNodes.has(node)) {
                             (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
+                            if (this.currentVisualString === "light") {
+                                (obj.material as THREE.MeshStandardMaterial).emissive.set(this.getNodeColorByType(node));
+                            }
                         }
                         obj.visible = this.getNodeVisible(node);
                     }
@@ -666,6 +674,22 @@ export class TagRoutesView extends ItemView {
             this.Graph.cameraPosition(newPos, node as any, 3000);
             this.highlightOnNodeClick(node)
         }
+        const file = this.app.vault.getAbstractFileByPath(filePath);
+        if (!file || !(file instanceof TFile)) {
+            return;
+    }
+        // focus on the node in file explorer
+        const fileExplorerView = this.plugin.app.workspace.getLeavesOfType('file-explorer')[0];
+        //   if (node.type !== 'attachment') {
+        if (fileExplorerView) {
+            try {
+                // 刷新文件浏览器视图
+                (fileExplorerView.view as any).revealInFolder(file);
+            } catch (error) {
+                console.error("Error revealing file in folder:", error);
+            }
+        }
+                 //   }
     }
     focusGraphTag(tag: string) {
         this.focusGraphNodeById(tag);
@@ -834,11 +858,49 @@ export class TagRoutesView extends ItemView {
         nodes.forEach((node: ExtendedNodeObject) => {
             node.connections = links.filter(link => link.sourceId === node.id || link.targetId === node.id).length;
         });
+
+        if(globalProgramControl.aimBeforeLink)
+         if (linkStar) {
+            const node = { x: 0, y: 0, z: 1 }
+            const distance = 2700; //this.getCameraDistance(node as any);
+            const distRatio = 1 + distance / Math.hypot(node.x ?? 0, node.y ?? 0, node.z ?? 0);
+            const newPos = node.x || node.y || node.z
+                ? { x: (node.x ?? 0) * distRatio, y: (node.y ?? 0) * distRatio, z: (node.z ?? 0) * distRatio }
+                : { x: 0, y: 0, z: distance }; // special case if node is in (0,0,0)
+            this.Graph.cameraPosition(
+                newPos, // new position
+                { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0 },
+                0  // ms transition duration
+            );
+            //this.Graph.camera().lookAt(node as any);
+        }
         // 更新图表数据
+        setTimeout(() => {
         this.Graph.graphData(this.gData);
-        this.Graph.refresh();
+        }, 0);
+
+        
+     //   this.Graph.refresh();
     }
     unlinkNodeByType(fileType: string) {
+/*         // focus on it
+        const node = this.gData.nodes.find((node: ExtendedNodeObject) => node.id === fileType);
+        if (node) {
+            const distance = 2700; //this.getCameraDistance(node as any);
+            const distRatio = 1 + distance / Math.hypot(node.x ?? 0, node.y ?? 0, node.z ?? 0);
+            const newPos = node.x || node.y || node.z
+                ? { x: (node.x ?? 0) * distRatio, y: (node.y ?? 0) * distRatio, z: (node.z ?? 0) * distRatio }
+                : { x: 0, y: 0, z: distance }; // special case if node is in (0,0,0)
+            this.Graph.cameraPosition(
+                //newPos, // new position
+                this.Graph.camera().position,
+                { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0 },
+                0  // ms transition duration
+            );
+            //this.Graph.camera().lookAt()
+        } */
+
+
         // 移除所有连接到 type 节点的链接
         let links: LinkObject[] = [];
         let nodes: ExtendedNodeObject[] = [];
@@ -877,7 +939,7 @@ export class TagRoutesView extends ItemView {
         // 更新图表数据
         this.gData = { nodes: nodes, links: links }
         this.Graph.graphData(this.gData);
-        this.Graph.refresh();
+      //  this.Graph.refresh();
     }
 
     onResetGraph() {
@@ -969,6 +1031,10 @@ export class TagRoutesView extends ItemView {
             this.plugin.settings.customSlot[this.currentSlotNum], "link_particle_size");
             this.setControlValue("Link particle number", this._controls,
         this.plugin.settings.customSlot[this.currentSlotNum], "link_particle_number");
+        this.setControlValue("Toggle global map", this._controls,
+            this.plugin.settings.customSlot[this.currentSlotNum], "toggle_global_map");
+        this.setControlValue("Toggle label display", this._controls,
+            this.plugin.settings.customSlot[this.currentSlotNum], "toggle_label_display");
     }
     onSettingsLoad() {
         if (!this.plugin.settings.customSlot) return; 
@@ -990,8 +1056,10 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.customSlot[0] = structuredClone(DEFAULT_DISPLAY_SETTINGS[this.plugin.settings.currentTheme]);
         this.plugin.settings.customSlot[this.currentSlotNum] = structuredClone(DEFAULT_DISPLAY_SETTINGS[this.plugin.settings.currentTheme]);
         this.plugin.saveSettings();
+        this.plugin.skipSave = true;
         this.applyChanges();
         this.updateColor();
+        this.plugin.skipSave = false;
         new Notice(`Graph reset on slot ${this.currentSlotNum}`);
     }
     onDropdown(value: string) {
@@ -1044,6 +1112,9 @@ export class TagRoutesView extends ItemView {
             if (this.highlightNodes.has(node)) color = this.plugin.settings.customSlot[0].colorMap["nodeHighlightColor"].value;
             if (node === this.selectedNode || node === this.hoverNode)
                 color = this.plugin.settings.customSlot[0].colorMap["nodeFocusColor"].value;
+        } else {
+           /* if (node === this.selectedNode || node === this.hoverNode)
+            color = this.plugin.settings.customSlot[0].colorMap["nodeFocusColor"].value;*/
         }
         return color;
     }
@@ -1540,6 +1611,19 @@ export class TagRoutesView extends ItemView {
             // 切换到阅读模式
             const view = this.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownView;
             setViewType(view, "preview");
+
+            // focus on the node in file explorer
+            const fileExplorerView = this.plugin.app.workspace.getLeavesOfType('file-explorer')[0];
+            if (node.type !== 'attachment') {
+                if (fileExplorerView) {
+                    try {
+                        // 刷新文件浏览器视图
+                        (fileExplorerView.view as any).revealInFolder(file);
+                    } catch (error) {
+                        console.error("Error revealing file in folder:", error);
+                    }
+                }
+            }
         } else {
             this.handleTagClick(node);
         }

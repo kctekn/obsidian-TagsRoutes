@@ -35,7 +35,7 @@ export class settingGroup {
             this.handleButton = new ExtraButtonComponent(this.headContainer.createEl('div', { cls: 'tree-item-icon collapse-icon' }))
                 .setIcon("chevron-down")
                 .setTooltip("Close " + name)
-                .onClick(() => {
+               /*  .onClick(() => {
                     if (this.holdContainer.style.display === 'none') {
                         this.holdContainer.style.display = 'inline';
                         this.handleButton.setTooltip("Close " + name);
@@ -45,9 +45,21 @@ export class settingGroup {
                         this.handleButton.setTooltip("Open " + name);
                         this.handleButton.setIcon("chevron-down")
                     }
-                });
+                }); */
                 this.headContainer.createEl('div', { cls: 'tree-item-inner graph-control-section-header' }).textContent = name;
                 this.headContainer.addClass("tree-item-self")
+            
+            this.headContainer.onclick = () => {
+                if (this.holdContainer.style.display === 'none') {
+                    this.holdContainer.style.display = 'inline';
+                    this.handleButton.setTooltip("Close " + name);
+                    this.handleButton.setIcon("x")
+                } else {
+                    this.holdContainer.style.display = 'none';
+                    this.handleButton.setTooltip("Open " + name);
+                    this.handleButton.setIcon("chevron-down")
+                }
+            };
             this.headContainer.addClass("mod-collapsible")
             this.holdContainer.addClass("tree-item-children")
         } else if (type === "root") {

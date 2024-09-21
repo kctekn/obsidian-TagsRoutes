@@ -3,6 +3,15 @@ import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
 import { createFolderIfNotExists,namedColor } from "./util/util"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
 //const versionInfo = require('./version_info.txt');
+
+export const globalProgramControl = {
+	useDiv : false,
+	debug: false,
+	useGroup: true,
+	allowDuplicated: false,
+	aimBeforeLink: true,
+}
+
 type AnyObject = Record<string, any>;
 export interface colorSpec {
 	name?: string;
@@ -91,7 +100,7 @@ export const DEFAULT_DISPLAY_SETTINGS_DARK: TagRoutesSettings = {
 	link_width: 1,
 	link_particle_size: 2,
 	link_particle_number: 2,
-	toggle_global_map: false,
+	toggle_global_map: true,
 	toggle_label_display: false,
 	colorMapSource:"Default dark",
 	colorMap:defaultolorMapDark,
@@ -103,7 +112,7 @@ export const DEFAULT_DISPLAY_SETTINGS_LIGHT: TagRoutesSettings = {
 	link_width: 1,
 	link_particle_size: 2,
 	link_particle_number: 2,
-	toggle_global_map: false,
+	toggle_global_map: true,
 	toggle_label_display: false,
 	colorMapSource:"Defalt light",
 	colorMap:defaultolorMapLight,
@@ -524,7 +533,8 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		.setTooltip("Reset color of current slot ")
 			.onClick(() => {
 			if (!this.plugin.settings.customSlot) return;
-			this.plugin.settings.customSlot[0].colorMap = structuredClone(defaltColorMap[this.plugin.settings.currentTheme]);
+				this.plugin.settings.customSlot[0].colorMap = structuredClone(defaltColorMap[this.plugin.settings.currentTheme]);
+				this.plugin.settings.customSlot[0].colorMapSource = DEFAULT_DISPLAY_SETTINGS[this.plugin.settings.currentTheme].colorMapSource;
 			this.plugin.view.onSettingsSave();
 			this.plugin.view.updateColor();
 			this.colors.forEach(v => v.resetColor(true))
