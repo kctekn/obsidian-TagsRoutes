@@ -122,7 +122,7 @@ export const DEFAULT_DISPLAY_SETTINGS = {
 	light: DEFAULT_DISPLAY_SETTINGS_LIGHT
 }
 const DEFAULT_SETTINGS: Settings = {
-	saveSpecVer: 10100,
+	saveSpecVer: 10101,
 	enableSave: true,
 	enableShow: true,
 	currentSlotNum: 1,
@@ -297,7 +297,7 @@ export default class TagsRoutes extends Plugin {
 	async loadSettings() {
 		this.settings = structuredClone(DEFAULT_SETTINGS);
 		const loadedSettings = await this.loadData() //as Settings;
-		if (loadedSettings?.saveSpecVer && loadedSettings.saveSpecVer >= 109) {
+		if (loadedSettings?.saveSpecVer && loadedSettings.saveSpecVer >= 10101) {
 			this.mergeDeep(this.settings, loadedSettings) 
 		}
 		this.settings.customSlot = this.settings[this.settings.currentTheme];
