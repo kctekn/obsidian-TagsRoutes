@@ -1,5 +1,5 @@
 import { MarkdownPostProcessorContext, moment, TFile, MarkdownRenderer, MarkdownView, HeadingCache, getFrontMatterInfo, parseFrontMatterTags } from "obsidian"
-import  TagsRoutes  from '../main';
+import  TagsRoutes, { globalProgramControl }  from '../main';
 import { getLineTime } from "./util";
 export class codeBlockProcessor {
     plugin: TagsRoutes;
@@ -76,8 +76,8 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
     }
    async  writeMarkdown(term: string, source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
        const markDownSource = source;
-        const useDiv: boolean = true;
-        if (useDiv) {
+
+        if (globalProgramControl.useDiv) {
             //el.createEl('pre', {text: markDownSource})
             MarkdownRenderer.render(this.plugin.app,
                 markDownSource,
@@ -101,6 +101,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
         }
     }
     async codeBlockProcessor(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+        //Bypass the first pass
         if ((ctx.frontmatter as any).tags === undefined) {
         //    console.log("first pass");
             return;
@@ -114,6 +115,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
         const regex = new RegExp(regstr, 'g')
         const match = source.match(regex)
         const term = match ?.[0] || "#empty"
+        this.writeMarkdown(term, "<br><div class=\"container-fluid\"><div class=\"tg-alert\"><b>PROCESSING...</b></div><small><em>The first time will be slow depending on vault size.</em></small></div>", el, ctx);
         const con = this.getTagContent(term)
         const markdownText: string[] = [];
         const values = await Promise.all(con);
@@ -127,7 +129,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
         }
         const markDownSource = markdownText.filter(line => line.trim() !== "").join("\n")
         const useDiv: boolean = true;
-        if (useDiv) {
+        if (globalProgramControl.useDiv){
             //el.createEl('pre', {text: markDownSource})
             MarkdownRenderer.render(this.plugin.app,
                 markDownSource,
