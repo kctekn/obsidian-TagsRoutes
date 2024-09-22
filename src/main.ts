@@ -6,7 +6,7 @@ import { codeBlockProcessor } from './util/CodeBlockProcessor';
 
 export const globalProgramControl = {
 	useDiv : false,
-	debugLevel: DebugLevel.INFO,
+	debugLevel: DebugLevel.DEBUG,
 	useGroup: true,
 	allowDuplicated: false,
 	aimBeforeLink: true,
@@ -169,6 +169,8 @@ export default class TagsRoutes extends Plugin {
 		for (let leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES)) {
 			if (leaf.view instanceof TagRoutesView) {
 				leaf.view.focusGraphNodeById(filePath)
+			//	leaf.view.Graph.refresh();
+			//	leaf.view.updateHighlight();
 			}
 		}
 	}

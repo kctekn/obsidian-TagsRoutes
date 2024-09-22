@@ -381,7 +381,7 @@ export class TagRoutesView extends ItemView {
         return group;
     }
     createNodeThreeObject(node: ExtendedNodeObject) {
-
+        DebugMsg(DebugLevel.DEBUG,"createNodeThreeObject called")
         const group = new THREE.Group();
 
         let nodeSize = (node.connections || 1)
@@ -496,6 +496,7 @@ export class TagRoutesView extends ItemView {
         }
 
         this.updateHighlight();
+       // this.Graph.refresh();
     }
     highlightOnNodeRightClick(node: ExtendedNodeObject | null) {
         if (node) {
@@ -620,6 +621,22 @@ export class TagRoutesView extends ItemView {
         this.selectedNodesLinks.forEach(link => this.highlightLinks.add(link));
         this.hoveredNodesLinks.forEach(link => this.highlightLinks.add(link));
 
+        
+        DebugMsg(DebugLevel.INFO,"update highlight entered")
+        
+        DebugMsg(DebugLevel.DEBUG,"selected node:", this.selectedNode)
+        DebugMsg(DebugLevel.DEBUG,"selected nodes:", this.selectedNodes)
+        DebugMsg(DebugLevel.DEBUG,"hovered node:", this.hoverNode)
+        DebugMsg(DebugLevel.DEBUG, "hovered nodes:", this.hoveredNodes)
+        DebugMsg(DebugLevel.DEBUG, "highlight nodes:", this.highlightNodes)
+        
+        this.Graph.graphData().nodes.forEach((node: ExtendedNodeObject) => {
+            if (!(node as any).__threeObj) {
+             //   this.Graph.graphData(this.gData);
+                DebugMsg(DebugLevel.ERROR,"no mesh found");
+                
+          } 
+        })
         // update nodes visibility
         this.Graph.graphData().nodes.forEach((node: ExtendedNodeObject) => {
             const obj = node._ThreeMesh; // 获取节点的 Three.js 对象
@@ -658,22 +675,26 @@ export class TagRoutesView extends ItemView {
                 if (showSpriteText && node._Sprite) {
                     node._Sprite.visible = true;
                     node._Sprite.textHeight = 18;
+                }else {
+                    DebugMsg(DebugLevel.ERROR,"node found but no sprite text found", this.highlightNodes)
                 }
-            } else {
-
-            }
+            } 
             
         }
         );
-        if (this.hoverNode && this.hoverNode._Sprite) {
+        DebugMsg(DebugLevel.INFO,"update highlight before exit")
+
+/*         if (this.hoverNode && this.hoverNode._Sprite) {
             this.hoverNode._Sprite.visible = true;
             this.hoverNode._Sprite.textHeight = 18;
-        }
+        } */
 
         this.Graph
             .linkWidth(this.Graph.linkWidth())
             .linkDirectionalParticles(this.Graph.linkDirectionalParticles())
             .linkVisibility(this.Graph.linkVisibility())
+        
+        
     }
     focusGraphNodeById(filePath: string) {
         // 获取 Graph 中的相应节点，并将视图聚焦到该节点
@@ -852,6 +873,7 @@ export class TagRoutesView extends ItemView {
             });
         // 将新创建的 broken 节点添加到节点列表中
             nodes.push(typeNode);
+            typeNodes.push(typeNode);
             this.selectedNode = typeNode;
             this.selectedNodes.add(typeNode);
         } else { 
@@ -881,7 +903,7 @@ export class TagRoutesView extends ItemView {
         }
         //统计connections数量 
         // 计算每个节点的连接数
-        nodes.forEach((node: ExtendedNodeObject) => {
+        typeNodes.forEach((node: ExtendedNodeObject) => {
             node.connections = links.filter(link => link.sourceId === node.id || link.targetId === node.id).length;
         });
 
@@ -899,13 +921,29 @@ export class TagRoutesView extends ItemView {
                 0  // ms transition duration
             );
             //this.Graph.camera().lookAt(node as any);
+         }
+        
+        this.gData = { nodes: nodes, links: links }
+        let tmpSave:boolean;
+        if (this.plugin.settings.customSlot) {
+            tmpSave =    this.plugin.settings.customSlot[0].toggle_global_map
+            this.plugin.settings.customSlot[0].toggle_global_map = true;
         }
+        this.Graph.refresh();
+        this.updateHighlight();
+        // we need sometime to let calculation to be finished
+        setTimeout(() => {
+            if (this.plugin.settings.customSlot) {
+                this.plugin.settings.customSlot[0].toggle_global_map = tmpSave || false;
+                this.updateHighlight();
+            }
+            }, 1000);
+        
         // 更新图表数据
         setTimeout(() => {
         this.Graph.graphData(this.gData);
         }, 0);
-        
-        this.updateHighlight();
+
         
      //   this.Graph.refresh();
     }
