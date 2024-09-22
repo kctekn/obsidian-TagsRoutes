@@ -833,9 +833,13 @@ export class TagRoutesView extends ItemView {
             /* process links */
                 typeNode.links?.push(addLink)
                 node.links?.push(addLink)
+                this.selectedNodes.add(node);
+                this.selectedNodesLinks.add(addLink);
             });
         // 将新创建的 broken 节点添加到节点列表中
-        nodes.push(typeNode);
+            nodes.push(typeNode);
+            this.selectedNode = typeNode;
+            this.selectedNodes.add(typeNode);
         } else { 
         // 将所有 type 节点以一条线连接起来
             for (let i = 0; i < typeNodes.length - 1; i++) {
@@ -852,7 +856,12 @@ export class TagRoutesView extends ItemView {
             /* process neighbors */
                 typeNodes[i].neighbors?.push(typeNodes[i + 1])
                 typeNodes[i + 1].neighbors?.push(typeNodes[i])
+                this.selectedNodes.add(typeNodes[i]);
+                this.selectedNodesLinks.add(addLink);
             }
+            this.selectedNode = typeNodes[0];
+            this.selectedNodes.add(typeNodes[typeNodes.length-1]);
+
         }
         //统计connections数量 
         // 计算每个节点的连接数
@@ -879,7 +888,8 @@ export class TagRoutesView extends ItemView {
         setTimeout(() => {
         this.Graph.graphData(this.gData);
         }, 0);
-
+        
+        this.updateHighlight();
         
      //   this.Graph.refresh();
     }
@@ -903,6 +913,8 @@ export class TagRoutesView extends ItemView {
 
 
         // 移除所有连接到 type 节点的链接
+        this.clearHightlightNodes()
+
         let links: LinkObject[] = [];
         let nodes: ExtendedNodeObject[] = [];
 
@@ -928,7 +940,6 @@ export class TagRoutesView extends ItemView {
 
         if (links.length == linksOriginalCount) return;
 
-        this.clearHightlightNodes()
         // 移除 type 节点
         nodes = this.gData.nodes.filter(node => node.id !== fileType);
         //统计connections数量 
@@ -940,6 +951,7 @@ export class TagRoutesView extends ItemView {
         // 更新图表数据
         this.gData = { nodes: nodes, links: links }
         this.Graph.graphData(this.gData);
+        this.updateHighlight();
       //  this.Graph.refresh();
     }
 
