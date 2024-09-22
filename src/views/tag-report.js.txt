@@ -67,5 +67,5 @@ function fun002()
 {
     a = 3;
     b = 4;
-    fun001(a,b).then(value=>console.log("the result is:", value))
+    fun001(a,b).then(value=>DebugMsg(DebugLevel.DEBUG,"the result is:", value))
 }

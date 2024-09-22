@@ -23,7 +23,7 @@ export class codeBlockProcessor {
                 }
     
                 if (tags.some(t => t.includes(tag))) {
-               //     console.log(">>find the file have this tag: ", file.path);
+               //     DebugMsg(DebugLevel.DEBUG,">>find the file have this tag: ", file.path);
                     return file.path;
                 }
             }
@@ -103,7 +103,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
     async codeBlockProcessor(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
         //Bypass the first pass
         if ((ctx.frontmatter as any).tags === undefined) {
-        //    console.log("first pass");
+        //    DebugMsg(DebugLevel.DEBUG,"first pass");
             return;
         }
 

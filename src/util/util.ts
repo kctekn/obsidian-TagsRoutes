@@ -1,5 +1,38 @@
 import { CachedMetadata, MarkdownView, TagCache, View, WorkspaceLeaf } from 'obsidian';
 import { TFile } from "obsidian";
+import { globalProgramControl } from 'src/main';
+
+// 定义调试级别
+export enum DebugLevel {
+	NONE = 0,   // 不输出
+	ERROR = 1,  // 仅输出错误
+	WARN = 2,   // 输出警告和错误
+	INFO = 3,   // 输出信息、警告和错误
+	DEBUG = 4   // 输出所有信息
+}
+
+// DebugMsg 
+export function DebugMsg(level: DebugLevel, ...args: any[]): void {
+	if (level <= globalProgramControl.debugLevel) {
+			switch (level) {
+					case DebugLevel.ERROR:
+							console.error('%c [ERROR] %c', 'color: white;background-color: red;', 'color: black;',...args);
+							break;
+					case DebugLevel.WARN:
+							console.warn('%c [WARN] %c', 'color: white;background-color: orange;', 'color: black;',...args);
+							break;
+					case DebugLevel.INFO:
+							console.info('%c [INFO] %c', 'color: white;background-color: blue;', 'color: black;',...args);
+							break;
+					case DebugLevel.DEBUG:
+							console.debug('%c [DEBUG] %c', 'color: black;background-color: lime;', 'color: black;',...args);
+							break;
+					default:
+							break;
+			}
+	}
+}
+
 export const setViewType = (view: View, mode: "source" | "preview" | "live") => {
 	if (view && view.getViewType() === 'markdown') {
 		switch (mode) {
@@ -19,9 +52,9 @@ export function createFolderIfNotExists(folderPath: string) {
 	const folder = this.app.vault.getAbstractFileByPath(folderPath);
 	if (!folder) {
 	   this.app.vault.createFolder(folderPath);
-	 //  console.log(`Folder created: ${folderPath}`);
+	 //  DebugMsg(DebugLevel.DEBUG,`Folder created: ${folderPath}`);
 	} else {
-	 //  console.log(`Folder already exists: ${folderPath}`);
+	 //  DebugMsg(DebugLevel.DEBUG,`Folder already exists: ${folderPath}`);
 	}
  }
 // 函数：获取所有标签
@@ -76,7 +109,7 @@ export async function showFile(filePath: string) {
 	}, 3000);
 	while (!(file && file instanceof TFile) && waitFlag) {
 		await sleep(100)
-		//	console.log("wait for file ready")
+		//	DebugMsg(DebugLevel.DEBUG,"wait for file ready")
 		file = vault.getAbstractFileByPath(filePath)
 	}
 	clearTimeout(timeout);

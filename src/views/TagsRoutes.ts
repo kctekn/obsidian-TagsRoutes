@@ -1,7 +1,7 @@
 import { moment, MarkdownView, Notice, CachedMetadata, ValueComponent, Platform } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
-import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile } from "../util/util"
+import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile, DebugMsg, DebugLevel } from "../util/util"
 import ForceGraph3D, { ForceGraph3DInstance } from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
@@ -81,7 +81,7 @@ class darkStyle implements VisualStyle {
     }
     // Implement the addStyle method
     addStyle(container:HTMLElement): void {
-        console.log(`Adding style: ${this.name}`);
+        DebugMsg(DebugLevel.DEBUG,`Adding style: ${this.name}`);
         this.plugin.view.clearHightlightNodes();
         this.Graph = this.plugin.view.Graph;
         this.Graph.backgroundColor(this.plugin.settings.customSlot?.[0].colorMap.backgroundColor.value||"#000003")
@@ -93,7 +93,7 @@ class darkStyle implements VisualStyle {
 
     // Implement the removeStyle method
     removeStyle(container:HTMLElement): void {
-        console.log(`Removing style: ${this.name}`);
+        DebugMsg(DebugLevel.DEBUG,`Removing style: ${this.name}`);
         this.plugin.view.Graph.postProcessingComposer().removePass(this.bloomPass);
     }
 }  
@@ -112,7 +112,7 @@ class lightStyle implements VisualStyle {
 
     // Implement the addStyle method
     addStyle(container: HTMLElement): void {
-        console.log(`Adding style: ${this.name}`);
+        DebugMsg(DebugLevel.DEBUG,`Adding style: ${this.name}`);
         this.plugin.view.clearHightlightNodes();
         this.Graph = this.plugin.view.Graph;
         this.Graph.backgroundColor(this.plugin.settings.customSlot?.[0].colorMap.backgroundColor.value || "#ffffff")
@@ -126,7 +126,7 @@ class lightStyle implements VisualStyle {
 
     // Implement the removeStyle method
     removeStyle(container: HTMLElement): void {
-        console.log(`Removing style: ${this.name}`);
+        DebugMsg(DebugLevel.DEBUG,`Removing style: ${this.name}`);
         this.Graph.scene().remove(this.Graph.lights()[1]);
     }
 }  
@@ -236,6 +236,7 @@ export class TagRoutesView extends ItemView {
         const parts = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(?:\d+(?:\.\d+)?))?\)$/);
         
         if (!parts) {
+            DebugMsg(DebugLevel.ERROR, "Invalid color format");
             throw new Error("Invalid color format");
         }
     
@@ -289,7 +290,7 @@ export class TagRoutesView extends ItemView {
         //    const colorMapSource = `'${(this.app.vault as any)?.config?.cssTheme || "Obsidian"}${(this.app.vault as any)?.config?.cssTheme?" - "+(this.app.vault as any)?.config?.theme || "Unknow":""}' - ${isDarkMode ? 'dark' : 'light'} `
         const colorMapSource = `'${(this.app.vault as any)?.config?.cssTheme || "Obsidian"}' - ${isDarkMode ? 'dark' : 'light'} `
         this.plugin.settings.customSlot[0].colorMapSource = colorMapSource;
-        console.log("current colormap: ", colorMapSource)
+        DebugMsg(DebugLevel.DEBUG,"current colormap: ", colorMapSource)
         new Notice(`Tags routes: Color imported from  ${colorMapSource}`);
         new Notice(`Tags routes: Use 'Save' to make the changes effective next time.`);
         this.setSaveButton(true)
@@ -325,7 +326,7 @@ export class TagRoutesView extends ItemView {
         if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
         nodeSize = Math.log2(nodeSize) * 5;
         const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
-       // console.log("type of this: ", typeof(view))
+       // DebugMsg(DebugLevel.DEBUG,"type of this: ", typeof(view))
         let color = this.getNodeColorByType(node);
         const material = new THREE.MeshBasicMaterial({ color });
         const material0 = new THREE.MeshStandardMaterial({
@@ -568,7 +569,7 @@ export class TagRoutesView extends ItemView {
         }
     }
     updateColor1() {
-        //console.log("update color")
+        //DebugMsg(DebugLevel.DEBUG,"update color")
         if (!this.plugin.settings.customSlot) return;
         this.plugin.view.clearHightlightNodes();
         if (this.currentVisualString === "light") {
@@ -581,7 +582,7 @@ export class TagRoutesView extends ItemView {
         return;
     }
     updateColor() {
-        //console.log("update color")
+        //DebugMsg(DebugLevel.DEBUG,"update color")
         if (!this.plugin.settings.customSlot) return;
         this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
             const color = this.getNodeColorByType(node);
@@ -796,7 +797,7 @@ export class TagRoutesView extends ItemView {
         let links: LinkObject[] = this.gData.links;
         let nodes: ExtendedNodeObject[] = this.gData.nodes;
         if (nodes.filter(node => node.id === fileType).length != 0) {
-            //    console.log(" has had type node, return.")
+            //    DebugMsg(DebugLevel.DEBUG," has had type node, return.")
             return;
         }
         // 创建一个新的 type 节点
@@ -966,29 +967,29 @@ export class TagRoutesView extends ItemView {
     onSlotSliderChange(value: number) {
         if (!this.plugin.settings.customSlot) return; 
         if (this.currentSlotNum == value) return;
-        //  console.log("saveing slot: ", value, " : ", this ?.plugin ?.settingsSlots[value]);
+        //  DebugMsg(DebugLevel.DEBUG,"saveing slot: ", value, " : ", this ?.plugin ?.settingsSlots[value]);
         this.currentSlotNum = value;
-        //console.log("Tags routes: set current slot: ", this.currentSlotNum)
-        //   console.log(" slot 0", this.plugin.settings.customSlot[0]);
-        //   console.log(" slot ", this.plugin.settings.currentSlot, ":", this.plugin.settings.customSlot[this.plugin.settings.currentSlot])
+        //DebugMsg(DebugLevel.DEBUG,"Tags routes: set current slot: ", this.currentSlotNum)
+        //   DebugMsg(DebugLevel.DEBUG," slot 0", this.plugin.settings.customSlot[0]);
+        //   DebugMsg(DebugLevel.DEBUG," slot ", this.plugin.settings.currentSlot, ":", this.plugin.settings.customSlot[this.plugin.settings.currentSlot])
         if (!this.deepEqual(this.plugin.settings.customSlot[0], this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum])) {
             // not load, just return
-            console.log(`Tags routes: Settings changed, click 'Save' to save to slot ${this.currentSlotNum}`)
-           // console.log("slot 0", this.plugin.settings.customSlot[0])
-           // console.log("slot ", this.currentSlotNum, this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum])
+            DebugMsg(DebugLevel.DEBUG,`Tags routes: Settings changed, click 'Save' to save to slot ${this.currentSlotNum}`)
+           // DebugMsg(DebugLevel.DEBUG,"slot 0", this.plugin.settings.customSlot[0])
+           // DebugMsg(DebugLevel.DEBUG,"slot ", this.currentSlotNum, this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum])
             new Notice(`Tags routes: Settings changed, click 'Save' to save to slot ${this.currentSlotNum}`, 5000);
             this.setSaveButton(true)
             return;
         } else {
-          //  console.log("it is the same, go to load effects")
+          //  DebugMsg(DebugLevel.DEBUG,"it is the same, go to load effects")
         }
-        console.log("Load from slot: ", this.currentSlotNum)
+        DebugMsg(DebugLevel.DEBUG,"Load from slot: ", this.currentSlotNum)
         this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlotNum]);
         this.plugin.settings.currentSlotNum = this.currentSlotNum;
         this.plugin.settings.themeSlotNum[this.plugin.settings.currentTheme] = this.currentSlotNum;
         this.plugin.saveSettings();
-        //   console.log("_control num: ", this._controls.length);
-        //   console.log("_controls: ", this._controls);
+        //   DebugMsg(DebugLevel.DEBUG,"_control num: ", this._controls.length);
+        //   DebugMsg(DebugLevel.DEBUG,"_controls: ", this._controls);
         // 使用辅助函数
         this.plugin.skipSave = true;
         this.applyChanges();
@@ -1002,7 +1003,7 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.currentSlotNum = this.currentSlotNum;
         this.plugin.settings.themeSlotNum[this.plugin.settings.currentTheme] = this.currentSlotNum;
         this.plugin.saveSettings();
-        console.log("[onSettingsSave] Save to slot: ", this.currentSlotNum)
+        DebugMsg(DebugLevel.DEBUG,"[onSettingsSave] Save to slot: ", this.currentSlotNum)
         new Notice(`Tags routes: Graph save to slot ${this.currentSlotNum}`);
         this.setSaveButton(false)
     }
@@ -1038,7 +1039,7 @@ export class TagRoutesView extends ItemView {
     }
     onSettingsLoad() {
         if (!this.plugin.settings.customSlot) return; 
-        console.log("Load from slot: ", this.currentSlotNum)
+        DebugMsg(DebugLevel.DEBUG,"Load from slot: ", this.currentSlotNum)
         this.plugin.settings.customSlot[0] = structuredClone(this.plugin.settings.customSlot[this.currentSlotNum]);
         this.plugin.settings.currentSlotNum = this.currentSlotNum;
         this.plugin.saveSettings();
@@ -1064,7 +1065,7 @@ export class TagRoutesView extends ItemView {
     }
     onDropdown(value: string) {
         this.orphanToLink = value;
-        console.log(value, "selected")
+        DebugMsg(DebugLevel.DEBUG,value, "selected")
     }
     clearHightlightNodes() {
         this.selectedNode = null
@@ -1516,7 +1517,7 @@ export class TagRoutesView extends ItemView {
             this.createAndWriteToFile(newFilePath, fileContent1);
         }
         if (node.type === 'frontmatter_tag') {
-            console.log("handleTagClick::frontmatter tag:", node.id)
+            DebugMsg(DebugLevel.DEBUG,"handleTagClick::frontmatter tag:", node.id)
             const sanitizedId = node.id.replace(/\//g, '__');
             const newFilePath = `TagsRoutes/reports/TagReport_frontmatter_tag_${sanitizedId}.md`; // 新文件的路径和名称
             const fileContent1 = `---\ntags:\n  - tag-report\n---\n
@@ -1533,7 +1534,7 @@ export class TagRoutesView extends ItemView {
         // 检查文件是否已经存在
         if (!vault.getAbstractFileByPath(filePath)) {
             await vault.create(filePath, content);
-            //    console.log("create query file.")
+            //    DebugMsg(DebugLevel.DEBUG,"create query file.")
         } else {
             // 如果文件已经存在，可以选择覆盖内容或者追加内容
             const file = vault.getAbstractFileByPath(filePath);
@@ -1567,19 +1568,19 @@ export class TagRoutesView extends ItemView {
             if (!this.createdFile) {
                 this.createdFile = true;
                 await vault.create(logFilePath, content.join(""));
-                // console.log("create log file.")
+                // DebugMsg(DebugLevel.DEBUG,"create log file.")
             }
         } else {
             // 如果文件已经存在，可以选择覆盖内容或者追加内容
             const file = vault.getAbstractFileByPath(logFilePath);
-            //        console.log("using existing log file")
+            //        DebugMsg(DebugLevel.DEBUG,"using existing log file")
             if (file instanceof TFile) {
                 //    vault.append(file, content.join(""))
                 await vault.process(file, (data) => {
                     return data + '\n' + content.join("");
                 });
             } else {
-                //    console.log("file is not ready, passed out")
+                //    DebugMsg(DebugLevel.DEBUG,"file is not ready, passed out")
             }
         }
         this.logMessages.length = 0;
@@ -1629,7 +1630,7 @@ export class TagRoutesView extends ItemView {
     }
     // view的open 事件
     async onOpen() {
-        //    console.log("On open tag routes view")
+        //    DebugMsg(DebugLevel.DEBUG,"On open tag routes view")
         this.container.empty();
         this.getCache();
         this.gData = this.buildGdata();

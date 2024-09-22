@@ -1,16 +1,19 @@
 import { App, WorkspaceLeaf, Notice, Plugin, PluginSettingTab, Setting, ToggleComponent, TextComponent, ColorComponent, ExtraButtonComponent } from 'obsidian';
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
-import { createFolderIfNotExists,namedColor } from "./util/util"
+import { createFolderIfNotExists,DebugLevel,DebugMsg,namedColor } from "./util/util"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
 //const versionInfo = require('./version_info.txt');
 
 export const globalProgramControl = {
 	useDiv : false,
-	debug: false,
+	debugLevel: DebugLevel.INFO,
 	useGroup: true,
 	allowDuplicated: false,
 	aimBeforeLink: true,
 }
+export const currentVersion = '1.1.1';    //Used to show in debug console
+export const currentSaveSpecVer = 10101;  //Indicate current version of saved config file: data.json 
+export const minSaveSpecVer = 10101;      //Data will be loaded if the loaded version of data.json >= minSaveSpecVer, and will be completely overrided to default if version < minSaveSpecVer
 
 type AnyObject = Record<string, any>;
 export interface colorSpec {
@@ -128,7 +131,7 @@ export const DEFAULT_DISPLAY_SETTINGS = {
 	light: DEFAULT_DISPLAY_SETTINGS_LIGHT
 }
 const DEFAULT_SETTINGS: Settings = {
-	saveSpecVer: 10101,
+	saveSpecVer: currentSaveSpecVer,
 	enableSave: true,
 	enableShow: true,
 	currentSlotNum: 1,
@@ -180,6 +183,7 @@ export default class TagsRoutes extends Plugin {
 	}
 	async onload() {
 		this.app.workspace.onLayoutReady(() => {
+			DebugMsg(DebugLevel.INFO,"Loading Tags Routes v",currentVersion)
 			this.initializePlugin();
 		});
 	}
@@ -195,7 +199,7 @@ export default class TagsRoutes extends Plugin {
 		});
 	}
 	async initializePlugin() {
-		//console.log(versionInfo);
+		//DebugMsg(DebugLevel.DEBUG,versionInfo);
 		//new Notice(versionInfo, 0)
 		createFolderIfNotExists('TagsRoutes')
 		createFolderIfNotExists('TagsRoutes/logs')
@@ -303,7 +307,7 @@ export default class TagsRoutes extends Plugin {
 	async loadSettings() {
 		this.settings = structuredClone(DEFAULT_SETTINGS);
 		const loadedSettings = await this.loadData() //as Settings;
-		if (loadedSettings?.saveSpecVer && loadedSettings.saveSpecVer >= 10101) {
+		if (loadedSettings?.saveSpecVer && loadedSettings.saveSpecVer >= minSaveSpecVer) {
 			this.mergeDeep(this.settings, loadedSettings) 
 		}
 		this.settings.customSlot = this.settings[this.settings.currentTheme];
@@ -314,7 +318,7 @@ export default class TagsRoutes extends Plugin {
 	}
 	async saveSettings() {
 		if (this.skipSave) return;
-		console.log("[TagsRoutes: Save settings]")
+		DebugMsg(DebugLevel.DEBUG,"[TagsRoutes: Save settings]")
 		this.settings.customSlot = null;  //don't save the duplicated object
 		this.saveData(this.settings);  //maybe need await here
 		this.settings.customSlot = this.settings[this.settings.currentTheme];
