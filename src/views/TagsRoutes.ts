@@ -29,7 +29,7 @@ interface nodeThreeObject extends ExtendedNodeObject {
     __threeObj?: THREE.Mesh
 }
 interface ExtendedNodeObject extends Node {
-    type: 'markdown' | 'tag' | 'attachment' | 'broken' | 'pdf' | 'excalidraw' | 'other' | 'frontmatter-tag';
+    type: 'markdown' | 'tag' | 'attachment' | 'broken' | 'pdf' | 'excalidraw' | 'other' | 'frontmatter_tag';
     x?: number;
     y?: number;
     z?: number;
@@ -790,7 +790,7 @@ export class TagRoutesView extends ItemView {
     onUnlinkButton() {
         this.unlinkNodeByType(this.orphanToLink as any)
     }
-    linkNodeByType(fileType: 'markdown' | 'tag' | 'attachment' | 'broken' | 'pdf' | 'excalidraw' | 'other' | 'frontmatter-tag', linkStar: boolean = true) {
+    linkNodeByType(fileType: 'markdown' | 'tag' | 'attachment' | 'broken' | 'pdf' | 'excalidraw' | 'other' | 'frontmatter_tag', linkStar: boolean = true) {
         this.clearHightlightNodes()
 
         let links: LinkObject[] = this.gData.links;
@@ -1100,10 +1100,9 @@ export class TagRoutesView extends ItemView {
             case 'attachment':
             case 'broken':
             case 'excalidraw':
-                color = this.plugin.settings.customSlot[0].colorMap[node.type].value;
-                break;
-            case 'frontmatter-tag':
-                color = 'DarkSalmon';
+            case 'pdf':
+            case 'frontmatter_tag':
+                            color = this.plugin.settings.customSlot[0].colorMap[node.type].value;
                 break;
             default:
                 color = '#ffffff'; // 默认颜色
@@ -1263,7 +1262,7 @@ export class TagRoutesView extends ItemView {
 
                     // 创建节点
                     if (!frontmatterTagSet.has(currentTag)) {
-                        nodes.push({ id: currentTag, type: 'frontmatter-tag' });
+                        nodes.push({ id: currentTag, type: 'frontmatter_tag' });
                         frontmatterTagSet.add(currentTag);
                     }
 
@@ -1516,13 +1515,13 @@ export class TagRoutesView extends ItemView {
 `; // 要写入的新内容
             this.createAndWriteToFile(newFilePath, fileContent1);
         }
-        if (node.type === 'frontmatter-tag') {
+        if (node.type === 'frontmatter_tag') {
             console.log("handleTagClick::frontmatter tag:", node.id)
             const sanitizedId = node.id.replace(/\//g, '__');
-            const newFilePath = `TagsRoutes/reports/TagReport_frontmatter-tag_${sanitizedId}.md`; // 新文件的路径和名称
+            const newFilePath = `TagsRoutes/reports/TagReport_frontmatter_tag_${sanitizedId}.md`; // 新文件的路径和名称
             const fileContent1 = `---\ntags:\n  - tag-report\n---\n
 \`\`\`tagsroutes
-    frontmatter-tag: ${node.id}
+    frontmatter_tag: ${node.id}
 \`\`\`
 `; // 要写入的新内容
             this.createAndWriteToFile(newFilePath, fileContent1);
@@ -1592,7 +1591,7 @@ export class TagRoutesView extends ItemView {
     async handleNodeClick(node: ExtendedNodeObject) {
         const filePath = node.id;
         const { workspace, vault } = this.app
-        if (node.type !== 'tag' && node.type !== 'frontmatter-tag') {
+        if (node.type !== 'tag' && node.type !== 'frontmatter_tag') {
             const file = vault.getAbstractFileByPath(filePath);
             if (!file || !(file instanceof TFile)) {
                 return;

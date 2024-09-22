@@ -22,7 +22,9 @@ export interface colorMap {
 	attachment: colorSpec;
 	broken: colorSpec;
 	excalidraw: colorSpec;
+	pdf: colorSpec;
 	tag: colorSpec;
+	frontmatter_tag: colorSpec;
 	nodeHighlightColor: colorSpec;
 	nodeFocusColor: colorSpec;
 	linkHighlightColor: colorSpec;
@@ -36,7 +38,9 @@ export const defaultolorMapDark: colorMap = {
 	attachment: {name:"default",  value: "#ffff00" },
 	broken: {name:"default",  value: "#ff0000"},
 	excalidraw: {name:"default",  value: "#00ffff"},
-	tag: {name:"default",  value: "#ff00ff"},
+	pdf: {name:"default",  value: "#0000ff"},
+	tag: { name: "default", value: "#ff00ff" },
+	frontmatter_tag:{name: "default", value:"#fa8072"},
 	nodeHighlightColor: {name:"default",  value: "#3333ff"},
 	nodeFocusColor: {name:"default",  value: "#ff3333"},
 	linkHighlightColor: {name:"default",  value: "#ffffff"},
@@ -50,7 +54,9 @@ export const defaultolorMapLight: colorMap = {
 	attachment: {name:"default",  value: "#ffff00" },
 	broken: {name:"default",  value: "#ff0000"},
 	excalidraw: {name:"default",  value: "#00ffff"},
+	pdf: {name:"default",  value: "#0000ff"},
 	tag: {name:"default",  value: "#ff00ff"},
+	frontmatter_tag:{name: "default", value:"#fa8072"},
 	nodeHighlightColor: {name:"default",  value: "#3333ff"},
 	nodeFocusColor: {name:"default",  value: "#ff3333"},
 	linkHighlightColor: {name:"default",  value: "#ffffff"},
@@ -558,7 +564,9 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Markdown", "markdown"))
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Tag","tag"));
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Excalidraw","excalidraw"));
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Pdf","pdf"));
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Attachment","attachment"));
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Frontmatter tag","frontmatter_tag"));
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Broken", "broken"));
 
 		new Setting(colorSettingsGroup).setName("Node state").setHeading().setDesc("Effects in global map mode.").settingEl.addClass("tg-settingtab-heading")

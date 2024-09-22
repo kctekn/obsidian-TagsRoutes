@@ -8,7 +8,7 @@ export class codeBlockProcessor {
         this.codeBlockProcessor = this.codeBlockProcessor.bind(this);
     }
     private async checkAndGetFrontmatterTag(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext){
-        const tag = source.replace(/frontmatter-tag:/, '').trim();
+        const tag = source.replace(/frontmatter_tag:/, '').trim();
         const files = this.plugin.app.vault.getMarkdownFiles();
     
         const matchingFiles = await Promise.all(files.map(async (file) => {
@@ -35,7 +35,7 @@ export class codeBlockProcessor {
 # Total \`${result.length}\` notes with tag \`${tag}\` :
 ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
 `;
-        this.writeMarkdown("frontmatter-tag: "+tag, writeContent, el, ctx);
+        this.writeMarkdown("frontmatter_tag: "+tag, writeContent, el, ctx);
     }
     private getTagContent(term: string) {
         const files = this.plugin.app.vault.getMarkdownFiles()
@@ -107,7 +107,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
             return;
         }
 
-        if (source.contains("frontmatter-tag:")) {
+        if (source.contains("frontmatter_tag:")) {
             this.checkAndGetFrontmatterTag(source,el,ctx)
             return;
         }
