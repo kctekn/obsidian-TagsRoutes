@@ -556,6 +556,7 @@ export class TagRoutesView extends ItemView {
         if (this.highlightNodes.size != 0) {
             return this.highlightNodes.has(node) ? true : false
         } else {
+            //DebugMsg(DebugLevel.DEBUG,"all set to visible")
             return true
         };
     }
@@ -606,39 +607,52 @@ export class TagRoutesView extends ItemView {
     }
     updateHighlight() {
         
-        // trigger update of highlighted objects in scene
+    // trigger update of highlighted objects in scene
+        
+        // clear all highlighted nodes
         this.highlightNodes.clear();
+        // re-construct highlight nodes if have any
         this.selectedNodes.forEach(node => this.highlightNodes.add(node));
         this.hoveredNodes.forEach(node => this.highlightNodes.add(node));
+        // clear all highlight links
         this.highlightLinks.clear();
+        // re-construct highlight links if have any
         this.selectedNodesLinks.forEach(link => this.highlightLinks.add(link));
         this.hoveredNodesLinks.forEach(link => this.highlightLinks.add(link));
+
+        // update nodes visibility
         this.Graph.graphData().nodes.forEach((node: ExtendedNodeObject) => {
             const obj = node._ThreeMesh; // 获取节点的 Three.js 对象
             if (obj) {
                 if (this.plugin.settings.customSlot) {
                     if (this.plugin.settings.customSlot[0].toggle_global_map) {
+                        //update color
                         (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
                         if (this.currentVisualString === "light") {
                             (obj.material as THREE.MeshStandardMaterial).emissive.set(this.getNodeColorByType(node));
                         }
+                        //update visibility
                         obj.visible = true;
                     } else {
+                        //update color
                         if (this.highlightNodes.has(node)) {
                             (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
                             if (this.currentVisualString === "light") {
                                 (obj.material as THREE.MeshStandardMaterial).emissive.set(this.getNodeColorByType(node));
                             }
                         }
+                        //update visibility
                         obj.visible = this.getNodeVisible(node);
                     }
                 }
             }
+            //clear node sprite visible
             if (node._Sprite && node._Sprite.visible) {
 
                 node._Sprite.visible = false;
                 node._Sprite.textHeight = 0;
             }
+            //apply node sprite visible
             const showSpriteText = this.plugin.settings.customSlot?.[0].toggle_label_display || false;
             if (this.highlightNodes.has(node) && node.type !== 'attachment' && node.type !== 'broken') {
                 if (showSpriteText && node._Sprite) {
@@ -859,8 +873,10 @@ export class TagRoutesView extends ItemView {
                 this.selectedNodes.add(typeNodes[i]);
                 this.selectedNodesLinks.add(addLink);
             }
-            this.selectedNode = typeNodes[0];
             this.selectedNodes.add(typeNodes[typeNodes.length-1]);
+
+            this.selectedNode = typeNodes[0];
+
 
         }
         //统计connections数量 
@@ -1433,7 +1449,12 @@ export class TagRoutesView extends ItemView {
                 this.highlightOnNodeRightClick(node);
             })
             .onBackgroundClick(() => {
-                this.highlightOnNodeClick(null);
+          
+            this.highlightOnNodeClick(null);
+            this.Graph.graphData(this.gData);
+         //   this.clearHightlightNodes();
+         //   this.updateHighlight();
+                //this.Graph.refresh();
             })
             .onNodeDragEnd((node: any) => {
                 node.fx = node.x;
