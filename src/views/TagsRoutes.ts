@@ -932,7 +932,7 @@ export class TagRoutesView extends ItemView {
             this.plugin.settings.customSlot[0].toggle_global_map = true;
         }
         this.Graph.refresh();
-        this.updateHighlight();
+    //    this.updateHighlight();
         // we need sometime to let calculation to be finished
         setTimeout(() => {
             if (this.plugin.settings.customSlot) {
