@@ -142,7 +142,8 @@ export class TagRoutesView extends ItemView {
     };
     _controls: Control[] = [];
     container = this.containerEl.children[1];
-    currentVisualString: "dark"|"light"|"" = "";
+    currentVisualString: "dark" | "light" | "" = "";
+    doingSwitchVisual: boolean = false;
     currentSlotNum: number;
     visualProcessor: VisualStyle;
     visuals: {
@@ -314,6 +315,7 @@ export class TagRoutesView extends ItemView {
             this.visualProcessor = this.visuals[visual]
             this.visualProcessor.addStyle(this.container as HTMLElement);
             this.currentVisualString = visual
+            this.doingSwitchVisual = true;
             return true;
         }
         return false;
@@ -594,7 +596,7 @@ export class TagRoutesView extends ItemView {
                     (obj.material as THREE.MeshBasicMaterial).color.set(color);
                 } else {
                     (obj.material as THREE.MeshStandardMaterial).color.set(color);
-                    (obj.material as THREE.MeshStandardMaterial).emissive.set(color);
+                    (obj.material as THREE.MeshStandardMaterial)?.emissive?.set(color);
                 }
               //  return;
             }
@@ -646,7 +648,7 @@ export class TagRoutesView extends ItemView {
                         //update color
                         (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
                         if (this.currentVisualString === "light") {
-                            (obj.material as THREE.MeshStandardMaterial).emissive.set(this.getNodeColorByType(node));
+                            (obj.material as THREE.MeshStandardMaterial)?.emissive?.set(this.getNodeColorByType(node));
                         }
                         //update visibility
                         obj.visible = true;
@@ -655,7 +657,7 @@ export class TagRoutesView extends ItemView {
                         if (this.highlightNodes.has(node)) {
                             (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByType(node));
                             if (this.currentVisualString === "light") {
-                                (obj.material as THREE.MeshStandardMaterial).emissive.set(this.getNodeColorByType(node));
+                                (obj.material as THREE.MeshStandardMaterial)?.emissive?.set(this.getNodeColorByType(node));
                             }
                         }
                         //update visibility
@@ -1031,8 +1033,11 @@ export class TagRoutesView extends ItemView {
         return true;
     }
     onSlotSliderChange(value: number) {
+        DebugMsg(DebugLevel.DEBUG,"onSlotSliderChange entered")
         if (!this.plugin.settings.customSlot) return; 
-        if (this.currentSlotNum == value) return;
+        if (this.currentSlotNum == value && !this.doingSwitchVisual) return;
+        if (this.doingSwitchVisual) this.doingSwitchVisual = false;  
+        DebugMsg(DebugLevel.DEBUG,"onSlotSliderChange go on")
         //  DebugMsg(DebugLevel.DEBUG,"saveing slot: ", value, " : ", this ?.plugin ?.settingsSlots[value]);
         this.currentSlotNum = value;
         //DebugMsg(DebugLevel.DEBUG,"Tags routes: set current slot: ", this.currentSlotNum)
