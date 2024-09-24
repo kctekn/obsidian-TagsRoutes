@@ -1560,7 +1560,7 @@ export class TagRoutesView extends ItemView {
                         .addExButton("circle-dashed", "Link orphan type as a star", () => this.onLinkButton(true))
                         .addExButton("spline", "Link orphan type as a line", () => this.onLinkButton(false))
                         .addExButton("unlink-2", "Unlink orphans", this.onUnlinkButton)
-                        .addExButton("corner-up-left", "Reset graph", this.onResetGraph)
+                        .addExButton("corner-up-left", "Reload graph", this.onResetGraph)
                     )
                 })
                   /*  .addButton("Link broken as star", "graph-button", () => { this.connectBrokenNodes(true) })
