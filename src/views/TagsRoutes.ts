@@ -1554,21 +1554,12 @@ export class TagRoutesView extends ItemView {
                 .addDropdown("Select orphan", this.getOrphanNodes(this.gData.nodes)/* { broken: "broken", pdf: "pdf", excalidraw: "excalidraw" }*/, "broken", this.onDropdown)
                 .add({
                     arg: (new settingGroup(this.plugin, "link-box", "link-box", "flex-box")
-                        /*                             .addButton("Star", "graph-button", () => { this.onLinkButton() })
-                                                    .addButton("Line", "graph-button", () => { this.onLinkButton() })
-                                                    .addButton("Unlink", "graph-button", () => { this.onUnlinkButton() }) */
                         .addExButton("circle-dashed", "Link orphan type as a star", () => this.onLinkButton(true))
                         .addExButton("spline", "Link orphan type as a line", () => this.onLinkButton(false))
                         .addExButton("unlink-2", "Unlink orphans", this.onUnlinkButton)
                         .addExButton("corner-up-left", "Reload graph", this.onResetGraph)
                     )
                 })
-                  /*  .addButton("Link broken as star", "graph-button", () => { this.connectBrokenNodes(true) })
-                    .addButton("Link broken as line", "graph-button", () => { this.connectBrokenNodes(false) })
-                    .addButton("Unlink broken", "graph-button", () => { this.resetBrokenNodes() })
-                    .addButton("Link Excalidraw orphans", "graph-button", () => { this.connectExcalidrawNodes() })
-                    .addButton("Unlink Excalidraw orphans", "graph-button", () => { this.resetUnlinkedExcalidrawNodes() })
-                    .addButton("Reset graph", "graph-button", () => { this.onResetGraph() })*/
             })
             .add({
                 arg: (new settingGroup(this.plugin, "control sliders", "Display control"))
@@ -1601,7 +1592,6 @@ export class TagRoutesView extends ItemView {
             //       arg: (new settingGroup("file filter", "File filter"))
             //           .addText("Filter path1", this.onText)
             //   })
-//            .attachEl(graphContainer.createEl('div', { cls: 'settings-container' }))
             .attachEl(graphContainer.createEl('div', { cls: 'graph-controls' }))
             .hideAll();
         this.plugin.skipSave = false;

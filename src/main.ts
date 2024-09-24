@@ -6,7 +6,7 @@ import { codeBlockProcessor } from './util/CodeBlockProcessor';
 
 export const globalProgramControl = {
 	useDiv : false,
-	debugLevel: DebugLevel.DEBUG,
+	debugLevel: DebugLevel.NONE,
 	useGroup: true,
 	allowDuplicated: false,
 	aimBeforeLink: true,
