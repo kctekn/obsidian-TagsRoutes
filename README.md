@@ -18,6 +18,31 @@ Wiki:
 
 And you can show up your beautiful vault pictures here: [Share & showcase](https://github.com/kctekn/obsidian-TagsRoutes/discussions/17)
 
+## Version 1.1.1 Release Notes
+
+1. **Improved Orphan File Detection**
+    - Enhanced algorithm to identify unlinked files:
+      - Files are now flagged as orphaned if they are not referenced by any other markdown file.
+    - New feature: Easily select and link orphaned files within the application.
+
+2. **Added Support for PDF Files**:
+    - The application now supports linking and managing PDF file types.
+
+3. **Bug Fixes**:
+    - Resolved various issues related to linking files within the scene.
+
+4. **New Quick Focus Function**:
+    - Right-clicking on a node in the scene now triggers a "quick focus" behavior for easier navigation.
+
+_*The usage demo:*_
+
+<img width="50%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.1.1-feature.gif">
+
+_*Settings of the demo:*_
+1. Obsidian theme: "80s Neon" - dark mode
+2. Plugin theme: default settings - dark mode
+3. Toggle global map: off
+4. Toggle label display: on
 
 ## Version 1.1.0 Release Notes
 
