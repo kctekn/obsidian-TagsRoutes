@@ -36,7 +36,7 @@ And you can show up your beautiful vault pictures here: [Share & showcase](https
 
 _*The usage demo:*_
 
-<img width="50%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.1.1-feature.gif">
+<img src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.1.1-feature.gif">
 
 _*Settings of the demo:*_
 1. Obsidian theme: "80s Neon" - dark mode
