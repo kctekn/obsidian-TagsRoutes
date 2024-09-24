@@ -6,7 +6,7 @@ import { codeBlockProcessor } from './util/CodeBlockProcessor';
 
 export const globalProgramControl = {
 	useDiv : false,
-	debugLevel: DebugLevel.NONE,
+	debugLevel: DebugLevel.INFO,
 	useGroup: true,
 	allowDuplicated: false,
 	aimBeforeLink: true,
@@ -311,6 +311,15 @@ export default class TagsRoutes extends Plugin {
 		const loadedSettings = await this.loadData() //as Settings;
 		if (loadedSettings?.saveSpecVer && loadedSettings.saveSpecVer >= minSaveSpecVer) {
 			this.mergeDeep(this.settings, loadedSettings) 
+			if (loadedSettings.saveSpecVer != currentSaveSpecVer) {
+				DebugMsg(DebugLevel.INFO, `Save spec version ${loadedSettings.saveSpecVer} merged.`)
+			}
+		} else {
+			if (loadedSettings?.saveSpecVer) {
+				DebugMsg(DebugLevel.INFO,`Override save spec version ${loadedSettings.saveSpecVer}.`)
+			} else {
+				DebugMsg(DebugLevel.INFO,`New installation or very old version: Using default settings.`)
+			}
 		}
 		this.settings.customSlot = this.settings[this.settings.currentTheme];
 		this.settings.currentSlotNum = this.settings.themeSlotNum[this.settings.currentTheme];

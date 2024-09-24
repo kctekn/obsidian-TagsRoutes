@@ -90,35 +90,6 @@ _**You can check the simple usage demo here:**_
 
 
 
-## Version 1.0.9/1.0.10 Release Notes:
-
-1. **Support for Named Color Input**: Added support for named color input, making it easier to select the perfect color.
-2. **Frontmatter Tags as Individual Tags**: Tags in the frontmatter are now treated as individual tags, separate from the tags in the note content.
-3. **File List Report Generation**: You can now generate a report of files associated with a tag by clicking on a frontmatter tag.
-4. **Colorful Node Name Display**: Node names now display in color by default, not just when hovered over.
-5. **Other Improvements**:
-   1. Updated the plugin icon.
-   2. Added a new general settings option to toggle whether the graph opens in the current tab.
-   3. Introduced a reset color button in the color settings section.
-
-Many updates is according to https://github.com/kctekn/obsidian-TagsRoutes/discussions/9, thanks to @jeceey for the creative suggestions.
-
-
-
-**Feature**
-
-<img width="20%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v109-update.gif">
-
-**Usage Demo**
-
-<img width="50%" src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/setup-color-v109.gif">
-
-
-## Version 1.0.8 - Release Notes
-Fixed a parsing tag issue: if the tag in frontmatter is wrote in a single line, it will meet error during plugin startup.
-
-refer to https://github.com/kctekn/obsidian-TagsRoutes/issues/10 for detail
-
 # More
 **Full version history please refer to [What's-new-history](https://github.com/kctekn/obsidian-TagsRoutes/wiki/What's-new-history)**
 

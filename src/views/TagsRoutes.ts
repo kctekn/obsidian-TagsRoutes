@@ -237,7 +237,7 @@ export class TagRoutesView extends ItemView {
         const parts = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(?:\d+(?:\.\d+)?))?\)$/);
         
         if (!parts) {
-            DebugMsg(DebugLevel.ERROR, "Invalid color format");
+            DebugMsg(DebugLevel.WARN, "Invalid color format");
             throw new Error("Invalid color format");
         }
     
@@ -624,7 +624,7 @@ export class TagRoutesView extends ItemView {
         this.hoveredNodesLinks.forEach(link => this.highlightLinks.add(link));
 
         
-        DebugMsg(DebugLevel.INFO,"update highlight entered")
+        DebugMsg(DebugLevel.DEBUG,"update highlight entered")
         
         DebugMsg(DebugLevel.DEBUG,"selected node:", this.selectedNode)
         DebugMsg(DebugLevel.DEBUG,"selected nodes:", this.selectedNodes)
@@ -632,13 +632,13 @@ export class TagRoutesView extends ItemView {
         DebugMsg(DebugLevel.DEBUG, "hovered nodes:", this.hoveredNodes)
         DebugMsg(DebugLevel.DEBUG, "highlight nodes:", this.highlightNodes)
         
-        this.Graph.graphData().nodes.forEach((node: ExtendedNodeObject) => {
+/*         this.Graph.graphData().nodes.forEach((node: ExtendedNodeObject) => {
             if (!(node as any).__threeObj) {
              //   this.Graph.graphData(this.gData);
                 DebugMsg(DebugLevel.ERROR,"no mesh found");
                 
           } 
-        })
+        }) */
         // update nodes visibility
         this.Graph.graphData().nodes.forEach((node: ExtendedNodeObject) => {
             const obj = node._ThreeMesh; // 获取节点的 Three.js 对象
@@ -677,14 +677,14 @@ export class TagRoutesView extends ItemView {
                 if (showSpriteText && node._Sprite) {
                     node._Sprite.visible = true;
                     node._Sprite.textHeight = 18;
-                }else {
+                }/* else {
                     DebugMsg(DebugLevel.ERROR,"node found but no sprite text found", this.highlightNodes)
-                }
+                } */
             } 
             
         }
         );
-        DebugMsg(DebugLevel.INFO,"update highlight before exit")
+        DebugMsg(DebugLevel.DEBUG,"update highlight before exit")
 
 /*         if (this.hoverNode && this.hoverNode._Sprite) {
             this.hoverNode._Sprite.visible = true;
@@ -1508,7 +1508,7 @@ export class TagRoutesView extends ItemView {
                         node.y + dir.y * distance,
                         node.z + dir.z * distance
                     );
-                    DebugMsg(DebugLevel.WARN,"Camera new position: ", targetPoint); // 输出目标点的坐标
+                    DebugMsg(DebugLevel.DEBUG,"Camera new position: ", targetPoint); // 输出目标点的坐标
                     this.Graph.cameraPosition(
                         targetPoint, // new position
                         { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0 },
