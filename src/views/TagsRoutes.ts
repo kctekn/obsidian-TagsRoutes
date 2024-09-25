@@ -477,17 +477,22 @@ export class TagRoutesView extends ItemView {
                 this.selectedNodes.clear();
                 this.selectedNodesLinks.clear();
                 this.selectedNode = node;
-                if (node) {
-                    this.selectedNodes.add(node);
-                    if (node.neighbors) {
-                        node.neighbors.forEach(neighbor => {
-                            this.selectedNodes.add(neighbor)
-                        });
-                    }
-                    if (node.links) {
-                        node.links.forEach(link => {
-                            this.selectedNodesLinks.add(link)
-                        });
+                const useNew: boolean = true;
+                if (useNew && node) {
+                    this.getNeighbors(node, { nodes: this.selectedNodes as any, links: this.selectedNodesLinks as any });
+                } else {
+                    if (node) {
+                        this.selectedNodes.add(node);
+                        if (node.neighbors) {
+                            node.neighbors.forEach(neighbor => {
+                                this.selectedNodes.add(neighbor)
+                            });
+                        }
+                        if (node.links) {
+                            node.links.forEach(link => {
+                                this.selectedNodesLinks.add(link)
+                            });
+                        }
                     }
                 }
             }else {
@@ -517,6 +522,30 @@ export class TagRoutesView extends ItemView {
 
         this.updateHighlight();
     }
+    
+    getNeighbors(node: ExtendedNodeObject, highLightSet:{ nodes:Set<ExtendedNodeObject>,links:Set<LinkObject>}) {
+        let retNodes = highLightSet.nodes;
+        let retLinks = highLightSet.links;
+         if (node.links) {
+            node.links.forEach(link => {
+                retLinks.add(link)
+            });
+        } 
+        retNodes.add(node);
+        if (node.neighbors) {
+            node.neighbors.forEach(neighbor => {
+                //let tmp:{nodes:Set<ExtendedNodeObject>,links:Set<LinkObject>}
+                if (!retNodes.has(neighbor)) {
+                    retNodes.add(neighbor)
+                    if(node.neighbors?.length && node.neighbors.length<=5)
+                    this.getNeighbors(neighbor, highLightSet);
+                    //                    retNodes = new Set([...retNodes, ...tmp.nodes])
+//                    retLinks = new Set([...retLinks, ...tmp.links])
+                }
+            });
+        }
+        //return { nodes: retNodes, links: retLinks }
+    }
     /**
      * Node will be null when hover ended
      * @param node 
@@ -528,17 +557,24 @@ export class TagRoutesView extends ItemView {
         this.hoverNode = node;
         this.hoveredNodes.clear();
         this.hoveredNodesLinks.clear();
-        if (node) {
-            this.hoveredNodes.add(node);
-            if (node.neighbors) {
-                node.neighbors.forEach(neighbor => {
-                    this.hoveredNodes.add(neighbor)
-                });
-            }
-            if (node.links) {
-                node.links.forEach(link => {
-                    this.hoveredNodesLinks.add(link)
-                });
+        const useNew: boolean = true;
+        if (useNew && node) {
+           this.getNeighbors(node,{nodes:this.hoveredNodes as any,links:this.hoveredNodesLinks as any});
+          //  this.hoveredNodes = nodes;
+          //  this.hoveredNodesLinks = links;
+        } else {
+            if (node) {
+                this.hoveredNodes.add(node);
+                if (node.neighbors) {
+                    node.neighbors.forEach(neighbor => {
+                        this.hoveredNodes.add(neighbor)
+                    });
+                }
+                if (node.links) {
+                    node.links.forEach(link => {
+                        this.hoveredNodesLinks.add(link)
+                    });
+                }
             }
         }
         this.updateHighlight();
