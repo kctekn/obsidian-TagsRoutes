@@ -477,8 +477,7 @@ export class TagRoutesView extends ItemView {
                 this.selectedNodes.clear();
                 this.selectedNodesLinks.clear();
                 this.selectedNode = node;
-                const useNew: boolean = true;
-                if (useNew && node) {
+                if (globalProgramControl.useTrackHighlight && node) {
                     this.getNeighbors(node, { nodes: this.selectedNodes as any, links: this.selectedNodesLinks as any });
                 } else {
                     if (node) {
@@ -527,8 +526,10 @@ export class TagRoutesView extends ItemView {
         let retNodes = highLightSet.nodes;
         let retLinks = highLightSet.links;
          if (node.links) {
-            node.links.forEach(link => {
-                retLinks.add(link)
+             node.links.forEach(link => {
+                 if (!retLinks.has(link)) {
+                     retLinks.add(link)
+                 }
             });
         } 
         retNodes.add(node);
@@ -539,12 +540,9 @@ export class TagRoutesView extends ItemView {
                     retNodes.add(neighbor)
                     if(node.neighbors?.length && node.neighbors.length<=5)
                     this.getNeighbors(neighbor, highLightSet);
-                    //                    retNodes = new Set([...retNodes, ...tmp.nodes])
-//                    retLinks = new Set([...retLinks, ...tmp.links])
                 }
             });
         }
-        //return { nodes: retNodes, links: retLinks }
     }
     /**
      * Node will be null when hover ended
@@ -557,8 +555,7 @@ export class TagRoutesView extends ItemView {
         this.hoverNode = node;
         this.hoveredNodes.clear();
         this.hoveredNodesLinks.clear();
-        const useNew: boolean = true;
-        if (useNew && node) {
+        if (globalProgramControl.useTrackHighlight && node) {
            this.getNeighbors(node,{nodes:this.hoveredNodes as any,links:this.hoveredNodesLinks as any});
           //  this.hoveredNodes = nodes;
           //  this.hoveredNodesLinks = links;
