@@ -1,4 +1,4 @@
-import { moment, MarkdownView, Notice, CachedMetadata, ValueComponent, Platform } from 'obsidian';
+import { moment, MarkdownView, Notice, CachedMetadata, ValueComponent, Platform, View } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
 import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile, DebugMsg, DebugLevel } from "../util/util"
@@ -9,6 +9,7 @@ import { settingGroup } from "./settings"
 import TagsRoutes, { defaltColorMap, DEFAULT_DISPLAY_SETTINGS, globalProgramControl, TagRoutesSettings } from '../main';
 import { Vector2 } from 'three';
 import SpriteText from 'three-spritetext';
+import html2canvas from 'html2canvas';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
 interface GraphData {
     nodes: ExtendedNodeObject[];
@@ -320,6 +321,74 @@ export class TagRoutesView extends ItemView {
         }
         return false;
     }
+
+    async captureAndSaveScreenshot() {
+        this.Graph.renderer().render(this.Graph.scene(), this.Graph.camera());
+        this.Graph.postProcessingComposer().render();// .renderer.render(this.Graph.scene(), this.Graph.camera());;
+        const gl = this.Graph.renderer().getContext();
+        const width = gl.drawingBufferWidth;
+        const height = gl.drawingBufferHeight;
+
+        const buffer = new Uint8Array(width * height * 4);
+        gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, buffer);
+      
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext('2d');
+      
+        if (!context) return;  // for type script
+        const imageData = context.createImageData(width, height);
+        imageData.data.set(buffer);
+      
+        context.putImageData(imageData, 0, 0);
+      
+        // 翻转图像（因为 WebGL 和 Canvas 的坐标系不同）
+        context.scale(1, -1);
+        context.translate(0, -height);
+        context.drawImage(canvas, 0, 0);
+      
+        const dataURL= canvas.toDataURL('image/png');
+
+        //const dataURL = this.Graph.renderer().domElement.toDataURL('image/png');
+        const base64Data = dataURL.split(',')[1];
+
+        const arrayBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0)).buffer;
+//        const filePath = `${this.app.vault.configDir}/graph-screenshot-${Date.now()}.png`;
+        const filePath = `graph-screenshot-${Date.now()}.png`;
+
+        const file = await this.app.vault.createBinary(filePath, arrayBuffer);
+
+        new Notice('Screenshot saved and inserted into note.');
+
+        this.insertImageToCurrentNote(file);
+    }
+    async insertImageToCurrentNote(file: TFile) {
+        let activeLeaf: WorkspaceLeaf | null = null;
+    
+        // 获取当前所有的 Markdown 视图
+        const leaves = this.app.workspace.getLeavesOfType("markdown");
+        if (leaves.length > 0) {
+            activeLeaf = leaves.find(leaf => {
+                const container = leaf.view.containerEl;
+                const parentContainer = container.closest('.workspace-leaf') as HTMLElement;
+                return parentContainer && parentContainer.style.display !== 'none';
+            }) || null;
+        }
+    
+        if (activeLeaf) {
+            const editor = (activeLeaf.view as MarkdownView).editor;
+            const cursor = editor.getCursor();
+            editor.replaceRange(`![[${file.path}]]`, cursor);
+            //DebugMsg(DebugLevel.WARN,"Screenshot saved and inserted into note.") //if it is in edit mode
+        } else {
+            DebugMsg(DebugLevel.WARN,"No markdown note is active: Insert to note canceled, only save screenshot.")
+            /* 如果没有找到 Markdown 视图，可以创建一个新的笔记
+            const leaf = this.app.workspace.getLeaf(false);
+            const newNote = await this.app.vault.create(`Screenshot-${Date.now()}.md`, `![[${file.path}]]`);
+            this.app.workspace.activeLeaf.openFile(newNote); */
+        }
+    }
     createNodeThreeObjectLight(node: ExtendedNodeObject,) {
 
         const group = new THREE.Group();
@@ -522,7 +591,7 @@ export class TagRoutesView extends ItemView {
         this.updateHighlight();
     }
     
-    getNeighbors(node: ExtendedNodeObject, highLightSet:{ nodes:Set<ExtendedNodeObject>,links:Set<LinkObject>}) {
+    async getNeighbors(node: ExtendedNodeObject, highLightSet:{ nodes:Set<ExtendedNodeObject>,links:Set<LinkObject>}) {
         let retNodes = highLightSet.nodes;
         let retLinks = highLightSet.links;
          if (node.links) {
@@ -538,7 +607,7 @@ export class TagRoutesView extends ItemView {
                 //let tmp:{nodes:Set<ExtendedNodeObject>,links:Set<LinkObject>}
                 if (!retNodes.has(neighbor)) {
                     retNodes.add(neighbor)
-                    if(node.neighbors?.length && node.neighbors.length<=5)
+                    if(node.neighbors?.length && node.neighbors.length<=500)
                     this.getNeighbors(neighbor, highLightSet);
                 }
             });
@@ -1461,6 +1530,7 @@ export class TagRoutesView extends ItemView {
         // 打印结果
         container.addClass("tags-routes")
         const graphContainer = container.createEl('div', { cls: 'graph-container' });
+        graphContainer.id = "graph-container";
 
         // Tooltips for new users
         const tooltipBar = container.createEl('div', { cls: 'tooltip-wrapper'});
@@ -1610,7 +1680,8 @@ export class TagRoutesView extends ItemView {
                     .addSlider("Slot #", 1, 5, 1, this.plugin.settings.currentSlotNum, this.onSlotSliderChange)
                     .add({
                         arg: (new settingGroup(this.plugin, "button-box", "button-box", "flex-box")
-                            .addButton("Apply theme color", "graph-button", () => { this.applyThemeColor() })
+                        .addButton("Apply theme color", "graph-button", () => { this.applyThemeColor() })
+                        .addButton("Capture scene", "graph-button", () => { this.captureAndSaveScreenshot() })
                         )
                     })
                     .add({
@@ -1777,3 +1848,4 @@ export class TagRoutesView extends ItemView {
         // Nothing to clean up.
     }
 }
+

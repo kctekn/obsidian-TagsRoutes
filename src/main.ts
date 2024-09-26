@@ -10,7 +10,7 @@ export const globalProgramControl = {
 	useGroup: true,
 	allowDuplicated: false,
 	aimBeforeLink: true,
-	useTrackHighlight: false,
+	useTrackHighlight: true,
 }
 export const currentVersion = '1.1.2';    //Used to show in debug console
 export const currentSaveSpecVer = 10101;  //Indicate current version of saved config file: data.json 
