@@ -443,6 +443,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 	toggleEnableSave: ToggleComponent;
 	toggleEnableShow: ToggleComponent;
 	colors: colorPickerGroup[] = [];
+	colorMapSourceElement: HTMLElement;
 	constructor(app: App, plugin: TagsRoutes) {
 		super(app, plugin);
 		this.plugin = plugin;
@@ -538,6 +539,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 							} 
 						  });
 						this.colors.forEach(v => v.resetColor(true))
+						this.colorMapSourceElement.innerText = this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum].colorMapSource;
 
 					})
 					.setValue(this.plugin.settings.currentTheme === 'dark' ? false : true)
@@ -559,6 +561,8 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 			this.plugin.view.onSettingsSave();
 			this.plugin.view.updateColor();
 			this.colors.forEach(v => v.resetColor(true))
+			this.colorMapSourceElement.innerText = this.plugin.settings.customSlot[this.plugin.settings.currentSlotNum].colorMapSource;
+
 			new Notice(`Color reset on slot ${this.plugin.settings.currentSlotNum}`);
 		});
 
@@ -568,8 +572,10 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		desc.createEl("a", { href: "https://www.w3.org/wiki/CSS/Properties/color/keywords", text: "Css color keywords" })
 		desc.createEl("br")
 		desc.createEl("br")
+		this.colorMapSourceElement =
 		desc.createEl("div").createEl("span", { text: "Current color map source: " })
-			.createEl("span", { text:  this.plugin.settings.customSlot?.[0]?.colorMapSource || "Defalt"	}).addClass("need-save")
+			.createEl("span", { text: this.plugin.settings.customSlot?.[0]?.colorMapSource || "Defalt" })
+		this.colorMapSourceElement.addClass("need-save")
 		desc.addClass("tags-routes");
 		desc.addClass("setting-item-description");
 

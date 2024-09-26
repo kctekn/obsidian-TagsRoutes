@@ -686,10 +686,10 @@ export class TagRoutesView extends ItemView {
         );
         DebugMsg(DebugLevel.DEBUG,"update highlight before exit")
 
-/*         if (this.hoverNode && this.hoverNode._Sprite) {
+        if (this.hoverNode && this.hoverNode._Sprite) {
             this.hoverNode._Sprite.visible = true;
             this.hoverNode._Sprite.textHeight = 18;
-        } */
+        }
 
         this.Graph
             .linkWidth(this.Graph.linkWidth())
