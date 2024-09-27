@@ -6,7 +6,7 @@ import ForceGraph3D, { ForceGraph3DInstance } from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "./settings"
-import TagsRoutes, { defaltColorMap, DEFAULT_DISPLAY_SETTINGS, globalProgramControl, TagRoutesSettings } from '../main';
+import TagsRoutes, { defaltColorMap, DEFAULT_DISPLAY_SETTINGS, globalDirectory, globalProgramControl, TagRoutesSettings } from '../main';
 import { Vector2 } from 'three';
 import SpriteText from 'three-spritetext';
 import html2canvas from 'html2canvas';
@@ -51,7 +51,6 @@ interface Node {
 }
 // 创建 filesDataMap
 const filesDataMap: Map<string, CachedMetadata | null> = new Map();
-const logFilePath = 'TagsRoutes/logs/logMessage.md'
 
 interface VisualStyle {
     // Name of the visual style
@@ -1536,7 +1535,7 @@ export class TagRoutesView extends ItemView {
         this.debugLogToFileM("|tags num:| " + (TagNodeNum) + "| broken files: |" + brokennum + "| tag links:| " + TagLinkNum + "|")
         this.debugWriteToFile();
         if (this.plugin.settings.enableShow) {
-            showFile(logFilePath);
+            showFile(globalDirectory.logFilePath);
         }
         return { nodes: nodes, links: links };
     }
@@ -1742,31 +1741,33 @@ export class TagRoutesView extends ItemView {
     handleTagClick(node: ExtendedNodeObject) {
         if (node.type === 'tag') {
             const sanitizedId = node.id.replace(/\//g, '__');
-            const newFilePath = `TagsRoutes/reports/TagReport_${sanitizedId}.md`; // 新文件的路径和名称
+            const newFileName = `TagReport_${sanitizedId}.md`; // 新文件的路径和名称
             const fileContent1 = `---\ntags:\n  - tag-report\n---\n
 \`\`\`tagsroutes
     ${node.id}
 \`\`\`
 `; // 要写入的新内容
-            this.createAndWriteToFile(newFilePath, fileContent1);
+            this.createAndWriteReport(newFileName, fileContent1);
         }
         if (node.type === 'frontmatter_tag') {
             DebugMsg(DebugLevel.DEBUG,"handleTagClick::frontmatter tag:", node.id)
             const sanitizedId = node.id.replace(/\//g, '__');
-            const newFilePath = `TagsRoutes/reports/TagReport_frontmatter_tag_${sanitizedId}.md`; // 新文件的路径和名称
+            const newFileName = `TagReport_frontmatter_tag_${sanitizedId}.md`; // 新文件的路径和名称
             const fileContent1 = `---\ntags:\n  - tag-report\n---\n
 \`\`\`tagsroutes
     frontmatter_tag: ${node.id}
 \`\`\`
 `; // 要写入的新内容
-            this.createAndWriteToFile(newFilePath, fileContent1);
+            this.createAndWriteReport(newFileName, fileContent1);
         }
     }
     // 创建文件并写入内容的函数
-    async createAndWriteToFile(filePath: string, content: string) {
+    async createAndWriteReport(fileName: string, content: string) {
         const { vault } = this.app;
+        const filePath=`${globalDirectory.reportDirectory}/${fileName}`
         // 检查文件是否已经存在
         if (!vault.getAbstractFileByPath(filePath)) {
+            createFolderIfNotExists(globalDirectory.reportDirectory)
             await vault.create(filePath, content);
             //    DebugMsg(DebugLevel.DEBUG,"create query file.")
         } else {
@@ -1777,7 +1778,9 @@ export class TagRoutesView extends ItemView {
             }
         }
         // 打开新创建的文件
-        const file = vault.getAbstractFileByPath(filePath)
+//        const file = vault.getAbstractFileByPath(filePath)
+        const file = vault.getFileByPath(filePath)
+        console.log("files", vault.getFiles())
         if (file && file instanceof TFile) {
             const leaf = this.app.workspace.getLeaf();
             await leaf.openFile(file)
@@ -1798,15 +1801,16 @@ export class TagRoutesView extends ItemView {
         const { vault } = this.app;
         const content = this.logMessages;
         // 检查文件是否已经存在
-        if (!vault.getAbstractFileByPath(logFilePath)) {
+        if (!vault.getAbstractFileByPath(globalDirectory.logFilePath)) {
+            createFolderIfNotExists(globalDirectory.logDirectory)
             if (!this.createdFile) {
                 this.createdFile = true;
-                await vault.create(logFilePath, content.join(""));
+                await vault.create(globalDirectory.logFilePath, content.join(""));
                 // DebugMsg(DebugLevel.DEBUG,"create log file.")
             }
         } else {
             // 如果文件已经存在，可以选择覆盖内容或者追加内容
-            const file = vault.getAbstractFileByPath(logFilePath);
+            const file = vault.getAbstractFileByPath(globalDirectory.logFilePath);
             //        DebugMsg(DebugLevel.DEBUG,"using existing log file")
             if (file instanceof TFile) {
                 //    vault.append(file, content.join(""))

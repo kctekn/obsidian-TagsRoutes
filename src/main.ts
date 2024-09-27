@@ -2,6 +2,7 @@ import { App, WorkspaceLeaf, Notice, Plugin, PluginSettingTab, Setting, ToggleCo
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
 import { createFolderIfNotExists,DebugLevel,DebugMsg,namedColor } from "./util/util"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
+import * as path from 'path';
 //const versionInfo = require('./version_info.txt');
 
 export const globalProgramControl = {
@@ -17,7 +18,18 @@ export const currentVersion = '1.1.3';    //Used to show in debug console
 export const currentSaveSpecVer = 10103;  //Indicate current version of saved config file: data.json 
 export const minSaveSpecVer = 10101;      //Data will be loaded if the loaded version of data.json >= minSaveSpecVer, and will be completely overrided to default if version < minSaveSpecVer
 
-type AnyObject = Record<string, any>;
+const programDirectory = "TagsRoutes"
+const logDirectory = `${programDirectory}/logs`
+const reportDirectory = `${programDirectory}/reports`
+const logFilePath = `${programDirectory}/logMessage.md`
+
+export const globalDirectory = {
+	programDirectory,
+	logDirectory,
+	reportDirectory,
+	logFilePath,
+}
+
 export interface colorSpec {
 	name?: string;
 	value: string;
@@ -212,9 +224,9 @@ export default class TagsRoutes extends Plugin {
 	async initializePlugin() {
 		//DebugMsg(DebugLevel.DEBUG,versionInfo);
 		//new Notice(versionInfo, 0)
-		createFolderIfNotExists('TagsRoutes')
-		createFolderIfNotExists('TagsRoutes/logs')
-		createFolderIfNotExists('TagsRoutes/reports')
+/* 		createFolderIfNotExists('.TagsRoutes')
+		createFolderIfNotExists('.TagsRoutes/logs')
+		createFolderIfNotExists('.TagsRoutes/reports') */
 		await this.loadSettings();
 		this.registerView(
 			VIEW_TYPE_TAGS_ROUTES,
