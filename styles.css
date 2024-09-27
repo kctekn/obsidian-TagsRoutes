@@ -7,11 +7,12 @@ If your plugin does not need CSS, delete this file.
 .tags-routes {
     padding: 0px !important;
     position: relative;
-}
-
-.tags-routes .graph-container {
     overflow: hidden !important;
 }
+
+/* .tags-routes .graph-container {
+    overflow: hidden !important;
+} */
 
 .tags-routes .tooltip-wrapper {
     position: absolute;
