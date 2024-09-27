@@ -11,7 +11,7 @@ export const globalProgramControl = {
 	allowDuplicated: false,
 	aimBeforeLink: true,
 }
-export const currentVersion = '1.1.1';    //Used to show in debug console
+export const currentVersion = '1.1.2';    //Used to show in debug console
 export const currentSaveSpecVer = 10101;  //Indicate current version of saved config file: data.json 
 export const minSaveSpecVer = 10101;      //Data will be loaded if the loaded version of data.json >= minSaveSpecVer, and will be completely overrided to default if version < minSaveSpecVer
 

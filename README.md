@@ -18,7 +18,7 @@ Wiki:
 
 And you can show up your beautiful vault pictures here: [Share & showcase](https://github.com/kctekn/obsidian-TagsRoutes/discussions/17)
 
-## Version 1.1.1 Release Notes
+## Version 1.1.1/1.1.2 Release Notes
 
 1. **Improved Orphan File Detection**
     - Enhanced algorithm to identify unlinked files:
@@ -33,6 +33,12 @@ And you can show up your beautiful vault pictures here: [Share & showcase](https
 
 4. **New Quick Focus Function**:
     - Right-clicking on a node in the scene now triggers a "quick focus" behavior for easier navigation.
+
+### Version 1.1.2 Bug Fix Release
+
+1. Color Map Source Update Issue: The color map source now correctly updates when the color is reset.
+2. Label Text Display Issue: The label text now displays correctly even when toggled off.
+3. Unwanted Border Issue: An issue causing an unwanted border to appear in certain scenarios has been resolved.
 
 _*The usage demo:*_
 
