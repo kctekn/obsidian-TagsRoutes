@@ -16,7 +16,7 @@ export class settingGroup {
         - and a hold container ready to add sub components
         - with in the given comtainer
     */
-    constructor(plugin: TagsRoutes, id: string, name: string, type: "root" | "group" | "flex-box" = "group") {//isRoot: boolean = false) {
+    constructor(plugin: TagsRoutes, id: string, name: string, type: "root" | "group" | "flex-box"|"normal-box" = "group") {//isRoot: boolean = false) {
         this.plugin = plugin
         this.rootContainer = document.createElement('div')
         this.rootContainer.id = id;
@@ -29,6 +29,11 @@ export class settingGroup {
             this.holdContainer.addClass('setting-flex-box')
             return this;
         }
+        if (type === "normal-box") {
+            this.holdContainer = this.rootContainer.createDiv('div')
+            //this.holdContainer.addClass('setting-flex-box')
+            return this;
+        }        
         this.headContainer = this.rootContainer.createEl('div')//, { cls: 'title-bar' })
         this.holdContainer = this.rootContainer.createDiv('div')
         if (type === "group") {

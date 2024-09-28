@@ -377,6 +377,7 @@ export class TagRoutesView extends ItemView {
         }
     
         if (activeLeaf) {
+            
             const editor = (activeLeaf.view as MarkdownView).editor;
             const cursor = editor.getCursor();
             editor.replaceRange(`![[${file.path}]]`, cursor);
@@ -1679,9 +1680,8 @@ export class TagRoutesView extends ItemView {
                 arg: (new settingGroup(this.plugin, "save-load", "Save and load"))
                     .addSlider("Slot #", 1, 5, 1, this.plugin.settings.currentSlotNum, this.onSlotSliderChange)
                     .add({
-                        arg: (new settingGroup(this.plugin, "button-box", "button-box", "flex-box")
+                        arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
                         .addButton("Apply theme color", "graph-button", () => { this.applyThemeColor() })
-                        .addButton("Capture scene", "graph-button", () => { this.captureAndSaveScreenshot() })
                         )
                     })
                     .add({
@@ -1689,6 +1689,11 @@ export class TagRoutesView extends ItemView {
                             .addButton("Save", "graph-button", () => { this.onSettingsSave() }).getLastElement(this.saveButtonRef)
                             .addButton("Load", "graph-button", () => { this.onSettingsLoad() })
                             .addButton("Reset", "graph-button", () => { this.onSettingsReset() })
+                        )
+                    })
+                    .add({
+                        arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
+                        .addButton("Capture", "graph-button", () => { this.captureAndSaveScreenshot() })
                         )
                     })
             })

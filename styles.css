@@ -106,7 +106,7 @@ If your plugin does not need CSS, delete this file.
     right: 10px;
     z-index: 10;
     padding: 1px 10px;
-    margin: 4px;
+/*    margin: 4px;*/
     font-size: 14px;
     border: none;
     border-radius: 5px;
@@ -162,7 +162,7 @@ If your plugin does not need CSS, delete this file.
 
 .tags-routes .setting-flex-box {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
 }
 
 .tags-routes .setting-item-inline {
