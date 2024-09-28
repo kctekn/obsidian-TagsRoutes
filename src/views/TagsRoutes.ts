@@ -322,7 +322,7 @@ export class TagRoutesView extends ItemView {
         return false;
     }
 
-    async captureAndSaveScreenshot() {
+    async captureAndSaveScreenshot(insert:boolean) {
         this.Graph.renderer().render(this.Graph.scene(), this.Graph.camera());
         this.Graph.postProcessingComposer().render();// .renderer.render(this.Graph.scene(), this.Graph.camera());;
         const gl = this.Graph.renderer().getContext();
@@ -361,10 +361,12 @@ export class TagRoutesView extends ItemView {
         const filePath = `${globalProgramControl.snapshotDirectory}/graph-screenshot-${moment(Date.now()).format('YYYY-MM-DD-HH-mm-ss')}.png`;
 
         const file = await this.app.vault.createBinary(filePath, arrayBuffer);
+        if (insert) {
 
-        new Notice('Screenshot saved and inserted into note.');
-
-        this.insertImageToCurrentNote(file);
+            this.insertImageToCurrentNote(file);
+        } else {
+            new Notice('Screenshot saved.');
+        }
     }
     async insertImageToCurrentNote(file: TFile) {
         let activeLeaf: WorkspaceLeaf | null = null;
@@ -386,8 +388,12 @@ export class TagRoutesView extends ItemView {
                 const editor = (activeLeaf.view as MarkdownView).editor;
                 const cursor = editor.getCursor();
                 editor.replaceRange(`![[${file.path}]]`, cursor);
+                new Notice('Screenshot saved and inserted into note.');
+
             }
         } else {
+            new Notice('Screenshot saved but no editing note found to insert.');
+
             DebugMsg(DebugLevel.WARN,"No markdown note is active: Insert to note canceled, only save screenshot.")
             /* 如果没有找到 Markdown 视图，可以创建一个新的笔记
             const leaf = this.app.workspace.getLeaf(false);
@@ -1698,7 +1704,12 @@ export class TagRoutesView extends ItemView {
                     })
                     .add({
                         arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
-                        .addButton("Capture", "graph-button", () => { this.captureAndSaveScreenshot() })
+                        .addButton("Capture & Insert", "graph-button", () => { this.captureAndSaveScreenshot(true) })
+                        )
+                    })
+                    .add({
+                        arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
+                        .addButton("Capture only", "graph-button", () => { this.captureAndSaveScreenshot(false) })
                         )
                     })
             })
