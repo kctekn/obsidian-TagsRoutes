@@ -1,7 +1,7 @@
 import { moment, MarkdownView, Notice, CachedMetadata, ValueComponent, Platform, View } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
-import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile, DebugMsg, DebugLevel } from "../util/util"
+import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile, DebugMsg, DebugLevel, createFolderIfNotExists } from "../util/util"
 import ForceGraph3D, { ForceGraph3DInstance } from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
@@ -355,7 +355,10 @@ export class TagRoutesView extends ItemView {
 
         const arrayBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0)).buffer;
 //        const filePath = `${this.app.vault.configDir}/graph-screenshot-${Date.now()}.png`;
-        const filePath = `graph-screenshot-${Date.now()}.png`;
+        if (globalProgramControl.snapshotDirectory !== "") {
+            createFolderIfNotExists(globalProgramControl.snapshotDirectory)
+        }
+        const filePath = `${globalProgramControl.snapshotDirectory}/graph-screenshot-${moment(Date.now()).format('YYYY-MM-DD-HH-mm-ss')}.png`;
 
         const file = await this.app.vault.createBinary(filePath, arrayBuffer);
 
@@ -377,11 +380,13 @@ export class TagRoutesView extends ItemView {
         }
     
         if (activeLeaf) {
-            
-            const editor = (activeLeaf.view as MarkdownView).editor;
-            const cursor = editor.getCursor();
-            editor.replaceRange(`![[${file.path}]]`, cursor);
-            //DebugMsg(DebugLevel.WARN,"Screenshot saved and inserted into note.") //if it is in edit mode
+            const state = (activeLeaf.view as MarkdownView).getState();
+            DebugMsg(DebugLevel.WARN, state);
+            if (state.mode === 'source') {
+                const editor = (activeLeaf.view as MarkdownView).editor;
+                const cursor = editor.getCursor();
+                editor.replaceRange(`![[${file.path}]]`, cursor);
+            }
         } else {
             DebugMsg(DebugLevel.WARN,"No markdown note is active: Insert to note canceled, only save screenshot.")
             /* 如果没有找到 Markdown 视图，可以创建一个新的笔记
