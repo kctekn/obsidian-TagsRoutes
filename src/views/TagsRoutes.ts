@@ -174,6 +174,7 @@ export class TagRoutesView extends ItemView {
         this.getNodeColorByType = this.getNodeColorByType.bind(this);
         this.switchTheme = this.switchTheme.bind(this);
         this.onToggleLabelDisplay = this.onToggleLabelDisplay.bind(this);
+        this.onToggleHighlightTrackMode = this.onToggleHighlightTrackMode.bind(this);
         this.setSaveButton = this.setSaveButton.bind(this);
         this.visuals = {
             dark: new darkStyle("dark", this.plugin),
@@ -560,7 +561,7 @@ export class TagRoutesView extends ItemView {
                 this.selectedNodes.clear();
                 this.selectedNodesLinks.clear();
                 this.selectedNode = node;
-                if (globalProgramControl.useTrackHighlight && node) {
+                if (this.plugin.settings.customSlot[0].toggle_highlight_track_mode && node) {
                     this.getNeighbors(node, { nodes: this.selectedNodes as any, links: this.selectedNodesLinks as any });
                 } else {
                     if (node) {
@@ -588,20 +589,24 @@ export class TagRoutesView extends ItemView {
        // this.Graph.refresh();
     }
     highlightOnNodeRightClick(node: ExtendedNodeObject | null) {
-        if (node) {
-            this.selectedNodes.add(node);
-            if (node.neighbors) {
-                node.neighbors.forEach(neighbor => {
-                    this.selectedNodes.add(neighbor)
-                });
-            }
-            if (node.links) {
-                node.links.forEach(link => {
-                    this.selectedNodesLinks.add(link)
-                });
+        if (!this.plugin.settings.customSlot) return; 
+        if (this.plugin.settings.customSlot[0].toggle_highlight_track_mode && node) {
+            this.getNeighbors(node, { nodes: this.selectedNodes as any, links: this.selectedNodesLinks as any });
+        } else {
+            if (node) {
+                this.selectedNodes.add(node);
+                if (node.neighbors) {
+                    node.neighbors.forEach(neighbor => {
+                        this.selectedNodes.add(neighbor)
+                    });
+                }
+                if (node.links) {
+                    node.links.forEach(link => {
+                        this.selectedNodesLinks.add(link)
+                    });
+                }
             }
         }
-
         this.updateHighlight();
     }
     
@@ -633,12 +638,13 @@ export class TagRoutesView extends ItemView {
      * @returns 
      */
     highlightOnNodeHover(node: ExtendedNodeObject | null) {
+        if (!this.plugin.settings.customSlot) return; 
         // no state change
         if ((!node && !this.hoveredNodes.size) || (node && this.hoverNode === node)) return;
         this.hoverNode = node;
         this.hoveredNodes.clear();
         this.hoveredNodesLinks.clear();
-        if (globalProgramControl.useTrackHighlight && node) {
+        if (this.plugin.settings.customSlot[0].toggle_highlight_track_mode && node) {
            this.getNeighbors(node,{nodes:this.hoveredNodes as any,links:this.hoveredNodesLinks as any});
           //  this.hoveredNodes = nodes;
           //  this.hoveredNodesLinks = links;
@@ -1229,6 +1235,8 @@ export class TagRoutesView extends ItemView {
             this.plugin.settings.customSlot[this.currentSlotNum], "toggle_global_map");
         this.setControlValue("Toggle label display", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "toggle_label_display");
+        this.setControlValue("Highlight track mode", this._controls,
+            this.plugin.settings.customSlot[this.currentSlotNum], "toggle_highlight_track_mode");
     }
     onSettingsLoad() {
         if (!this.plugin.settings.customSlot) return; 
