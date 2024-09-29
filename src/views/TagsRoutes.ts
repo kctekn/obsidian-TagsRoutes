@@ -392,15 +392,15 @@ export class TagRoutesView extends ItemView {
                 editor.replaceRange(`![[${file.path}]]`, cursor);
                 new Notice('Screenshot saved and inserted into note.');
 
+            } else {
+                new Notice('Screenshot saved but no editing note found to insert.');
+    
+                DebugMsg(DebugLevel.WARN,"No markdown note is active: Insert to note canceled, only save screenshot.")
+                /* 如果没有找到 Markdown 视图，可以创建一个新的笔记
+                const leaf = this.app.workspace.getLeaf(false);
+                const newNote = await this.app.vault.create(`Screenshot-${Date.now()}.md`, `![[${file.path}]]`);
+                this.app.workspace.activeLeaf.openFile(newNote); */
             }
-        } else {
-            new Notice('Screenshot saved but no editing note found to insert.');
-
-            DebugMsg(DebugLevel.WARN,"No markdown note is active: Insert to note canceled, only save screenshot.")
-            /* 如果没有找到 Markdown 视图，可以创建一个新的笔记
-            const leaf = this.app.workspace.getLeaf(false);
-            const newNote = await this.app.vault.create(`Screenshot-${Date.now()}.md`, `![[${file.path}]]`);
-            this.app.workspace.activeLeaf.openFile(newNote); */
         }
     }
     createNodeThreeObjectLight(node: ExtendedNodeObject,) {
