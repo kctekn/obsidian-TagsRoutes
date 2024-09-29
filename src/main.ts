@@ -546,7 +546,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.snapShotFolder)
 					.onChange(async (v) => {
 						this.plugin.settings.snapShotFolder = v;
-						console.log("on text change: ", v)
+				//		console.log("on text change: ", v)
 						await this.plugin.saveSettings();
 					})
 				})

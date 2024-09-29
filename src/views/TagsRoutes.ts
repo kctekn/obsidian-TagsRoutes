@@ -1780,7 +1780,7 @@ export class TagRoutesView extends ItemView {
         // 打开新创建的文件
 //        const file = vault.getAbstractFileByPath(filePath)
         const file = vault.getFileByPath(filePath)
-        console.log("files", vault.getFiles())
+   //     console.log("files", vault.getFiles())
         if (file && file instanceof TFile) {
             const leaf = this.app.workspace.getLeaf();
             await leaf.openFile(file)
