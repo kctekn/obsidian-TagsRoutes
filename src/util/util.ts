@@ -79,8 +79,9 @@ export const getFileType = (filePath: string): nodeTypes => {
 				return 'pdf'
 		}
 	if (filePath.contains("attachments")) return 'attachment'
-	if (middlePart.contains("graph-screenshot-")) return 'screenshot'
-		return 'other'
+	if (middlePart?.contains("graph-screenshot-")) return 'screenshot'
+
+	return 'other'
 };
 export const getAllLinks = (cache: CachedMetadata | null): string[] => {
 	if (!cache || !cache.links) return [];
