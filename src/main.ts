@@ -13,8 +13,8 @@ export const globalProgramControl = {
 	useTrackHighlight: true,
 	snapshotDirectory: "graph-screenshot",
 }
-export const currentVersion = '1.1.2';    //Used to show in debug console
-export const currentSaveSpecVer = 10101;  //Indicate current version of saved config file: data.json 
+export const currentVersion = '1.1.3';    //Used to show in debug console
+export const currentSaveSpecVer = 10103;  //Indicate current version of saved config file: data.json 
 export const minSaveSpecVer = 10101;      //Data will be loaded if the loaded version of data.json >= minSaveSpecVer, and will be completely overrided to default if version < minSaveSpecVer
 
 type AnyObject = Record<string, any>;
@@ -83,6 +83,7 @@ export interface TagRoutesSettings {
 	link_particle_number: number;
 	toggle_global_map: boolean;
 	toggle_label_display: boolean;
+	toggle_highlight_track_mode: boolean;
 	colorMapSource: string;
 	colorMap: colorMap;
 }
@@ -97,6 +98,8 @@ interface Settings {
 		light: number;
 	}
 	openInCurrentTab: boolean;
+	enableTagsReaction: boolean;
+	snapShotFolder: string;
 	currentTheme: "dark"|"light";
 	customSlot: ThemeSlots | null ;
 	dark: ThemeSlots;
@@ -113,6 +116,7 @@ export const DEFAULT_DISPLAY_SETTINGS_DARK: TagRoutesSettings = {
 	link_particle_number: 2,
 	toggle_global_map: true,
 	toggle_label_display: false,
+	toggle_highlight_track_mode: false,
 	colorMapSource:"Default dark",
 	colorMap:defaultolorMapDark,
 }
@@ -125,6 +129,7 @@ export const DEFAULT_DISPLAY_SETTINGS_LIGHT: TagRoutesSettings = {
 	link_particle_number: 2,
 	toggle_global_map: true,
 	toggle_label_display: false,
+	toggle_highlight_track_mode: false,
 	colorMapSource:"Defalt light",
 	colorMap:defaultolorMapLight,
 }
@@ -142,6 +147,8 @@ const DEFAULT_SETTINGS: Settings = {
 		light: 1,
 	},
 	openInCurrentTab: false,
+	enableTagsReaction: true,
+	snapShotFolder: "graph-screenshot",
 	currentTheme: "dark",
 	customSlot:null,
 	dark: [
@@ -495,6 +502,18 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 			}
 		)
 		new Setting(containerEl)
+			.setName('Enable tag type node interaction')
+			.setDesc('Do full text/frontmatter query, and generate report when click on a tag\'s type node in scene .')
+			.addToggle((toggle: ToggleComponent) => {
+				toggle
+				.onChange(async (value) => {
+					this.plugin.settings.enableTagsReaction = value;
+					await this.plugin.saveSettings();
+				})
+				.setValue(this.plugin.settings.enableTagsReaction)
+			}
+		)
+		new Setting(containerEl)
 			.setName('Open graph in current tab')
 			.setDesc('Toggle to open graph within current tab.')
 			.addToggle((toggle: ToggleComponent) => {
@@ -507,7 +526,28 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 				
 			}
 		)
-
+		new Setting(containerEl)
+		.setName('Location to save graph screen snapshot')
+			.setDesc('Folder to save the graph screen snapshot.')
+			.addText((text: TextComponent) => {
+				text
+					.setValue(this.plugin.settings.snapShotFolder)
+					.onChange(async (v) => {
+						this.plugin.settings.snapShotFolder = v;
+						console.log("on text change: ", v)
+						await this.plugin.saveSettings();
+					})
+				})
+/* 		.addToggle((toggle: ToggleComponent) => {
+			toggle
+				.onChange(async (value) => {
+					this.plugin.settings.openInCurrentTab = value;
+					await this.plugin.saveSettings();
+				})
+				.setValue(this.plugin.settings.openInCurrentTab)
+			
+		} */
+	
 		const themeTitle = containerEl.createEl("div", {cls: 'tags-routes-settings-title'}); 
 		themeTitle.createEl("h1", { text: "Theme" });
 

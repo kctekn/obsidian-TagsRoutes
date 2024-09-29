@@ -1,6 +1,7 @@
 import { CachedMetadata, MarkdownView, TagCache, View, WorkspaceLeaf } from 'obsidian';
 import { TFile } from "obsidian";
 import { globalProgramControl } from 'src/main';
+import { nodeTypes } from 'src/views/TagsRoutes';
 
 // 定义调试级别
 export enum DebugLevel {
@@ -63,7 +64,7 @@ export const getTags = (cache: CachedMetadata | null): TagCache[] => {
 	return cache.tags;
 };
 // 函数：判断文件类型
-export const getFileType = (filePath: string): 'markdown' | 'tag' | 'attachment' | 'broken' | 'pdf' | 'excalidraw' | 'other' => {
+export const getFileType = (filePath: string): nodeTypes => {
 	const parts = filePath.split('.');
 	const extension = parts[parts.length - 1];
 	const middlePart = parts[parts.length - 2];
@@ -77,7 +78,8 @@ export const getFileType = (filePath: string): 'markdown' | 'tag' | 'attachment'
 			case 'pdf':
 				return 'pdf'
 		}
-		if (filePath.contains("attachments"))  return 'attachment'
+	if (filePath.contains("attachments")) return 'attachment'
+	if (middlePart.contains("graph-screenshot-")) return 'screenshot'
 		return 'other'
 };
 export const getAllLinks = (cache: CachedMetadata | null): string[] => {

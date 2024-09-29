@@ -29,8 +29,9 @@ interface LinkObject {
 interface nodeThreeObject extends ExtendedNodeObject {
     __threeObj?: THREE.Mesh
 }
+export type nodeTypes = 'markdown' | 'tag' | 'attachment' | 'broken' | 'pdf' | 'excalidraw' |'screenshot'| 'other' | 'frontmatter_tag';
 interface ExtendedNodeObject extends Node {
-    type: 'markdown' | 'tag' | 'attachment' | 'broken' | 'pdf' | 'excalidraw' | 'other' | 'frontmatter_tag';
+    type: nodeTypes;
     x?: number;
     y?: number;
     z?: number;
@@ -355,10 +356,11 @@ export class TagRoutesView extends ItemView {
 
         const arrayBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0)).buffer;
 //        const filePath = `${this.app.vault.configDir}/graph-screenshot-${Date.now()}.png`;
-        if (globalProgramControl.snapshotDirectory !== "") {
+/*         if (globalProgramControl.snapshotDirectory !== "") {
             createFolderIfNotExists(globalProgramControl.snapshotDirectory)
-        }
-        const filePath = `${globalProgramControl.snapshotDirectory}/graph-screenshot-${moment(Date.now()).format('YYYY-MM-DD-HH-mm-ss')}.png`;
+        } */
+        createFolderIfNotExists(this.plugin.settings.snapShotFolder)
+        const filePath = `${this.plugin.settings.snapShotFolder}/graph-screenshot-${moment(Date.now()).format('YYYY-MM-DD-HH-mm-ss')}.png`;
 
         const file = await this.app.vault.createBinary(filePath, arrayBuffer);
         if (insert) {
@@ -877,6 +879,12 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.customSlot[0].link_particle_size = value
         this.plugin.saveSettings();
     }
+    onToggleHighlightTrackMode(value:boolean){
+        if (!this.plugin.settings.customSlot) return; 
+        this.plugin.settings.customSlot[0].toggle_highlight_track_mode = value;
+        this.plugin.saveSettings();
+        this.updateHighlight();
+    }
     onToggleLabelDisplay(value: boolean) {
         if (!this.plugin.settings.customSlot) return; 
         this.plugin.settings.customSlot[0].toggle_label_display = value;
@@ -942,7 +950,7 @@ export class TagRoutesView extends ItemView {
     onUnlinkButton() {
         this.unlinkNodeByType(this.orphanToLink as any)
     }
-    linkNodeByType(fileType: 'markdown' | 'tag' | 'attachment' | 'broken' | 'pdf' | 'excalidraw' | 'other' | 'frontmatter_tag', linkStar: boolean = true) {
+    linkNodeByType(fileType: nodeTypes, linkStar: boolean = true) {
         this.clearHightlightNodes()
 
         let links: LinkObject[] = this.gData.links;
@@ -1686,6 +1694,7 @@ export class TagRoutesView extends ItemView {
                     .addSlider("Link particle number", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_number, this.onLinkParticleNumber)
                     .addToggle("Toggle global map", this.plugin.settings.customSlot[0].toggle_global_map, this.onToggleGlobalMap)
                     .addToggle("Toggle label display", this.plugin.settings.customSlot[0].toggle_label_display, this.onToggleLabelDisplay)
+                    .addToggle("Highlight track mode", this.plugin.settings.customSlot[0].toggle_highlight_track_mode, this.onToggleHighlightTrackMode)
             })
             .add({
                 arg: (new settingGroup(this.plugin, "save-load", "Save and load"))
