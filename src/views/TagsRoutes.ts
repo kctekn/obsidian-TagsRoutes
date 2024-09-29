@@ -401,6 +401,8 @@ export class TagRoutesView extends ItemView {
                 const newNote = await this.app.vault.create(`Screenshot-${Date.now()}.md`, `![[${file.path}]]`);
                 this.app.workspace.activeLeaf.openFile(newNote); */
             }
+        } else {
+            new Notice('Screenshot saved but no markdown note is active.');
         }
     }
     createNodeThreeObjectLight(node: ExtendedNodeObject,) {
