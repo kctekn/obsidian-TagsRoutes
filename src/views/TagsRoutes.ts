@@ -385,7 +385,7 @@ export class TagRoutesView extends ItemView {
     
         if (activeLeaf) {
             const state = (activeLeaf.view as MarkdownView).getState();
-            DebugMsg(DebugLevel.WARN, state);
+            DebugMsg(DebugLevel.DEBUG, state);
             if (state.mode === 'source') {
                 const editor = (activeLeaf.view as MarkdownView).editor;
                 const cursor = editor.getCursor();
@@ -395,7 +395,7 @@ export class TagRoutesView extends ItemView {
             } else {
                 new Notice('Screenshot saved but no editing note found to insert.');
     
-                DebugMsg(DebugLevel.WARN,"No markdown note is active: Insert to note canceled, only save screenshot.")
+                DebugMsg(DebugLevel.DEBUG,"No markdown note is active: Insert to note canceled, only save screenshot.")
                 /* 如果没有找到 Markdown 视图，可以创建一个新的笔记
                 const leaf = this.app.workspace.getLeaf(false);
                 const newNote = await this.app.vault.create(`Screenshot-${Date.now()}.md`, `![[${file.path}]]`);
