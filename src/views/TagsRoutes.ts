@@ -1001,13 +1001,15 @@ export class TagRoutesView extends ItemView {
     }
     onToggleFreezeNodePosition(value:boolean){
         if (!this.plugin.settings.customSlot) return; 
+       
         if (value) {
             DebugMsg(DebugLevel.WARN, "Go to freeze");
             this.Graph.graphData().nodes.forEach(node => {
                 node.fx = node.x;
                 node.fy = node.y;
                 node.fz = node.z;
-              });
+            });
+            this.Graph.enableNodeDrag(false)
         } else {
             DebugMsg(DebugLevel.WARN, "Go to un-freeze");
             this.Graph.graphData().nodes.forEach(node => {
@@ -1015,7 +1017,8 @@ export class TagRoutesView extends ItemView {
                 node.fy = undefined;
                 node.fz = undefined;
               });
-        }
+              this.Graph.enableNodeDrag(true)
+            }
 
 //        this.plugin.settings.customSlot[0].toggle_highlight_track_mode = value;
 //        this.plugin.saveSettings();
