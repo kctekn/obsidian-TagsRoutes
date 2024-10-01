@@ -228,10 +228,10 @@ export class TagRoutesView extends ItemView {
         document.body.removeChild(tempElement);
         
         // Convert to hex and return
-        return this.rgbToHex(color);
+        return this.rgbStrToHex(color);
     }
     
-    rgbToHex(color: string): string {
+    rgbStrToHex(color: string): string {
         if (color.startsWith('#')) {
             return color.slice(0, 7);
         }
@@ -249,7 +249,93 @@ export class TagRoutesView extends ItemView {
         
         return `#${r}${g}${b}`;
     }
-
+    rgbToHex(rgb: [number, number, number]): string {
+        return '#' + rgb.map(x => {
+            const hex = Math.round(x * 255).toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+        }).join('');
+    }
+    hexToRgb(hex: string): [number, number, number] {
+        // 移除可能存在的 '#' 前缀
+        hex = hex.replace(/^#/, '');
+    
+        // 解析十六进制值
+        const bigint = parseInt(hex, 16);
+        const r = (bigint >> 16) & 255;
+        const g = (bigint >> 8) & 255;
+        const b = bigint & 255;
+    
+        return [r, g, b];
+    }
+    rgbToHsl(r: number, g: number, b: number): [number, number, number] {
+        r /= 255;
+        g /= 255;
+        b /= 255;
+    
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let h=0 , s: number;
+        const l = (max + min) / 2;
+    
+        if (max === min) {
+            h = s = 0; // achromatic
+        } else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+    
+        return [h, s, l];
+    }
+    hslToRgb(h: number, s: number, l: number): [number, number, number] {
+        let r: number, g: number, b: number;
+    
+        if (s === 0) {
+            r = g = b = l; // achromatic
+        } else {
+            const hue2rgb = (p: number, q: number, t: number) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            };
+    
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1/3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1/3);
+        }
+    
+        return [r, g, b];
+    }
+    getContrastingColor(hexColor: string, angle: number): string {
+        // 确保角度在 0-360 范围内
+        angle = angle % 360;
+        if (angle < 0) angle += 360;
+    
+        // 将十六进制颜色转换为 RGB
+        const rgb = this.hexToRgb(hexColor);
+    
+        // 将 RGB 转换为 HSL
+        const [h, s, l] = this.rgbToHsl(rgb[0], rgb[1], rgb[2]);
+    
+        // 旋转色相
+        const newHue = (h + angle / 360) % 1;
+    
+        // 将新的 HSL 转换回 RGB
+        const [r, g, b] = this.hslToRgb(newHue, s, l);
+    
+        // 将 RGB 转换回十六进制格式
+        return this.rgbToHex([r, g, b]);
+    }
     applyThemeColor() {
         if (!this.plugin.settings.customSlot) return;
         this.plugin.settings.customSlot[0].colorMap["markdown"] = {
@@ -405,6 +491,7 @@ export class TagRoutesView extends ItemView {
             new Notice('Screenshot saved but no markdown note is active.');
         }
     }
+    colorAngle=-45;
     createNodeThreeObjectLight(node: ExtendedNodeObject,) {
 
         const group = new THREE.Group();
@@ -450,9 +537,9 @@ export class TagRoutesView extends ItemView {
 
 
         sprite.material.depthWrite = false; // make sprite background transparent
-        sprite.color = this.getNodeColorByType(node);
+        sprite.color = this.getContrastingColor(color,this.colorAngle);
         sprite.visible = false;
-        if (node.type === 'tag') sprite.color = '#CCCCCC'
+    //    if (node.type === 'tag') sprite.color = '#CCCCCC'
         sprite.textHeight = 0;
         //sprite.scale.set(18, 18, 8); // 设置标签大小
 
@@ -502,9 +589,9 @@ export class TagRoutesView extends ItemView {
 
 
         sprite.material.depthWrite = false; // make sprite background transparent
-        sprite.color = this.getNodeColorByType(node);
+        sprite.color = this.getContrastingColor(color,this.colorAngle);
         sprite.visible = false;
-        if (node.type === 'tag') sprite.color = '#ffffff'
+   //     if (node.type === 'tag') sprite.color = '#ffffff'
         sprite.textHeight = 0;
         //sprite.scale.set(18, 18, 8); // 设置标签大小
 
