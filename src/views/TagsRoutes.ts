@@ -180,6 +180,7 @@ export class TagRoutesView extends ItemView {
         this.onTextColorAngle = this.onTextColorAngle.bind(this);
         this.onBloomStrength = this.onBloomStrength.bind(this);
         this.setSaveButton = this.setSaveButton.bind(this);
+        this.onToggleFreezeNodePosition = this.onToggleFreezeNodePosition.bind(this);
         this.visuals = {
             dark: new darkStyle("dark", this.plugin),
             light: new lightStyle("light", this.plugin)
@@ -972,7 +973,7 @@ export class TagRoutesView extends ItemView {
     this.plugin.settings.customSlot[0].text_color_angle = value
     this.Graph.graphData().nodes.forEach((n:ExtendedNodeObject) => {
             if (n._Sprite) {
-                n._Sprite.color= this.getContrastingColor(this.getNodeColorByType(n),this.plugin.settings.customSlot?.[0].text_color_angle||0)
+                n._Sprite.color= this.getContrastingColor(this.getNodeColorByType(n),(this.plugin.settings.customSlot?.[0].text_color_angle||0)*45)
 
             }
     })
@@ -998,7 +999,30 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.customSlot[0].link_particle_size = value
         this.plugin.saveSettings();
     }
-    onToggleHighlightTrackMode(value:boolean){
+    onToggleFreezeNodePosition(value:boolean){
+        if (!this.plugin.settings.customSlot) return; 
+        if (value) {
+            DebugMsg(DebugLevel.WARN, "Go to freeze");
+            this.Graph.graphData().nodes.forEach(node => {
+                node.fx = node.x;
+                node.fy = node.y;
+                node.fz = node.z;
+              });
+        } else {
+            DebugMsg(DebugLevel.WARN, "Go to un-freeze");
+            this.Graph.graphData().nodes.forEach(node => {
+                node.fx = undefined;
+                node.fy = undefined;
+                node.fz = undefined;
+              });
+        }
+
+//        this.plugin.settings.customSlot[0].toggle_highlight_track_mode = value;
+//        this.plugin.saveSettings();
+//        this.clearHightlightNodes();
+//        this.updateHighlight();
+    }
+    onToggleHighlightTrackMode(value: boolean) {
         if (!this.plugin.settings.customSlot) return; 
         this.plugin.settings.customSlot[0].toggle_highlight_track_mode = value;
         this.plugin.saveSettings();
@@ -1807,13 +1831,14 @@ export class TagRoutesView extends ItemView {
             })
             .add({
                 arg: (new settingGroup(this.plugin, "control sliders", "Display control"))
-                    .addSlider("Node size", 1, 10, 1, this.plugin.settings.customSlot[0].node_size, this.onNodeSize)
+                .addToggle("Freeze node position", this.plugin.settings.customSlot[0].toggle_highlight_track_mode, this.onToggleFreezeNodePosition)
+                .addSlider("Node size", 1, 10, 1, this.plugin.settings.customSlot[0].node_size, this.onNodeSize)
                     .addSlider("Node repulsion", 0, 10, 1, this.plugin.settings.customSlot[0].node_repulsion, this.onNodeRepulsion)
                     .addSlider("Link distance", 1, 25, 1, this.plugin.settings.customSlot[0].link_distance, this.onLinkDistance)
                     .addSlider("Link width", 1, 5, 1, this.plugin.settings.customSlot[0].link_width, this.onLinkWidth)
                     .addSlider("Link particle size", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_size, this.onLinkParticleSize)
-                    .addSlider("Link particle number", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_number, this.onLinkParticleNumber)
-                    .addSlider("Text color", 0, 360, 10, this.plugin.settings.customSlot[0].text_color_angle, this.onTextColorAngle)
+                    .addSlider("Link particle number", 0, 5, 1, this.plugin.settings.customSlot[0].link_particle_number, this.onLinkParticleNumber)
+                    .addSlider("Text color", 0, 8, 1, this.plugin.settings.customSlot[0].text_color_angle, this.onTextColorAngle)
                     .addSlider("Bloom strength", 0.4, 3.0, 0.2, this.plugin.settings.customSlot[0].bloom_strength, this.onBloomStrength)
                     .addToggle("Toggle global map", this.plugin.settings.customSlot[0].toggle_global_map, this.onToggleGlobalMap)
                     .addToggle("Toggle label display", this.plugin.settings.customSlot[0].toggle_label_display, this.onToggleLabelDisplay)
