@@ -88,7 +88,10 @@ class darkStyle implements VisualStyle {
         this.Graph.backgroundColor(this.plugin.settings.customSlot?.[0].colorMap.backgroundColor.value||"#000003")
         this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObject)
         this.Graph.lights()[0].intensity = 1.0;
-        this.bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2), 2.0, 1, 0)
+        this.bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2),
+            /*2.0,*/
+            this.plugin.settings.customSlot?.[0].bloom_strength||2.0,
+            0.5, 0)
         this.plugin.view.Graph.postProcessingComposer().addPass(this.bloomPass);
     }
 
@@ -174,6 +177,8 @@ export class TagRoutesView extends ItemView {
         this.switchTheme = this.switchTheme.bind(this);
         this.onToggleLabelDisplay = this.onToggleLabelDisplay.bind(this);
         this.onToggleHighlightTrackMode = this.onToggleHighlightTrackMode.bind(this);
+        this.onTextColorAngle = this.onTextColorAngle.bind(this);
+        this.onBloomStrength = this.onBloomStrength.bind(this);
         this.setSaveButton = this.setSaveButton.bind(this);
         this.visuals = {
             dark: new darkStyle("dark", this.plugin),
@@ -537,7 +542,7 @@ export class TagRoutesView extends ItemView {
 
 
         sprite.material.depthWrite = false; // make sprite background transparent
-        sprite.color = this.getContrastingColor(color,this.colorAngle);
+        sprite.color = this.getContrastingColor(color,this.plugin.settings.customSlot?.[0].text_color_angle||0)
         sprite.visible = false;
     //    if (node.type === 'tag') sprite.color = '#CCCCCC'
         sprite.textHeight = 0;
@@ -589,7 +594,7 @@ export class TagRoutesView extends ItemView {
 
 
         sprite.material.depthWrite = false; // make sprite background transparent
-        sprite.color = this.getContrastingColor(color,this.colorAngle);
+        sprite.color = this.getContrastingColor(color,this.plugin.settings.customSlot?.[0].text_color_angle||0)
         sprite.visible = false;
    //     if (node.type === 'tag') sprite.color = '#ffffff'
         sprite.textHeight = 0;
@@ -811,7 +816,7 @@ export class TagRoutesView extends ItemView {
               //  return;
             }
             if (node._Sprite) {
-                node._Sprite.color = color;
+                node._Sprite.color = this.getContrastingColor(this.getNodeColorByType(node),this.plugin.settings.customSlot?.[0].text_color_angle||0);
             }
         })
         this.Graph.backgroundColor(this.plugin.settings.customSlot[0].colorMap["backgroundColor"].value)
@@ -959,6 +964,26 @@ export class TagRoutesView extends ItemView {
         if (!this.plugin.settings.customSlot) return; 
         this.Graph.linkWidth((link: any) => this.highlightLinks.has(link) ? 2 * value : value)
         this.plugin.settings.customSlot[0].link_width = value
+        this.plugin.saveSettings();
+    }
+    onTextColorAngle(value: number) {
+        if (!this.plugin.settings.customSlot) return; 
+    //    this.Graph.linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
+    this.plugin.settings.customSlot[0].text_color_angle = value
+    this.Graph.graphData().nodes.forEach((n:ExtendedNodeObject) => {
+            if (n._Sprite) {
+                n._Sprite.color= this.getContrastingColor(this.getNodeColorByType(n),this.plugin.settings.customSlot?.[0].text_color_angle||0)
+
+            }
+    })
+        this.updateHighlight();
+        this.plugin.saveSettings();
+    }
+    onBloomStrength(value: number) {
+        if (!this.plugin.settings.customSlot) return; 
+        if (this.currentVisualString !== 'dark') return;
+        (this.visualProcessor as darkStyle).bloomPass.strength = value;
+        this.plugin.settings.customSlot[0].bloom_strength = value
         this.plugin.saveSettings();
     }
     onLinkParticleNumber(value: number) {
@@ -1788,6 +1813,8 @@ export class TagRoutesView extends ItemView {
                     .addSlider("Link width", 1, 5, 1, this.plugin.settings.customSlot[0].link_width, this.onLinkWidth)
                     .addSlider("Link particle size", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_size, this.onLinkParticleSize)
                     .addSlider("Link particle number", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_number, this.onLinkParticleNumber)
+                    .addSlider("Text color", 0, 360, 10, this.plugin.settings.customSlot[0].text_color_angle, this.onTextColorAngle)
+                    .addSlider("Bloom strength", 0.4, 3.0, 0.2, this.plugin.settings.customSlot[0].bloom_strength, this.onBloomStrength)
                     .addToggle("Toggle global map", this.plugin.settings.customSlot[0].toggle_global_map, this.onToggleGlobalMap)
                     .addToggle("Toggle label display", this.plugin.settings.customSlot[0].toggle_label_display, this.onToggleLabelDisplay)
                     .addToggle("Highlight track mode", this.plugin.settings.customSlot[0].toggle_highlight_track_mode, this.onToggleHighlightTrackMode)

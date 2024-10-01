@@ -93,6 +93,8 @@ export interface TagRoutesSettings {
 	link_width: number;
 	link_particle_size: number;
 	link_particle_number: number;
+	text_color_angle: number;
+	bloom_strength: number;
 	toggle_global_map: boolean;
 	toggle_label_display: boolean;
 	toggle_highlight_track_mode: boolean;
@@ -126,6 +128,8 @@ export const DEFAULT_DISPLAY_SETTINGS_DARK: TagRoutesSettings = {
 	link_width: 1,
 	link_particle_size: 2,
 	link_particle_number: 2,
+	text_color_angle: 0,
+	bloom_strength:2.0,
 	toggle_global_map: true,
 	toggle_label_display: false,
 	toggle_highlight_track_mode: false,
@@ -139,6 +143,8 @@ export const DEFAULT_DISPLAY_SETTINGS_LIGHT: TagRoutesSettings = {
 	link_width: 1,
 	link_particle_size: 2,
 	link_particle_number: 2,
+	text_color_angle:0,
+	bloom_strength: 2.0,
 	toggle_global_map: true,
 	toggle_label_display: false,
 	toggle_highlight_track_mode: false,
