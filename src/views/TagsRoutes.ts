@@ -322,7 +322,8 @@ export class TagRoutesView extends ItemView {
     
         return [r, g, b];
     }
-    getContrastingColor(hexColor: string, angle: number): string {
+    getContrastingColor(hexColor: string, angle1: number): string {
+        let angle = angle1 * 45;  //angle1: 0-8
         // 确保角度在 0-360 范围内
         angle = angle % 360;
         if (angle < 0) angle += 360;
@@ -817,7 +818,7 @@ export class TagRoutesView extends ItemView {
               //  return;
             }
             if (node._Sprite) {
-                node._Sprite.color = this.getContrastingColor(this.getNodeColorByType(node),this.plugin.settings.customSlot?.[0].text_color_angle||0);
+                node._Sprite.color = this.getContrastingColor(this.getNodeColorByType(node),(this.plugin.settings.customSlot?.[0].text_color_angle||0));
             }
         })
         this.Graph.backgroundColor(this.plugin.settings.customSlot[0].colorMap["backgroundColor"].value)
@@ -973,7 +974,7 @@ export class TagRoutesView extends ItemView {
     this.plugin.settings.customSlot[0].text_color_angle = value
     this.Graph.graphData().nodes.forEach((n:ExtendedNodeObject) => {
             if (n._Sprite) {
-                n._Sprite.color= this.getContrastingColor(this.getNodeColorByType(n),(this.plugin.settings.customSlot?.[0].text_color_angle||0)*45)
+                n._Sprite.color= this.getContrastingColor(this.getNodeColorByType(n),(this.plugin.settings.customSlot?.[0].text_color_angle||0))
 
             }
     })
@@ -1375,8 +1376,12 @@ export class TagRoutesView extends ItemView {
             this.plugin.settings.customSlot[this.currentSlotNum], "toggle_global_map");
         this.setControlValue("Toggle label display", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "toggle_label_display");
-        this.setControlValue("Highlight track mode", this._controls,
+            this.setControlValue("Highlight track mode", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "toggle_highlight_track_mode");
+            this.setControlValue("Text color", this._controls,
+            this.plugin.settings.customSlot[this.currentSlotNum], "text_color_angle");
+            this.setControlValue("Bloom strength", this._controls,
+            this.plugin.settings.customSlot[this.currentSlotNum], "bloom_strength");
     }
     onSettingsLoad() {
         if (!this.plugin.settings.customSlot) return; 
