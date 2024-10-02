@@ -1004,7 +1004,7 @@ export class TagRoutesView extends ItemView {
         if (!this.plugin.settings.customSlot) return; 
        
         if (value) {
-            DebugMsg(DebugLevel.WARN, "Go to freeze");
+      //      DebugMsg(DebugLevel.WARN, "Go to freeze");
             this.Graph.graphData().nodes.forEach(node => {
                 node.fx = node.x;
                 node.fy = node.y;
@@ -1012,7 +1012,7 @@ export class TagRoutesView extends ItemView {
             });
             this.Graph.enableNodeDrag(false)
         } else {
-            DebugMsg(DebugLevel.WARN, "Go to un-freeze");
+       //     DebugMsg(DebugLevel.WARN, "Go to un-freeze");
             this.Graph.graphData().nodes.forEach(node => {
                 node.fx = undefined;
                 node.fy = undefined;
@@ -1380,7 +1380,7 @@ export class TagRoutesView extends ItemView {
             this.plugin.settings.customSlot[this.currentSlotNum], "toggle_highlight_track_mode");
             this.setControlValue("Text color", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "text_color_angle");
-            this.setControlValue("Bloom strength", this._controls,
+            this.setControlValue("Bloom strength (dark mode)", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "bloom_strength");
     }
     onSettingsLoad() {
@@ -1449,6 +1449,7 @@ export class TagRoutesView extends ItemView {
             case 'excalidraw':
             case 'pdf':
             case 'frontmatter_tag':
+            case 'screenshot':
                             color = this.plugin.settings.customSlot[0].colorMap[node.type].value;
                 break;
             default:
@@ -1847,7 +1848,7 @@ export class TagRoutesView extends ItemView {
                     .addSlider("Link particle size", 1, 5, 1, this.plugin.settings.customSlot[0].link_particle_size, this.onLinkParticleSize)
                     .addSlider("Link particle number", 0, 5, 1, this.plugin.settings.customSlot[0].link_particle_number, this.onLinkParticleNumber)
                     .addSlider("Text color", 0, 8, 1, this.plugin.settings.customSlot[0].text_color_angle, this.onTextColorAngle)
-                    .addSlider("Bloom strength", 0.4, 3.0, 0.2, this.plugin.settings.customSlot[0].bloom_strength, this.onBloomStrength)
+                    .addSlider("Bloom strength (dark mode)", 0.4, 3.0, 0.2, this.plugin.settings.customSlot[0].bloom_strength, this.onBloomStrength)
                     .addToggle("Toggle global map", this.plugin.settings.customSlot[0].toggle_global_map, this.onToggleGlobalMap)
                     .addToggle("Toggle label display", this.plugin.settings.customSlot[0].toggle_label_display, this.onToggleLabelDisplay)
                     .addToggle("Highlight track mode", this.plugin.settings.customSlot[0].toggle_highlight_track_mode, this.onToggleHighlightTrackMode)

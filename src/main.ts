@@ -42,6 +42,7 @@ export interface colorMap {
 	pdf: colorSpec;
 	tag: colorSpec;
 	frontmatter_tag: colorSpec;
+	screenshot: colorSpec;
 	nodeHighlightColor: colorSpec;
 	nodeFocusColor: colorSpec;
 	linkHighlightColor: colorSpec;
@@ -58,6 +59,7 @@ export const defaultolorMapDark: colorMap = {
 	pdf: {name:"default",  value: "#0000ff"},
 	tag: { name: "default", value: "#ff00ff" },
 	frontmatter_tag:{name: "default", value:"#fa8072"},
+	screenshot:{name: "default", value:"#7f00ff"},
 	nodeHighlightColor: {name:"default",  value: "#3333ff"},
 	nodeFocusColor: {name:"default",  value: "#ff3333"},
 	linkHighlightColor: {name:"default",  value: "#ffffff"},
@@ -74,6 +76,7 @@ export const defaultolorMapLight: colorMap = {
 	pdf: {name:"default",  value: "#0000ff"},
 	tag: {name:"default",  value: "#ff00ff"},
 	frontmatter_tag:{name: "default", value:"#fa8072"},
+	screenshot:{name: "default", value:"#7f00ff"},
 	nodeHighlightColor: {name:"default",  value: "#3333ff"},
 	nodeFocusColor: {name:"default",  value: "#ff3333"},
 	linkHighlightColor: {name:"default",  value: "#ffffff"},
@@ -648,6 +651,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Pdf","pdf"));
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Attachment","attachment"));
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Frontmatter tag","frontmatter_tag"));
+		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Screenshot","screenshot"));
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Broken", "broken"));
 
 		new Setting(colorSettingsGroup).setName("Node state").setHeading().setDesc("Effects in global map mode.").settingEl.addClass("tg-settingtab-heading")
