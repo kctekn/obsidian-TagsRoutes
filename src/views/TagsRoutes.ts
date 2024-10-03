@@ -692,6 +692,7 @@ export class TagRoutesView extends ItemView {
     }
     highlightOnNodeRightClick(node: ExtendedNodeObject | null) {
         if (!this.plugin.settings.customSlot) return; 
+        if (node) this.selectedNode = node;
         if (this.plugin.settings.customSlot[0].toggle_highlight_track_mode && node) {
             this.getNeighbors(node, { nodes: this.selectedNodes as any, links: this.selectedNodesLinks as any });
         } else {
