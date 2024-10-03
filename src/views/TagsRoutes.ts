@@ -527,7 +527,10 @@ export class TagRoutesView extends ItemView {
 
         if (node.type == 'other') {
             node_text_name = node.id
-        } else {
+        }  /*  else if (node.type == 'screenshot') {
+            node_text_name = parts[parts.length - 1].split(".")[0].replace("graph-screenshot-","")
+        }*/
+     else {
             if (node.type == 'tag') {
                 node_text_name = parts[parts.length - 1]
             } else {
@@ -579,7 +582,10 @@ export class TagRoutesView extends ItemView {
 
         if (node.type == 'other') {
             node_text_name = node.id
-        } else {
+        } /*else if (node.type == 'screenshot') {
+            node_text_name = parts[parts.length - 1].split(".")[0].replace("graph-screenshot-","")
+        }*/
+         else {
             if (node.type == 'tag') {
                 node_text_name = parts[parts.length - 1]
             } else {
@@ -890,7 +896,8 @@ export class TagRoutesView extends ItemView {
             }
             //apply node sprite visible
             const showSpriteText = this.plugin.settings.customSlot?.[0].toggle_label_display || false;
-            if (this.highlightNodes.has(node) && node.type !== 'attachment' && node.type !== 'broken') {
+            if (this.highlightNodes.has(node) && node.type !== 'attachment' && node.type !== 'broken'
+            && node.type !=='screenshot') {
                 if (showSpriteText && node._Sprite) {
                     node._Sprite.visible = true;
                     node._Sprite.textHeight = 18;
