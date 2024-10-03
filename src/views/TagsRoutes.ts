@@ -657,6 +657,7 @@ export class TagRoutesView extends ItemView {
                 }
             }
         } else {
+
             // the none global map mode
             if (!this.selectedNodes.has(node)) {
                 this.selectedNodes.clear();
@@ -1033,10 +1034,38 @@ export class TagRoutesView extends ItemView {
 //        this.clearHightlightNodes();
 //        this.updateHighlight();
     }
+    getHighlightOnSelectedNode(selectedNode: ExtendedNodeObject) {
+        if (!this.plugin.settings.customSlot) return;
+        const node = selectedNode;
+        if (this.plugin.settings.customSlot[0].toggle_highlight_track_mode && this.selectedNode) {
+            this.getNeighbors(node, { nodes: this.selectedNodes as any, links: this.selectedNodesLinks as any });
+        }else {
+            if (node) {
+                this.selectedNodes.add(node);
+                if (node.neighbors) {
+                    node.neighbors.forEach(neighbor => {
+                        this.selectedNodes.add(neighbor)
+                    });
+                }
+                if (node.links) {
+                    node.links.forEach(link => {
+                        this.selectedNodesLinks.add(link)
+                    });
+                }
+            }
+        }
+    }
     onToggleHighlightTrackMode(value: boolean) {
         if (!this.plugin.settings.customSlot) return; 
         this.plugin.settings.customSlot[0].toggle_highlight_track_mode = value;
         this.plugin.saveSettings();
+        let tmpNode=null;
+        if (this.selectedNode) tmpNode = this.selectedNode;
+        this.clearHightlightNodes();
+        if (tmpNode) {
+            this.selectedNode = tmpNode;
+            this.getHighlightOnSelectedNode(this.selectedNode);
+        }
         this.updateHighlight();
     }
     onToggleLabelDisplay(value: boolean) {
