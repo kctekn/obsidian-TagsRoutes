@@ -1895,7 +1895,7 @@ export class TagRoutesView extends ItemView {
                     .addSlider("Slot #", 1, 5, 1, this.plugin.settings.currentSlotNum, this.onSlotSliderChange)
                     .add({
                         arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
-                        .addButton("Apply theme color", "graph-button", () => { this.applyThemeColor() })
+                        .addButton("Apply Theme Color", "graph-button", () => { this.applyThemeColor() })
                         )
                     })
                     .add({
@@ -1907,12 +1907,12 @@ export class TagRoutesView extends ItemView {
                     })
                     .add({
                         arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
-                        .addButton("Capture & Insert", "graph-button", () => { this.captureAndSaveScreenshot(true) })
+                        .addButton("Capture & Insert into Note", "graph-button", () => { this.captureAndSaveScreenshot(true) })
                         )
                     })
                     .add({
                         arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
-                        .addButton("Capture only", "graph-button", () => { this.captureAndSaveScreenshot(false) })
+                        .addButton("Capture Snapshot", "graph-button", () => { this.captureAndSaveScreenshot(false) })
                         )
                     })
             })
