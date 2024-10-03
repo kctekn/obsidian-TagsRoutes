@@ -523,8 +523,8 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 			}
 		)
 		new Setting(containerEl)
-			.setName('Enable tag type node interaction')
-			.setDesc('Do full text/frontmatter query, and generate report when click on a tag\'s type node in scene .')
+			.setName('Enable tag click actions')
+			.setDesc('When enabled, clicking on a tag will generate a content report based on that tag.')
 			.addToggle((toggle: ToggleComponent) => {
 				toggle
 				.onChange(async (value) => {
@@ -548,8 +548,8 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 			}
 		)
 		new Setting(containerEl)
-		.setName('Location to save graph screen snapshot')
-			.setDesc('Folder to save the graph screen snapshot.')
+		.setName('Save location for graph snapshots')
+			.setDesc('Choose the folder where you want to save screenshots of the graph.')
 			.addText((text: TextComponent) => {
 				text
 					.setValue(this.plugin.settings.snapShotFolder)

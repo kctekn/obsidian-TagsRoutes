@@ -1877,7 +1877,7 @@ export class TagRoutesView extends ItemView {
             })
             .add({
                 arg: (new settingGroup(this.plugin, "control sliders", "Display control"))
-                .addToggle("Freeze node position", false, this.onToggleFreezeNodePosition)
+                .addToggle("Lock node positions", false, this.onToggleFreezeNodePosition)
                 .addSlider("Node size", 1, 10, 1, this.plugin.settings.customSlot[0].node_size, this.onNodeSize)
                     .addSlider("Node repulsion", 0, 10, 1, this.plugin.settings.customSlot[0].node_repulsion, this.onNodeRepulsion)
                     .addSlider("Link distance", 1, 25, 1, this.plugin.settings.customSlot[0].link_distance, this.onLinkDistance)
