@@ -1888,7 +1888,7 @@ export class TagRoutesView extends ItemView {
                     .addSlider("Bloom strength (dark mode)", 0.4, 3.0, 0.2, this.plugin.settings.customSlot[0].bloom_strength, this.onBloomStrength)
                     .addToggle("Toggle global map", this.plugin.settings.customSlot[0].toggle_global_map, this.onToggleGlobalMap)
                     .addToggle("Toggle label display", this.plugin.settings.customSlot[0].toggle_label_display, this.onToggleLabelDisplay)
-                    .addToggle("Highlight track mode", this.plugin.settings.customSlot[0].toggle_highlight_track_mode, this.onToggleHighlightTrackMode)
+                    .addToggle("Highlight connection paths", this.plugin.settings.customSlot[0].toggle_highlight_track_mode, this.onToggleHighlightTrackMode)
             })
             .add({
                 arg: (new settingGroup(this.plugin, "save-load", "Save and load"))
