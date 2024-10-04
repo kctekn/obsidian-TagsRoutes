@@ -491,7 +491,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		containerEl.createEl("h1", { text: "General" });
 
 		new Setting(containerEl)
-			.setName('Log Node/Link Count')
+			.setName('Log node/link count')
 			.setDesc('Enable or disable logging the number of nodes and links when the graph loads.')
 			.addToggle((toggle: ToggleComponent) => {
 				toggle
@@ -507,7 +507,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 			}
 			)
 		new Setting(containerEl)
-			.setName('Show Log File on Startup')
+			.setName('Show log file on startup')
 			.setDesc('Automatically display the log file after the graph loads.')
 			.addToggle((toggle: ToggleComponent) => {
 				toggle
