@@ -18,6 +18,36 @@ Wiki:
 
 And you can show up your beautiful vault pictures here: [Share & showcase](https://github.com/kctekn/obsidian-TagsRoutes/discussions/17)
 
+## Version 1.1.3 Release Notes
+ 
+ This release introduces major updates to screenshots, enhancements to graph display control, and provides more choice in how you interact with tags nodes.
+ 
+**1. Major Updates:**
+
+* **Screenshot Functionality:** Capture your current graph as an image! You can now save the graph as a picture and insert it directly into your note or save it to a designated snapshot folder.
+* **New "Screenshot" Node Type:** A new node type dedicated to screenshots has been added. Customize its color and use it to easily manage and check for orphan files.
+
+**2. Graph Display Enhancements:**
+
+* **Adjustable Node Label Color:**  Easily adjust the color of node labels using a slider. This allows you to automatically find a clear and readable text color against the background.
+* **Tunable Bloom in Dark Mode:** Fine-tune the bloom strength in dark mode for optimal visual appeal.
+* **Lock Node Positions:** Lock the position of nodes to improve performance, especially on lower-end devices.
+* **Disable Link Particles:** Set the link particle number to 0 to disable the particle effect and boost performance.
+* **New "Track" Highlight Mode:** Introducing a new highlight mode called "Track." When enabled, clicking a node will highlight all directly and indirectly connected nodes, allowing you to easily visualize sub-networks within your larger graph.
+
+**3. Choice of Tags Node Interaction:**
+
+* **Enable/Disable Tags Query:** Choose whether to enable the tag query function when clicking on tag nodes. Disable this feature if you don't rely on tags for note management.
+* **"TagsRoutes" Folder Removal:** If you disable the following three options:
+    * 'Log node/link Count'
+    * 'Show log file on Startup'
+    * 'Enable tag click action '
+    You can safely delete the 'TagsRoutes' folder in your vault, as the plugin will no longer utilize it.
+
+_*The usage demo:*_
+
+<img src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.1.3-feature.gif">
+
 ## Version 1.1.1/1.1.2 Release Notes
 
 1. **Improved Orphan File Detection**
