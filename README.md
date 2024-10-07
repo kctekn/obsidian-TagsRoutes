@@ -42,7 +42,8 @@ And you can show up your beautiful vault pictures here: [Share & showcase](https
     * 'Log node/link Count'
     * 'Show log file on Startup'
     * 'Enable tag click action '
-    You can safely delete the 'TagsRoutes' folder in your vault, as the plugin will no longer utilize it.
+    
+	You can safely delete the 'TagsRoutes' folder in your vault, as the plugin will no longer utilize it.
 
 _*The usage demo:*_
 
