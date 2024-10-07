@@ -7,7 +7,7 @@ If your plugin does not need CSS, delete this file.
 .tags-routes {
     padding: 0px !important;
     position: relative;
-    overflow: hidden !important;
+    overflow: hidden   !important;
 }
 
 /* .tags-routes .graph-container {
@@ -216,7 +216,7 @@ If your plugin does not need CSS, delete this file.
 .tags-routes .graph-controls{
     background-color: rgb(from var(--background-primary) r g b / 0.7)
  }
-.tags-routes .need-save {
+.tags-routes-need-save {
     border-bottom: 5px solid var(--interactive-accent-hover);
 }
 

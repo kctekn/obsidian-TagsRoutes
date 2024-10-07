@@ -345,10 +345,10 @@ export default class TagsRoutes extends Plugin {
 				DebugMsg(DebugLevel.INFO, `Save spec version ${loadedSettings.saveSpecVer} merged.`)
 			}
 		} else {
-			if (loadedSettings?.saveSpecVer) {
+			if (loadedSettings && loadedSettings.saveSpecVer) {
 				DebugMsg(DebugLevel.INFO,`Override save spec version ${loadedSettings.saveSpecVer}.`)
-			} else {
-				DebugMsg(DebugLevel.INFO,`New installation or very old version: Using default settings.`)
+			} else if(!loadedSettings) {
+				DebugMsg(DebugLevel.INFO,`New installation: Using default settings.`)
 			}
 		}
 		this.settings.customSlot = this.settings[this.settings.currentTheme];
@@ -638,8 +638,8 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		this.colorMapSourceElement =
 		desc.createEl("div").createEl("span", { text: "Current color map source: " })
 			.createEl("span", { text: this.plugin.settings.customSlot?.[0]?.colorMapSource || "Defalt" })
-		this.colorMapSourceElement.addClass("need-save")
-		desc.addClass("tags-routes");
+		this.colorMapSourceElement.addClass("tags-routes-need-save")
+		//desc.addClass("tags-routes");
 		desc.addClass("setting-item-description");
 
 		const colorSettingsGroup = containerEl.createEl("div", { cls: "tags-routes" })

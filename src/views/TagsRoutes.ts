@@ -394,10 +394,10 @@ export class TagRoutesView extends ItemView {
     setSaveButton(needSave: boolean) {
         if (this.saveButtonRef.value) {
             if (needSave) {
-                this.saveButtonRef.value.addClass("need-save")
+                this.saveButtonRef.value.addClass("tags-routes-need-save")
             }
             else {
-                this.saveButtonRef.value.removeClass("need-save")
+                this.saveButtonRef.value.removeClass("tags-routes-need-save")
             }
         }
     }
