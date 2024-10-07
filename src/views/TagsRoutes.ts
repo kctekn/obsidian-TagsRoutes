@@ -448,10 +448,6 @@ export class TagRoutesView extends ItemView {
         const base64Data = dataURL.split(',')[1];
 
         const arrayBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0)).buffer;
-//        const filePath = `${this.app.vault.configDir}/graph-screenshot-${Date.now()}.png`;
-/*         if (globalProgramControl.snapshotDirectory !== "") {
-            createFolderIfNotExists(globalProgramControl.snapshotDirectory)
-        } */
         createFolderIfNotExists(this.plugin.settings.snapShotFolder)
         const filePath = `${this.plugin.settings.snapShotFolder}/graph-screenshot-${moment(Date.now()).format('YYYY-MM-DD-HH-mm-ss')}.png`;
 
