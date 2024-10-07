@@ -1409,7 +1409,7 @@ export class TagRoutesView extends ItemView {
             this.plugin.settings.customSlot[this.currentSlotNum], "toggle_global_map");
         this.setControlValue("Toggle label display", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "toggle_label_display");
-            this.setControlValue("Highlight track mode", this._controls,
+            this.setControlValue("Highlight connection paths", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "toggle_highlight_track_mode");
             this.setControlValue("Text color", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "text_color_angle");
