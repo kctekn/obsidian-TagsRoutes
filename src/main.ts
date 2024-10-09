@@ -102,6 +102,7 @@ export interface TagRoutesSettings {
 	toggle_global_map: boolean;
 	toggle_label_display: boolean;
 	toggle_highlight_track_mode: boolean;
+	toggle_selection_box: boolean;
 	colorMapSource: string;
 	colorMap: colorMap;
 }
@@ -139,6 +140,7 @@ export const DEFAULT_DISPLAY_SETTINGS_DARK: TagRoutesSettings = {
 	toggle_global_map: true,
 	toggle_label_display: false,
 	toggle_highlight_track_mode: false,
+	toggle_selection_box: true,
 	colorMapSource:"Default dark",
 	colorMap:defaultolorMapDark,
 }
@@ -154,6 +156,7 @@ export const DEFAULT_DISPLAY_SETTINGS_LIGHT: TagRoutesSettings = {
 	toggle_global_map: true,
 	toggle_label_display: false,
 	toggle_highlight_track_mode: false,
+	toggle_selection_box: true,
 	colorMapSource:"Defalt light",
 	colorMap:defaultolorMapLight,
 }

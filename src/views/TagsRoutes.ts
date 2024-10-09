@@ -194,6 +194,7 @@ export class TagRoutesView extends ItemView {
      //   this.currentSlot = this.plugin.settings.currentSlot;
         this.applyNodeSize = this.applyNodeSize.bind(this)
         this.onToggleLabelDisplay = this.onToggleLabelDisplay.bind(this)
+        this.getNodeSize = this.getNodeSize.bind(this)
     }
     getViewType() {
         return VIEW_TYPE_TAGS_ROUTES;
@@ -213,7 +214,8 @@ export class TagRoutesView extends ItemView {
     private hoverNode: ExtendedNodeObject | null;
     private selectedNode: ExtendedNodeObject | null;
     private orphanToLink: string = 'broken';
-
+    private highlightBox: THREE.LineSegments;
+    private continuousRotation: number = 0;
 
     getComputedColorForSelector(selector: string): string {
         // Create a temporary element
@@ -493,7 +495,25 @@ export class TagRoutesView extends ItemView {
             new Notice('Screenshot saved but no markdown note is active.');
         }
     }
-    colorAngle=-45;
+    createWireframeBox = (size: number, color: string) => {
+        
+        const geometry = new THREE.BoxGeometry(size, size, size);
+        //const geometry = new THREE.SphereGeometry(size, 14, 14, 14);
+      //  const geometry = new THREE.TorusGeometry(size,1,15,36)
+        const wireframe = new THREE.EdgesGeometry(geometry);
+        const lineMaterial = new THREE.LineBasicMaterial({ color: color });
+        lineMaterial.opacity = .000004;
+        
+        return new THREE.LineSegments(wireframe, lineMaterial);
+    };
+    getNodeSize(node: ExtendedNodeObject): number {
+        if (!this.plugin.settings.customSlot) return 1;
+        let ratio = this.plugin.settings.customSlot[0].node_size;
+        let nodeSize = (node.connections || 1)
+        if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
+        nodeSize = Math.log2(nodeSize) * ratio
+        return nodeSize < 3 ? 3: nodeSize;
+    }
     createNodeThreeObjectLight(node: ExtendedNodeObject,) {
 
         const group = new THREE.Group();
@@ -828,6 +848,28 @@ export class TagRoutesView extends ItemView {
         //this.Graph.backgroundColor(this.plugin.settings?.customSlot?.[0].colorMap.backgroundColor.value||defaltColorMap[this.plugin.settings.currentTheme].backgroundColor.value)
         this.Graph.linkColor(this.Graph.linkColor());
     }
+    updateHightlightBox() {
+        if (this.plugin.settings.customSlot?.[0].toggle_selection_box) {
+            //this.highlightBox.visible = false;
+            if (this.selectedNode && this.selectedNode._ThreeGroup) {
+                //console.log("update selected node box")
+                this.Graph.scene().remove(this.highlightBox)
+                this.highlightBox = this.createWireframeBox(this.getNodeSize(this.selectedNode) * 3, '#ffff00')
+                this.Graph.scene().add(this.highlightBox)
+
+                this.highlightBox.position.set(this.selectedNode?._ThreeGroup?.position.x, this.selectedNode?._ThreeGroup?.position.y, this.selectedNode?._ThreeGroup?.position.z)
+
+
+            }
+            if (this.hoverNode && this.hoverNode._ThreeGroup) {
+                //console.log("update hoverNode node box")
+                this.Graph.scene().remove(this.highlightBox)
+                this.highlightBox = this.createWireframeBox(this.getNodeSize(this.hoverNode) * 3, '#ffff00')
+                this.Graph.scene().add(this.highlightBox)
+                this.highlightBox.position.set(this.hoverNode?._ThreeGroup?.position.x, this.hoverNode?._ThreeGroup?.position.y, this.hoverNode?._ThreeGroup?.position.z)
+            }
+        }
+    }
     updateHighlight() {
         
     // trigger update of highlighted objects in scene
@@ -912,6 +954,7 @@ export class TagRoutesView extends ItemView {
             this.hoverNode._Sprite.textHeight = 18;
         }
 
+        this.updateHightlightBox();
         this.Graph
             .linkWidth(this.Graph.linkWidth())
             .linkDirectionalParticles(this.Graph.linkDirectionalParticles())
@@ -1858,6 +1901,28 @@ export class TagRoutesView extends ItemView {
             .onNodeHover((node: ExtendedNodeObject) => this.highlightOnNodeHover(node))
             .onLinkHover((link: any) => this.onLinkHover(link))
             .cooldownTicks(10000)
+        
+
+            this.highlightBox = this.createWireframeBox(16, '#ffffff')
+            this.highlightBox.visible = false;
+            this.Graph.scene().add(this.highlightBox)
+            
+            setInterval(() => {
+                this.highlightBox.rotation.copy(this.Graph.camera().rotation);
+                
+                this.continuousRotation += 0.05;
+                this.highlightBox.rotateX(30 * Math.PI / 180);   //rotate box along axis X for a angle to let it looks more good.
+                this.highlightBox.rotateY(this.continuousRotation);
+                if (this.selectedNode && this.selectedNode._ThreeGroup) {
+                    this.highlightBox.position.set(this.selectedNode?._ThreeGroup?.position.x, this.selectedNode?._ThreeGroup?.position.y, this.selectedNode?._ThreeGroup?.position.z)
+                }
+                if (this.hoverNode && this.hoverNode._ThreeGroup) {
+                    this.highlightBox.position.set(this.hoverNode?._ThreeGroup?.position.x, this.hoverNode?._ThreeGroup?.position.y, this.hoverNode?._ThreeGroup?.position.z)
+                }
+                if (!this.selectedNode && !this.hoverNode) {
+                    this.highlightBox.visible = false; 
+                }
+            }, 10);
         //Graph.onEngineStop(()=>Graph.zoomToFit(4000))  //自动复位
 /*         const bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2), 2.0, 1, 0)
         this.Graph.postProcessingComposer().addPass(bloomPass); */
