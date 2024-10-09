@@ -153,7 +153,7 @@ export class TagRoutesView extends ItemView {
         dark: VisualStyle;
         light: VisualStyle;
     }
-    saveButtonRef= { value: null as HTMLElement | null };
+    saveButtonRef = { value: null as HTMLElement | null };
     constructor(leaf: WorkspaceLeaf, plugin: TagsRoutes) {
         super(leaf);
         this.plugin = plugin;
@@ -186,15 +186,16 @@ export class TagRoutesView extends ItemView {
         }
 
         this.onDropdown = this.onDropdown.bind(this)
-     //   this.createNodeThreeObject = this.createNodeThreeObject.bind(this)
+        //   this.createNodeThreeObject = this.createNodeThreeObject.bind(this)
         this.onLinkButton = this.onLinkButton.bind(this)
         this.onUnlinkButton = this.onUnlinkButton.bind(this)
         this.linkNodeByType = this.linkNodeByType.bind(this)
         this.unlinkNodeByType = this.unlinkNodeByType.bind(this)
-     //   this.currentSlot = this.plugin.settings.currentSlot;
+        //   this.currentSlot = this.plugin.settings.currentSlot;
         this.applyNodeSize = this.applyNodeSize.bind(this)
         this.onToggleLabelDisplay = this.onToggleLabelDisplay.bind(this)
         this.getNodeSize = this.getNodeSize.bind(this)
+        this.onToggleSelectionBox = this.onToggleSelectionBox.bind(this)
     }
     getViewType() {
         return VIEW_TYPE_TAGS_ROUTES;
@@ -214,8 +215,9 @@ export class TagRoutesView extends ItemView {
     private hoverNode: ExtendedNodeObject | null;
     private selectedNode: ExtendedNodeObject | null;
     private orphanToLink: string = 'broken';
-    private highlightBox: THREE.LineSegments;
+    private highlightBox: THREE.LineSegments | null = null;
     private continuousRotation: number = 0;
+    private highLightBoxIntervalId: NodeJS.Timer | null = null;
 
     getComputedColorForSelector(selector: string): string {
         // Create a temporary element
@@ -223,7 +225,7 @@ export class TagRoutesView extends ItemView {
         tempElement.style.display = 'none';
         
         // Apply the selector as a class name
-        tempElement.className = selector.replace(/^\./, '').replace(/\./g,' '); // Remove leading dot if present
+        tempElement.className = selector.replace(/^\./, '').replace(/\./g, ' '); // Remove leading dot if present
         // Append to body
         document.body.appendChild(tempElement);
         
@@ -281,7 +283,7 @@ export class TagRoutesView extends ItemView {
     
         const max = Math.max(r, g, b);
         const min = Math.min(r, g, b);
-        let h=0 , s: number;
+        let h = 0, s: number;
         const l = (max + min) / 2;
     
         if (max === min) {
@@ -308,17 +310,17 @@ export class TagRoutesView extends ItemView {
             const hue2rgb = (p: number, q: number, t: number) => {
                 if (t < 0) t += 1;
                 if (t > 1) t -= 1;
-                if (t < 1/6) return p + (q - p) * 6 * t;
-                if (t < 1/2) return q;
-                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                if (t < 1 / 6) return p + (q - p) * 6 * t;
+                if (t < 1 / 2) return q;
+                if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
                 return p;
             };
     
             const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
             const p = 2 * l - q;
-            r = hue2rgb(p, q, h + 1/3);
+            r = hue2rgb(p, q, h + 1 / 3);
             g = hue2rgb(p, q, h);
-            b = hue2rgb(p, q, h - 1/3);
+            b = hue2rgb(p, q, h - 1 / 3);
         }
     
         return [r, g, b];
@@ -377,9 +379,9 @@ export class TagRoutesView extends ItemView {
                     getComputedStyle(this.app.workspace.containerEl).getPropertyValue("--background-primary").toLowerCase()
             }
             this.Graph.backgroundColor(this.plugin.settings.customSlot[0].colorMap["backgroundColor"].value)
-          //  this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObjectLight)
+            //  this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObjectLight)
         } else if (this.currentVisualString === "dark") {
-          //  this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObject)
+            //  this.Graph.nodeThreeObject(this.plugin.view.createNodeThreeObject)
         }
         this.updateColor();
         this.updateHighlight();
@@ -387,7 +389,7 @@ export class TagRoutesView extends ItemView {
         //    const colorMapSource = `'${(this.app.vault as any)?.config?.cssTheme || "Obsidian"}${(this.app.vault as any)?.config?.cssTheme?" - "+(this.app.vault as any)?.config?.theme || "Unknow":""}' - ${isDarkMode ? 'dark' : 'light'} `
         const colorMapSource = `'${(this.app.vault as any)?.config?.cssTheme || "Obsidian"}' - ${isDarkMode ? 'dark' : 'light'} `
         this.plugin.settings.customSlot[0].colorMapSource = colorMapSource;
-        DebugMsg(DebugLevel.DEBUG,"current colormap: ", colorMapSource)
+        DebugMsg(DebugLevel.DEBUG, "current colormap: ", colorMapSource)
         new Notice(`Tags routes: Color imported from  ${colorMapSource}`);
         new Notice(`Tags routes: Use 'Save' to make the changes effective next time.`);
         this.setSaveButton(true)
@@ -405,7 +407,7 @@ export class TagRoutesView extends ItemView {
     /*
         Make sure the customSlot has been swtiched to wanted theme before call this
     */
-    async switchTheme(visual: 'dark' | 'light'):Promise<boolean> {
+    async switchTheme(visual: 'dark' | 'light'): Promise<boolean> {
         if (this.currentVisualString !== visual) {
             this.visualProcessor?.removeStyle(this.container as HTMLElement);
             this.visualProcessor = this.visuals[visual]
@@ -417,7 +419,7 @@ export class TagRoutesView extends ItemView {
         return false;
     }
 
-    async captureAndSaveScreenshot(insert:boolean) {
+    async captureAndSaveScreenshot(insert: boolean) {
         this.Graph.renderer().render(this.Graph.scene(), this.Graph.camera());
         this.Graph.postProcessingComposer().render();// .renderer.render(this.Graph.scene(), this.Graph.camera());;
         const gl = this.Graph.renderer().getContext();
@@ -443,7 +445,7 @@ export class TagRoutesView extends ItemView {
         context.translate(0, -height);
         context.drawImage(canvas, 0, 0);
       
-        const dataURL= canvas.toDataURL('image/png');
+        const dataURL = canvas.toDataURL('image/png');
 
         //const dataURL = this.Graph.renderer().domElement.toDataURL('image/png');
         const base64Data = dataURL.split(',')[1];
@@ -485,7 +487,7 @@ export class TagRoutesView extends ItemView {
             } else {
                 new Notice('Screenshot saved but no editing note found to insert.');
     
-                DebugMsg(DebugLevel.DEBUG,"No markdown note is active: Insert to note canceled, only save screenshot.")
+                DebugMsg(DebugLevel.DEBUG, "No markdown note is active: Insert to note canceled, only save screenshot.")
                 /* 如果没有找到 Markdown 视图，可以创建一个新的笔记
                 const leaf = this.app.workspace.getLeaf(false);
                 const newNote = await this.app.vault.create(`Screenshot-${Date.now()}.md`, `![[${file.path}]]`);
@@ -499,7 +501,7 @@ export class TagRoutesView extends ItemView {
         
         const geometry = new THREE.BoxGeometry(size, size, size);
         //const geometry = new THREE.SphereGeometry(size, 14, 14, 14);
-      //  const geometry = new THREE.TorusGeometry(size,1,15,36)
+        //  const geometry = new THREE.TorusGeometry(size,1,15,36)
         const wireframe = new THREE.EdgesGeometry(geometry);
         const lineMaterial = new THREE.LineBasicMaterial({ color: color });
         lineMaterial.opacity = .000004;
@@ -512,7 +514,42 @@ export class TagRoutesView extends ItemView {
         let nodeSize = (node.connections || 1)
         if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
         nodeSize = Math.log2(nodeSize) * ratio
-        return nodeSize < 3 ? 3: nodeSize;
+        return nodeSize < 3 ? 3 : nodeSize;
+    }
+    createHighlightBox() {
+        if (!this.highlightBox) {
+            this.highlightBox = this.createWireframeBox(16, '#ffffff')
+            this.highlightBox.visible = false;
+            this.Graph.scene().add(this.highlightBox)
+        }
+        if (!this.highLightBoxIntervalId) {
+            this.highLightBoxIntervalId = setInterval(() => {
+                if (!this.highlightBox) return;
+                this.highlightBox.rotation.copy(this.Graph.camera().rotation);
+            
+                this.continuousRotation += 0.05;
+                this.highlightBox.rotateX(30 * Math.PI / 180);   //rotate box along axis X for a angle to let it looks more good.
+                this.highlightBox.rotateY(this.continuousRotation);
+                if (this.selectedNode && this.selectedNode._ThreeGroup) {
+                    this.highlightBox.position.set(this.selectedNode?._ThreeGroup?.position.x, this.selectedNode?._ThreeGroup?.position.y, this.selectedNode?._ThreeGroup?.position.z)
+                }
+                if (this.hoverNode && this.hoverNode._ThreeGroup) {
+                    this.highlightBox.position.set(this.hoverNode?._ThreeGroup?.position.x, this.hoverNode?._ThreeGroup?.position.y, this.hoverNode?._ThreeGroup?.position.z)
+                }
+                if (!this.selectedNode && !this.hoverNode) {
+                    this.highlightBox.visible = false;
+                }
+            }, 10);
+        }
+    }
+    removeHighlightBox() {
+        if (this.highlightBox)
+            this.Graph.scene().remove(this.highlightBox)
+        if (this.highLightBoxIntervalId)
+            clearInterval(this.highLightBoxIntervalId)
+        this.highlightBox = null;
+        this.highLightBoxIntervalId = null;
+
     }
     createNodeThreeObjectLight(node: ExtendedNodeObject,) {
 
@@ -522,12 +559,12 @@ export class TagRoutesView extends ItemView {
         if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
         nodeSize = Math.log2(nodeSize) * 5;
         const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
-       // DebugMsg(DebugLevel.DEBUG,"type of this: ", typeof(view))
+        // DebugMsg(DebugLevel.DEBUG,"type of this: ", typeof(view))
         let color = this.getNodeColorByType(node);
         const material = new THREE.MeshBasicMaterial({ color });
         const material0 = new THREE.MeshStandardMaterial({
             color: color,
-        //    blending: THREE.AdditiveBlending,
+            //    blending: THREE.AdditiveBlending,
             
             emissive: color,
             emissiveIntensity: 0.3
@@ -545,7 +582,7 @@ export class TagRoutesView extends ItemView {
         }  /*  else if (node.type == 'screenshot') {
             node_text_name = parts[parts.length - 1].split(".")[0].replace("graph-screenshot-","")
         }*/
-     else {
+        else {
             if (node.type == 'tag') {
                 node_text_name = parts[parts.length - 1]
             } else {
@@ -562,9 +599,9 @@ export class TagRoutesView extends ItemView {
 
 
         sprite.material.depthWrite = false; // make sprite background transparent
-        sprite.color = this.getContrastingColor(color,this.plugin.settings.customSlot?.[0].text_color_angle||0)
+        sprite.color = this.getContrastingColor(color, this.plugin.settings.customSlot?.[0].text_color_angle || 0)
         sprite.visible = false;
-    //    if (node.type === 'tag') sprite.color = '#CCCCCC'
+        //    if (node.type === 'tag') sprite.color = '#CCCCCC'
         sprite.textHeight = 0;
         //sprite.scale.set(18, 18, 8); // 设置标签大小
 
@@ -580,7 +617,7 @@ export class TagRoutesView extends ItemView {
         return group;
     }
     createNodeThreeObject(node: ExtendedNodeObject) {
-        DebugMsg(DebugLevel.DEBUG,"createNodeThreeObject called")
+        DebugMsg(DebugLevel.DEBUG, "createNodeThreeObject called")
         const group = new THREE.Group();
 
         let nodeSize = (node.connections || 1)
@@ -600,7 +637,7 @@ export class TagRoutesView extends ItemView {
         } /*else if (node.type == 'screenshot') {
             node_text_name = parts[parts.length - 1].split(".")[0].replace("graph-screenshot-","")
         }*/
-         else {
+        else {
             if (node.type == 'tag') {
                 node_text_name = parts[parts.length - 1]
             } else {
@@ -617,9 +654,9 @@ export class TagRoutesView extends ItemView {
 
 
         sprite.material.depthWrite = false; // make sprite background transparent
-        sprite.color = this.getContrastingColor(color,this.plugin.settings.customSlot?.[0].text_color_angle||0)
+        sprite.color = this.getContrastingColor(color, this.plugin.settings.customSlot?.[0].text_color_angle || 0)
         sprite.visible = false;
-   //     if (node.type === 'tag') sprite.color = '#ffffff'
+        //     if (node.type === 'tag') sprite.color = '#ffffff'
         sprite.textHeight = 0;
         //sprite.scale.set(18, 18, 8); // 设置标签大小
 
@@ -634,13 +671,13 @@ export class TagRoutesView extends ItemView {
 
         return group;
     }
-    getCameraDistance(node: ExtendedNodeObject):number {
+    getCameraDistance(node: ExtendedNodeObject): number {
         let nodeSize = (node.connections || 1)
         const maxdistance = 640
         const minDistance = 150
         let distance = 640
         if (nodeSize < 10) {
-          distance = minDistance + nodeSize/10  * (maxdistance - minDistance)
+            distance = minDistance + nodeSize / 10 * (maxdistance - minDistance)
         }
         return distance
     }
@@ -650,7 +687,7 @@ export class TagRoutesView extends ItemView {
      * 
      */
     highlightOnNodeClick(node: ExtendedNodeObject | null) {
-        if (!this.plugin.settings.customSlot) return; 
+        if (!this.plugin.settings.customSlot) return;
         // no state change
         if ((!node && !this.selectedNodes.size) || (node && this.selectedNode === node)) return;
         if (this.plugin.settings.customSlot[0].toggle_global_map) {
@@ -695,7 +732,7 @@ export class TagRoutesView extends ItemView {
                         }
                     }
                 }
-            }else {
+            } else {
                 this.selectedNode = node;
             }
 
@@ -703,10 +740,10 @@ export class TagRoutesView extends ItemView {
         }
 
         this.updateHighlight();
-       // this.Graph.refresh();
+        // this.Graph.refresh();
     }
     highlightOnNodeRightClick(node: ExtendedNodeObject | null) {
-        if (!this.plugin.settings.customSlot) return; 
+        if (!this.plugin.settings.customSlot) return;
         if (node) this.selectedNode = node;
         if (this.plugin.settings.customSlot[0].toggle_highlight_track_mode && node) {
             this.getNeighbors(node, { nodes: this.selectedNodes as any, links: this.selectedNodesLinks as any });
@@ -728,24 +765,24 @@ export class TagRoutesView extends ItemView {
         this.updateHighlight();
     }
     
-    async getNeighbors(node: ExtendedNodeObject, highLightSet:{ nodes:Set<ExtendedNodeObject>,links:Set<LinkObject>}) {
+    async getNeighbors(node: ExtendedNodeObject, highLightSet: { nodes: Set<ExtendedNodeObject>, links: Set<LinkObject> }) {
         let retNodes = highLightSet.nodes;
         let retLinks = highLightSet.links;
-         if (node.links) {
-             node.links.forEach(link => {
-                 if (!retLinks.has(link)) {
-                     retLinks.add(link)
-                 }
+        if (node.links) {
+            node.links.forEach(link => {
+                if (!retLinks.has(link)) {
+                    retLinks.add(link)
+                }
             });
-        } 
+        }
         retNodes.add(node);
         if (node.neighbors) {
             node.neighbors.forEach(neighbor => {
                 //let tmp:{nodes:Set<ExtendedNodeObject>,links:Set<LinkObject>}
                 if (!retNodes.has(neighbor)) {
                     retNodes.add(neighbor)
-                    if(node.neighbors?.length && node.neighbors.length<=500)
-                    this.getNeighbors(neighbor, highLightSet);
+                    if (node.neighbors?.length && node.neighbors.length <= 500)
+                        this.getNeighbors(neighbor, highLightSet);
                 }
             });
         }
@@ -756,16 +793,16 @@ export class TagRoutesView extends ItemView {
      * @returns 
      */
     highlightOnNodeHover(node: ExtendedNodeObject | null) {
-        if (!this.plugin.settings.customSlot) return; 
+        if (!this.plugin.settings.customSlot) return;
         // no state change
         if ((!node && !this.hoveredNodes.size) || (node && this.hoverNode === node)) return;
         this.hoverNode = node;
         this.hoveredNodes.clear();
         this.hoveredNodesLinks.clear();
         if (this.plugin.settings.customSlot[0].toggle_highlight_track_mode && node) {
-           this.getNeighbors(node,{nodes:this.hoveredNodes as any,links:this.hoveredNodesLinks as any});
-          //  this.hoveredNodes = nodes;
-          //  this.hoveredNodesLinks = links;
+            this.getNeighbors(node, { nodes: this.hoveredNodes as any, links: this.hoveredNodesLinks as any });
+            //  this.hoveredNodes = nodes;
+            //  this.hoveredNodesLinks = links;
         } else {
             if (node) {
                 this.hoveredNodes.add(node);
@@ -794,7 +831,7 @@ export class TagRoutesView extends ItemView {
         this.updateHighlight();
     }
     getNodeVisible(node: any) {
-        if (!this.plugin.settings.customSlot) return false; 
+        if (!this.plugin.settings.customSlot) return false;
         if (this.plugin.settings.customSlot[0].toggle_global_map) return true;
         if (this.highlightNodes.size != 0) {
             return this.highlightNodes.has(node) ? true : false
@@ -804,7 +841,7 @@ export class TagRoutesView extends ItemView {
         };
     }
     getLinkVisible(link: any) {
-        if (!this.plugin.settings.customSlot) return true; 
+        if (!this.plugin.settings.customSlot) return true;
         if (this.plugin.settings.customSlot[0].toggle_global_map) return true;
         if (this.highlightLinks.size != 0 || this.selectedNode || this.hoverNode) {
             return this.highlightLinks.has(link) ? true : false
@@ -838,10 +875,10 @@ export class TagRoutesView extends ItemView {
                     (obj.material as THREE.MeshStandardMaterial).color.set(color);
                     (obj.material as THREE.MeshStandardMaterial)?.emissive?.set(color);
                 }
-              //  return;
+                //  return;
             }
             if (node._Sprite) {
-                node._Sprite.color = this.getContrastingColor(this.getNodeColorByType(node),(this.plugin.settings.customSlot?.[0].text_color_angle||0));
+                node._Sprite.color = this.getContrastingColor(this.getNodeColorByType(node), (this.plugin.settings.customSlot?.[0].text_color_angle || 0));
             }
         })
         this.Graph.backgroundColor(this.plugin.settings.customSlot[0].colorMap["backgroundColor"].value)
@@ -849,30 +886,31 @@ export class TagRoutesView extends ItemView {
         this.Graph.linkColor(this.Graph.linkColor());
     }
     updateHightlightBox() {
-        if (this.plugin.settings.customSlot?.[0].toggle_selection_box) {
-            //this.highlightBox.visible = false;
-            if (this.selectedNode && this.selectedNode._ThreeGroup) {
-                //console.log("update selected node box")
-                this.Graph.scene().remove(this.highlightBox)
-                this.highlightBox = this.createWireframeBox(this.getNodeSize(this.selectedNode) * 3, '#ffff00')
-                this.Graph.scene().add(this.highlightBox)
+        //if (this.plugin.settings.customSlot?.[0].toggle_selection_box) {
+        //this.highlightBox.visible = false;
+        if (!this.highlightBox) return;
+        if (this.selectedNode && this.selectedNode._ThreeGroup) {
+            //console.log("update selected node box")
+            this.Graph.scene().remove(this.highlightBox)
+            this.highlightBox = this.createWireframeBox(this.getNodeSize(this.selectedNode) * 3, '#ffff00')
+            this.Graph.scene().add(this.highlightBox)
 
-                this.highlightBox.position.set(this.selectedNode?._ThreeGroup?.position.x, this.selectedNode?._ThreeGroup?.position.y, this.selectedNode?._ThreeGroup?.position.z)
+            this.highlightBox.position.set(this.selectedNode?._ThreeGroup?.position.x, this.selectedNode?._ThreeGroup?.position.y, this.selectedNode?._ThreeGroup?.position.z)
 
 
-            }
-            if (this.hoverNode && this.hoverNode._ThreeGroup) {
-                //console.log("update hoverNode node box")
-                this.Graph.scene().remove(this.highlightBox)
-                this.highlightBox = this.createWireframeBox(this.getNodeSize(this.hoverNode) * 3, '#ffff00')
-                this.Graph.scene().add(this.highlightBox)
-                this.highlightBox.position.set(this.hoverNode?._ThreeGroup?.position.x, this.hoverNode?._ThreeGroup?.position.y, this.hoverNode?._ThreeGroup?.position.z)
-            }
         }
+        if (this.hoverNode && this.hoverNode._ThreeGroup) {
+            //console.log("update hoverNode node box")
+            this.Graph.scene().remove(this.highlightBox)
+            this.highlightBox = this.createWireframeBox(this.getNodeSize(this.hoverNode) * 3, '#ffff00')
+            this.Graph.scene().add(this.highlightBox)
+            this.highlightBox.position.set(this.hoverNode?._ThreeGroup?.position.x, this.hoverNode?._ThreeGroup?.position.y, this.hoverNode?._ThreeGroup?.position.z)
+        }
+        //   }
     }
     updateHighlight() {
         
-    // trigger update of highlighted objects in scene
+        // trigger update of highlighted objects in scene
         
         // clear all highlighted nodes
         this.highlightNodes.clear();
@@ -886,21 +924,21 @@ export class TagRoutesView extends ItemView {
         this.hoveredNodesLinks.forEach(link => this.highlightLinks.add(link));
 
         
-        DebugMsg(DebugLevel.DEBUG,"update highlight entered")
+        DebugMsg(DebugLevel.DEBUG, "update highlight entered")
         
-        DebugMsg(DebugLevel.DEBUG,"selected node:", this.selectedNode)
-        DebugMsg(DebugLevel.DEBUG,"selected nodes:", this.selectedNodes)
-        DebugMsg(DebugLevel.DEBUG,"hovered node:", this.hoverNode)
+        DebugMsg(DebugLevel.DEBUG, "selected node:", this.selectedNode)
+        DebugMsg(DebugLevel.DEBUG, "selected nodes:", this.selectedNodes)
+        DebugMsg(DebugLevel.DEBUG, "hovered node:", this.hoverNode)
         DebugMsg(DebugLevel.DEBUG, "hovered nodes:", this.hoveredNodes)
         DebugMsg(DebugLevel.DEBUG, "highlight nodes:", this.highlightNodes)
         
-/*         this.Graph.graphData().nodes.forEach((node: ExtendedNodeObject) => {
-            if (!(node as any).__threeObj) {
-             //   this.Graph.graphData(this.gData);
-                DebugMsg(DebugLevel.ERROR,"no mesh found");
-                
-          } 
-        }) */
+        /*         this.Graph.graphData().nodes.forEach((node: ExtendedNodeObject) => {
+                    if (!(node as any).__threeObj) {
+                     //   this.Graph.graphData(this.gData);
+                        DebugMsg(DebugLevel.ERROR,"no mesh found");
+                        
+                  } 
+                }) */
         // update nodes visibility
         this.Graph.graphData().nodes.forEach((node: ExtendedNodeObject) => {
             const obj = node._ThreeMesh; // 获取节点的 Three.js 对象
@@ -936,25 +974,27 @@ export class TagRoutesView extends ItemView {
             //apply node sprite visible
             const showSpriteText = this.plugin.settings.customSlot?.[0].toggle_label_display || false;
             if (this.highlightNodes.has(node) && node.type !== 'attachment' && node.type !== 'broken'
-            && node.type !=='screenshot') {
+                && node.type !== 'screenshot') {
                 if (showSpriteText && node._Sprite) {
                     node._Sprite.visible = true;
                     node._Sprite.textHeight = 18;
                 }/* else {
                     DebugMsg(DebugLevel.ERROR,"node found but no sprite text found", this.highlightNodes)
                 } */
-            } 
+            }
             
         }
         );
-        DebugMsg(DebugLevel.DEBUG,"update highlight before exit")
+        DebugMsg(DebugLevel.DEBUG, "update highlight before exit")
 
         if (this.hoverNode && this.hoverNode._Sprite) {
             this.hoverNode._Sprite.visible = true;
             this.hoverNode._Sprite.textHeight = 18;
         }
 
-        this.updateHightlightBox();
+        if (this.plugin.settings.customSlot?.[0].toggle_selection_box && this.highlightBox) {
+            this.updateHightlightBox();
+        }
         this.Graph
             .linkWidth(this.Graph.linkWidth())
             .linkDirectionalParticles(this.Graph.linkDirectionalParticles())
@@ -977,17 +1017,17 @@ export class TagRoutesView extends ItemView {
             this.highlightOnNodeClick(node)
         }
         if (this.plugin.settings.enableAutoFocus) {
-            const file = this.app.vault.getAbstractFileByPath(filePath);
-            if (!file || !(file instanceof TFile)) {
-                return;
-            }
+        const file = this.app.vault.getAbstractFileByPath(filePath);
+        if (!file || !(file instanceof TFile)) {
+            return;
+        }
             // 保存当前活动的叶子
             const activeLeaf = this.app.workspace.activeLeaf;
-            // focus on the node in file explorer
-            const fileExplorerView = this.plugin.app.workspace.getLeavesOfType('file-explorer')[0];
-            //   if (node.type !== 'attachment') {
-            if (fileExplorerView) {
-                try {
+        // focus on the node in file explorer
+        const fileExplorerView = this.plugin.app.workspace.getLeavesOfType('file-explorer')[0];
+        //   if (node.type !== 'attachment') {
+        if (fileExplorerView) {
+            try {
                     const fileExplorerEl = fileExplorerView.view.containerEl;
                     if (fileExplorerEl) {
                         fileExplorerEl.blur();
@@ -995,17 +1035,17 @@ export class TagRoutesView extends ItemView {
                         const selectedItems = fileExplorerEl.querySelectorAll('.has-focus');
                         selectedItems.forEach(item => item.classList.remove('has-focus'));
                     }
-                    // 刷新文件浏览器视图
-                    (fileExplorerView.view as any).revealInFolder(file);
+                // 刷新文件浏览器视图
+                (fileExplorerView.view as any).revealInFolder(file);
                     // 将焦点重新设置到之前的活动叶子
                     if (activeLeaf) {
                     //    this.app.workspace.setActiveLeaf(activeLeaf, { focus: true });
                         (fileExplorerView.view as any).tree.focusedItem = null;
                     }
-                } catch (error) {
-                    console.error("Error revealing file in folder:", error);
-                }
+            } catch (error) {
+                console.error("Error revealing file in folder:", error);
             }
+        }
         }
         //   }
     }
@@ -1019,55 +1059,55 @@ export class TagRoutesView extends ItemView {
         return button;
     }
     onLinkDistance(value: number) {
-        if (!this.plugin.settings.customSlot) return; 
+        if (!this.plugin.settings.customSlot) return;
         this.Graph.d3Force('link')?.distance(value * 10);
         this.Graph.d3ReheatSimulation();
         this.plugin.settings.customSlot[0].link_distance = value
         this.plugin.saveSettings();
     }
     onLinkWidth(value: number) {
-        if (!this.plugin.settings.customSlot) return; 
+        if (!this.plugin.settings.customSlot) return;
         this.Graph.linkWidth((link: any) => this.highlightLinks.has(link) ? 2 * value : value)
         this.plugin.settings.customSlot[0].link_width = value
         this.plugin.saveSettings();
     }
     onTextColorAngle(value: number) {
-        if (!this.plugin.settings.customSlot) return; 
-    //    this.Graph.linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
-    this.plugin.settings.customSlot[0].text_color_angle = value
-    this.Graph.graphData().nodes.forEach((n:ExtendedNodeObject) => {
+        if (!this.plugin.settings.customSlot) return;
+        //    this.Graph.linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
+        this.plugin.settings.customSlot[0].text_color_angle = value
+        this.Graph.graphData().nodes.forEach((n: ExtendedNodeObject) => {
             if (n._Sprite) {
-                n._Sprite.color= this.getContrastingColor(this.getNodeColorByType(n),(this.plugin.settings.customSlot?.[0].text_color_angle||0))
+                n._Sprite.color = this.getContrastingColor(this.getNodeColorByType(n), (this.plugin.settings.customSlot?.[0].text_color_angle || 0))
 
             }
-    })
+        })
         this.updateHighlight();
         this.plugin.saveSettings();
     }
     onBloomStrength(value: number) {
-        if (!this.plugin.settings.customSlot) return; 
+        if (!this.plugin.settings.customSlot) return;
         if (this.currentVisualString !== 'dark') return;
         (this.visualProcessor as darkStyle).bloomPass.strength = value;
         this.plugin.settings.customSlot[0].bloom_strength = value
         this.plugin.saveSettings();
     }
     onLinkParticleNumber(value: number) {
-        if (!this.plugin.settings.customSlot) return; 
+        if (!this.plugin.settings.customSlot) return;
         this.Graph.linkDirectionalParticles((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
         this.plugin.settings.customSlot[0].link_particle_number = value
         this.plugin.saveSettings();
     }
     onLinkParticleSize(value: number) {
-        if (!this.plugin.settings.customSlot) return; 
+        if (!this.plugin.settings.customSlot) return;
         this.Graph.linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
         this.plugin.settings.customSlot[0].link_particle_size = value
         this.plugin.saveSettings();
     }
-    onToggleFreezeNodePosition(value:boolean){
-        if (!this.plugin.settings.customSlot) return; 
+    onToggleFreezeNodePosition(value: boolean) {
+        if (!this.plugin.settings.customSlot) return;
        
         if (value) {
-      //      DebugMsg(DebugLevel.WARN, "Go to freeze");
+            //      DebugMsg(DebugLevel.WARN, "Go to freeze");
             this.Graph.graphData().nodes.forEach(node => {
                 node.fx = node.x;
                 node.fy = node.y;
@@ -1075,26 +1115,26 @@ export class TagRoutesView extends ItemView {
             });
             this.Graph.enableNodeDrag(false)
         } else {
-       //     DebugMsg(DebugLevel.WARN, "Go to un-freeze");
+            //     DebugMsg(DebugLevel.WARN, "Go to un-freeze");
             this.Graph.graphData().nodes.forEach(node => {
                 node.fx = undefined;
                 node.fy = undefined;
                 node.fz = undefined;
-              });
-              this.Graph.enableNodeDrag(true)
-            }
+            });
+            this.Graph.enableNodeDrag(true)
+        }
 
-//        this.plugin.settings.customSlot[0].toggle_highlight_track_mode = value;
-//        this.plugin.saveSettings();
-//        this.clearHightlightNodes();
-//        this.updateHighlight();
+        //        this.plugin.settings.customSlot[0].toggle_highlight_track_mode = value;
+        //        this.plugin.saveSettings();
+        //        this.clearHightlightNodes();
+        //        this.updateHighlight();
     }
     getHighlightOnSelectedNode(selectedNode: ExtendedNodeObject) {
         if (!this.plugin.settings.customSlot) return;
         const node = selectedNode;
         if (this.plugin.settings.customSlot[0].toggle_highlight_track_mode && this.selectedNode) {
             this.getNeighbors(node, { nodes: this.selectedNodes as any, links: this.selectedNodesLinks as any });
-        }else {
+        } else {
             if (node) {
                 this.selectedNodes.add(node);
                 if (node.neighbors) {
@@ -1111,15 +1151,26 @@ export class TagRoutesView extends ItemView {
         }
     }
     onToggleHighlightTrackMode(value: boolean) {
-        if (!this.plugin.settings.customSlot) return; 
+        if (!this.plugin.settings.customSlot) return;
         this.plugin.settings.customSlot[0].toggle_highlight_track_mode = value;
         this.plugin.saveSettings();
-        let tmpNode=null;
+        let tmpNode = null;
         if (this.selectedNode) tmpNode = this.selectedNode;
         this.clearHightlightNodes();
         if (tmpNode) {
             this.selectedNode = tmpNode;
             this.getHighlightOnSelectedNode(this.selectedNode);
+        }
+        this.updateHighlight();
+    }
+    onToggleSelectionBox(value: boolean) {
+        if (!this.plugin.settings.customSlot) return; 
+        this.plugin.settings.customSlot[0].toggle_selection_box = value;
+        this.plugin.saveSettings();
+        if (value) {
+            this.createHighlightBox();
+        } else {
+            this.removeHighlightBox();
         }
         this.updateHighlight();
     }
@@ -1450,7 +1501,7 @@ export class TagRoutesView extends ItemView {
         }
     }
     applyChanges() {
-        if (!this.plugin.settings.customSlot) return; 
+        if (!this.plugin.settings.customSlot) return;
         this.setControlValue("Node size", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "node_size");
         this.setControlValue("Node repulsion", this._controls,
@@ -1461,17 +1512,19 @@ export class TagRoutesView extends ItemView {
             this.plugin.settings.customSlot[this.currentSlotNum], "link_width");
         this.setControlValue("Link particle size", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "link_particle_size");
-            this.setControlValue("Link particle number", this._controls,
-        this.plugin.settings.customSlot[this.currentSlotNum], "link_particle_number");
+        this.setControlValue("Link particle number", this._controls,
+            this.plugin.settings.customSlot[this.currentSlotNum], "link_particle_number");
         this.setControlValue("Toggle global map", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "toggle_global_map");
         this.setControlValue("Toggle label display", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "toggle_label_display");
-            this.setControlValue("Highlight connection paths", this._controls,
+        this.setControlValue("Toggle selection box", this._controls,
+            this.plugin.settings.customSlot[this.currentSlotNum], "toggle_selection_box");
+        this.setControlValue("Highlight connection paths", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "toggle_highlight_track_mode");
-            this.setControlValue("Text color", this._controls,
+        this.setControlValue("Text color", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "text_color_angle");
-            this.setControlValue("Bloom strength (dark mode)", this._controls,
+        this.setControlValue("Bloom strength (dark mode)", this._controls,
             this.plugin.settings.customSlot[this.currentSlotNum], "bloom_strength");
     }
     onSettingsLoad() {
@@ -1902,27 +1955,10 @@ export class TagRoutesView extends ItemView {
             .onLinkHover((link: any) => this.onLinkHover(link))
             .cooldownTicks(10000)
         
-
-            this.highlightBox = this.createWireframeBox(16, '#ffffff')
-            this.highlightBox.visible = false;
-            this.Graph.scene().add(this.highlightBox)
+        if (this.plugin.settings.customSlot?.[0].toggle_selection_box) {
+            this.createHighlightBox();
+            }
             
-            setInterval(() => {
-                this.highlightBox.rotation.copy(this.Graph.camera().rotation);
-                
-                this.continuousRotation += 0.05;
-                this.highlightBox.rotateX(30 * Math.PI / 180);   //rotate box along axis X for a angle to let it looks more good.
-                this.highlightBox.rotateY(this.continuousRotation);
-                if (this.selectedNode && this.selectedNode._ThreeGroup) {
-                    this.highlightBox.position.set(this.selectedNode?._ThreeGroup?.position.x, this.selectedNode?._ThreeGroup?.position.y, this.selectedNode?._ThreeGroup?.position.z)
-                }
-                if (this.hoverNode && this.hoverNode._ThreeGroup) {
-                    this.highlightBox.position.set(this.hoverNode?._ThreeGroup?.position.x, this.hoverNode?._ThreeGroup?.position.y, this.hoverNode?._ThreeGroup?.position.z)
-                }
-                if (!this.selectedNode && !this.hoverNode) {
-                    this.highlightBox.visible = false; 
-                }
-            }, 10);
         //Graph.onEngineStop(()=>Graph.zoomToFit(4000))  //自动复位
 /*         const bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2), 2.0, 1, 0)
         this.Graph.postProcessingComposer().addPass(bloomPass); */
@@ -1964,6 +2000,7 @@ export class TagRoutesView extends ItemView {
                     .addSlider("Bloom strength (dark mode)", 0.4, 3.0, 0.2, this.plugin.settings.customSlot[0].bloom_strength, this.onBloomStrength)
                     .addToggle("Toggle global map", this.plugin.settings.customSlot[0].toggle_global_map, this.onToggleGlobalMap)
                     .addToggle("Toggle label display", this.plugin.settings.customSlot[0].toggle_label_display, this.onToggleLabelDisplay)
+                    .addToggle("Toggle selection box", this.plugin.settings.customSlot[0].toggle_selection_box, this.onToggleSelectionBox)
                     .addToggle("Highlight connection paths", this.plugin.settings.customSlot[0].toggle_highlight_track_mode, this.onToggleHighlightTrackMode)
             })
             .add({
