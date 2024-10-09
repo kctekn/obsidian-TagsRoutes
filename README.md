@@ -18,7 +18,7 @@ Wiki:
 
 And you can show up your beautiful vault pictures here: [Share & showcase](https://github.com/kctekn/obsidian-TagsRoutes/discussions/17)
 
-## Version 1.1.3 Release Notes
+## Version 1.1.3/1.1.4 Release Notes
  
  This release introduces major updates to screenshots, enhancements to graph display control, and provides more choice in how you interact with tags nodes.
  
@@ -44,6 +44,11 @@ And you can show up your beautiful vault pictures here: [Share & showcase](https
     * 'Enable tag click action '
     
 	You can safely delete the 'TagsRoutes' folder in your vault, as the plugin will no longer utilize it.
+
+### Version 1.1.4 Bug Fix Release
+
+1. Fix a bug that the setting of 'highlight track mode' lost update when switch slot.
+
 
 _*The usage demo:*_
 
