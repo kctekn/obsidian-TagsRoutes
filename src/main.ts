@@ -50,6 +50,7 @@ export interface colorMap {
 	linkNormalColor: colorSpec;
 	linkParticleColor: colorSpec;
 	linkParticleHighlightColor: colorSpec;
+	selectionBoxColor: colorSpec;
 	backgroundColor: colorSpec;
 }
 export const defaultolorMapDark: colorMap = {
@@ -67,6 +68,7 @@ export const defaultolorMapDark: colorMap = {
 	linkNormalColor: {name:"default",  value: "#ffffff"},
 	linkParticleColor: {name:"default",  value: "#ffffff"},
 	linkParticleHighlightColor: { name: "default", value: "#ff00ff" },
+	selectionBoxColor:{name:"default", value:"#ffff00"},
 	backgroundColor:{name:"default",value:"#000003"}
 }
 export const defaultolorMapLight: colorMap = {
@@ -84,6 +86,7 @@ export const defaultolorMapLight: colorMap = {
 	linkNormalColor: {name:"default",  value: "#ffffff"},
 	linkParticleColor: {name:"default",  value: "#ffffff"},
 	linkParticleHighlightColor: { name: "default", value: "#ff00ff" },
+	selectionBoxColor: {name:"default", value:"#e0ac00"},
 	backgroundColor:{name:"default",value:"#ffffff"}
 }
 export const defaltColorMap = {

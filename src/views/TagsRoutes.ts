@@ -500,11 +500,9 @@ export class TagRoutesView extends ItemView {
     createWireframeBox = (size: number, color: string) => {
         
         const geometry = new THREE.BoxGeometry(size, size, size);
-        //const geometry = new THREE.SphereGeometry(size, 14, 14, 14);
-        //  const geometry = new THREE.TorusGeometry(size,1,15,36)
         const wireframe = new THREE.EdgesGeometry(geometry);
         const lineMaterial = new THREE.LineBasicMaterial({ color: color });
-        lineMaterial.opacity = .000004;
+//        lineMaterial.opacity = .000004;
         
         return new THREE.LineSegments(wireframe, lineMaterial);
     };
@@ -892,7 +890,7 @@ export class TagRoutesView extends ItemView {
         if (this.selectedNode && this.selectedNode._ThreeGroup) {
             //console.log("update selected node box")
             this.Graph.scene().remove(this.highlightBox)
-            this.highlightBox = this.createWireframeBox(this.getNodeSize(this.selectedNode) * 3, '#ffff00')
+            this.highlightBox = this.createWireframeBox(this.getNodeSize(this.selectedNode) * 3, this.plugin.settings.customSlot?.[0].colorMap.selectionBoxColor.value||"#ffff00")
             this.Graph.scene().add(this.highlightBox)
 
             this.highlightBox.position.set(this.selectedNode?._ThreeGroup?.position.x, this.selectedNode?._ThreeGroup?.position.y, this.selectedNode?._ThreeGroup?.position.z)
@@ -902,7 +900,7 @@ export class TagRoutesView extends ItemView {
         if (this.hoverNode && this.hoverNode._ThreeGroup) {
             //console.log("update hoverNode node box")
             this.Graph.scene().remove(this.highlightBox)
-            this.highlightBox = this.createWireframeBox(this.getNodeSize(this.hoverNode) * 3, '#ffff00')
+            this.highlightBox = this.createWireframeBox(this.getNodeSize(this.hoverNode) * 3, this.plugin.settings.customSlot?.[0].colorMap.selectionBoxColor.value||"#ffff00")
             this.Graph.scene().add(this.highlightBox)
             this.highlightBox.position.set(this.hoverNode?._ThreeGroup?.position.x, this.hoverNode?._ThreeGroup?.position.y, this.hoverNode?._ThreeGroup?.position.z)
         }
