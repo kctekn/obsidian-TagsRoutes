@@ -611,12 +611,12 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                 query.result = await this.frontmatterTagProcessor(query);
                 break;
             case 'time_duration:':
-                query.result = (await Promise.all(await this.timeDurationProcessor(query))).flat().filter(v => v != "");
                 this.writeMarkdown(query.value, "<br><div class=\"container-fluid\"><div class=\"tg-alert\"><b>PROCESSING...</b></div><small><em>The first time will be slow depending on vault size.</em></small></div>", el, ctx);
+                query.result = (await Promise.all(await this.timeDurationProcessor(query))).flat().filter(v => v != "");
                 break;
             case 'tag:':
-                query.result = (await Promise.all(await this.tagProcessor(query))).flat().filter(v => v != "");
                 this.writeMarkdown(query.value, "<br><div class=\"container-fluid\"><div class=\"tg-alert\"><b>PROCESSING...</b></div><small><em>The first time will be slow depending on vault size.</em></small></div>", el, ctx);
+                query.result = (await Promise.all(await this.tagProcessor(query))).flat().filter(v => v != "");
                 break;
         }
         // render it
