@@ -3,10 +3,11 @@ import TagsRoutes, { globalProgramControl } from '../main';
 import { getLineTime, DebugLevel, DebugMsg } from "./util";
 
 //Include: number, English chars, Chinese chars, and: /, -
-const pattern_tags_char = '#[0-9a-zA-Z\\u4e00-\\u9fa5/-_]'
+const pattern_tags_char = '#[0-9a-zA-Z\\u4e00-\\u9fa5/_-]'
 const pattern_timeStamp = '\\d{4}-\\d{2}-\\d{2} *\\d{2}:\\d{2}:\\d{2}'
 //Links format: 'tr-' + number or English chars
-const pattern_link = '\\^tr-[a-z0-9]+$'
+//const pattern_link = '\\^tr-[a-z0-9]+$'
+const tagRegEx = /\^tr-[a-z0-9]+$/
 const regex_TagsWithTimeStamp = new RegExp(`(?:(?<=\\s)|(?<=^))((?:${pattern_tags_char}+ +)+)(${pattern_timeStamp})?`, 'gm');
 interface queryKey{
     type: string;
@@ -144,25 +145,26 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                                 mmtime = " Created Time: " + moment(file.stat.ctime).format('YYYY-MM-DD HH:mm:ss');
                             }
 
-                            // 生成一个随机的段落链接标记
-                            const tagRegEx = /\^tr-[a-z0-9]+$/;
-                            let randomLinker;
-                            const tagMatch = paragraph.trimEnd().match(tagRegEx);
-                            if (tagMatch) {
+                            let randomLinker=""
+                            if (globalProgramControl.generateLinker) {
+                                // 生成一个随机的段落链接标记
+                                const tagMatch = paragraph.trimEnd().match(tagRegEx);
+                                if (tagMatch) {
 
-                                randomLinker = tagMatch[0].substring(1); // 获取已有的链接标记
-                            } else {
-                                randomLinker = 'tr-' + Math.random().toString(36).substr(2, 9);
-                                let updatedLine = ""
-                                if (paragraph.trimEnd().match(/\`\`\`/)) {
-                                    updatedLine = paragraph.trimEnd() + `\n^${randomLinker}\n`;
+                                    randomLinker = tagMatch[0].substring(1); // 获取已有的链接标记
                                 } else {
-                                    updatedLine = paragraph.trimEnd() + ` ^${randomLinker}\n`;
+                                    randomLinker = 'tr-' + Math.random().toString(36).substr(2, 9);
+                                    let updatedLine = ""
+                                    if (paragraph.trimEnd().match(/\`\`\`/)) {
+                                        updatedLine = paragraph.trimEnd() + `\n^${randomLinker}\n`;
+                                    } else {
+                                        updatedLine = paragraph.trimEnd() + ` ^${randomLinker}\n`;
+                                    }
+                                    updatedContent = updatedContent.replace(paragraph, updatedLine.trimEnd());
+                                    isUpdated = true;  // 标记为更新
                                 }
-                                updatedContent = updatedContent.replace(paragraph, updatedLine.trimEnd());
-                                isUpdated = true;  // 标记为更新
+                                randomLinker=`#^${randomLinker}`
                             }
-
 //                            return paragraph.trimEnd() + "\n\n \[*From* [[" + `${file.name.split(".")[0]}#^${randomLinker}|${file.name.split(".")[0]}]], *` + mmtime + "*\]\n";
                             const regexp_local = new RegExp(regex_TagsWithTimeStamp.source, regex_TagsWithTimeStamp.flags);
                             let matched_Tags_Timestamp_Group;
@@ -175,7 +177,9 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                                 retParagraph = paragraph.trimEnd() + "\n\n----\n " +
                                     "\[ *Tags:* " + matches?.join(' ') + " \]\n" +
                                     "\[ *" + contentTimeString + "* \]\n" +
-                                    "\[ *From:* [[" + `${file.name.split(".")[0]}#^${randomLinker}|${file.name.split(".")[0]}]] \]\n`
+                                    (globalProgramControl.generateLinker?
+                                    "\[ *From:* [[" + `${file.name.split(".")[0]}${randomLinker}|${file.name.split(".")[0]}]] \]\n` :
+                                    "\[ *From:* [[" + `${file.name.split(".")[0]}]] \]\n` )
                             }
                             return retParagraph;
                         }
@@ -249,32 +253,34 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                                     continue;
                                 }
 
-                                // 生成一个随机的段落链接标记
-                                const tagRegEx = /\^tr-[a-z0-9]+$/;
-                                let randomLinker;
-                                const tagMatch = paragraph.trimEnd().match(tagRegEx);
-                                if (tagMatch) {
-                                    randomLinker = tagMatch[0].substring(1); // 获取已有的链接标记
-                                } else {
-                                    //create link, and change the original paragraph in the file content
-                                    randomLinker = 'tr-' + Math.random().toString(36).substr(2, 9);
-                                    let updatedLine = ""
-                                    if (paragraph.trimEnd().match(/\`\`\`/)) {
-                                        updatedLine = paragraph.trimEnd() + `\n^${randomLinker}\n`;
+                                let randomLinker=""
+                                if (globalProgramControl.generateLinker) {
+                                    // 生成一个随机的段落链接标记
+                                    const tagMatch = paragraph.trimEnd().match(tagRegEx);
+                                    if (tagMatch) {
+                                        randomLinker = tagMatch[0].substring(1); // 获取已有的链接标记
                                     } else {
-                                        updatedLine = paragraph.trimEnd() + ` ^${randomLinker}\n`;
+                                        //create link, and change the original paragraph in the file content
+                                        randomLinker = 'tr-' + Math.random().toString(36).substr(2, 9);
+                                        let updatedLine = ""
+                                        if (paragraph.trimEnd().match(/\`\`\`/)) {
+                                            updatedLine = paragraph.trimEnd() + `\n^${randomLinker}\n`;
+                                        } else {
+                                            updatedLine = paragraph.trimEnd() + ` ^${randomLinker}\n`;
+                                        }
+                                        updatedContent = updatedContent.replace(paragraph, updatedLine.trimEnd());
+                                        isUpdated = true;  // 标记为更新
                                     }
-                                    updatedContent = updatedContent.replace(paragraph, updatedLine.trimEnd());
-                                    isUpdated = true;  // 标记为更新
+                                    randomLinker=`#^${randomLinker}`
                                 }
-
-                              //  const regexB = /#[a-zA-Z0-9\u4e00-\u9fa5\/\-]+/gm;
                                 const regexB = new RegExp(`${pattern_tags_char}+`,'gm')
                                 const matches = matched_Tags.match(regexB)
                                 retParagraph = paragraph.trimEnd() + "\n\n----\n " +
                                     "\[ *Tags:* " + matches?.join(' ') + " \]\n" +
                                     "\[ *" + contentTimeString + "* \]\n" +
-                                    "\[ *From:* [[" + `${file.name.split(".")[0]}#^${randomLinker}|${file.name.split(".")[0]}]] \]\n`
+                                    (globalProgramControl.generateLinker?
+                                    "\[ *From:* [[" + `${file.name.split(".")[0]}${randomLinker}|${file.name.split(".")[0]}]] \]\n` :
+                                    "\[ *From:* [[" + `${file.name.split(".")[0]}]] \]\n` )
                             }
                             return retParagraph;
                         }
@@ -362,7 +368,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
             const tagMap: Map<string, string[]> = new Map();
             //Get tags
            // const regex1 = /(?<= )#([a-zA-Z0-9\u4e00-\u9fa5\/\-]+)/g;
-            const pattern_tags_char = '#[0-9a-zA-Z\\u4e00-\\u9fa5/_-]'
+           // const pattern_tags_char = '#[0-9a-zA-Z\\u4e00-\\u9fa5/_-]'
             const regex1 = new RegExp(`(?<= )${pattern_tags_char}+`,'g')
             noteArr.sort((b, a) => getLineTime(a) - getLineTime(b))
 
@@ -425,11 +431,11 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
             return;
         }
 
-        // get the key type, and value
+        //Get the key type, and value
         const query = this.extractQueryKey(source)
         const perf = new performanceCount()
         this.writeMarkdownWrap(query, "<br><div class=\"container-fluid\"><div class=\"tg-alert\"><b>PROCESSING...</b></div><small><em>The first time will be slow depending on vault size.</em></small></div>", el, ctx);
-        // process to get the content
+        //Process to get the content
         switch (query.type) {
             case 'frontmatter_tag:':
                 query.result = await this.frontmatterTagProcessor(query);
@@ -441,7 +447,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                 query.result = (await Promise.all(await this.tagProcessor(query))).flat().filter(v => v != "");
                 break;
         }
-        // render it
+        //Render it
         let executionTimeString
         if (globalProgramControl.debugLevel == DebugLevel.INFO) {
             executionTimeString = perf.getTimeCost();

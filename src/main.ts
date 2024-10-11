@@ -13,6 +13,7 @@ export const globalProgramControl = {
 	aimBeforeLink: true,
 	useTrackHighlight: true,
 	snapshotDirectory: "graph-screenshot",
+	generateLinker: true,
 }
 export const currentVersion = '1.1.3';    //Used to show in debug console
 export const currentSaveSpecVer = 10103;  //Indicate current version of saved config file: data.json 
