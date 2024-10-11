@@ -118,53 +118,67 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                     return [];
                 }
 
-                const lines = content
+                const paragraphs = content
                     .split(/\n[\ ]*\n/)
                     .filter(line => line.contains(term));
 
-                if (lines.length != 0) {
+                if (paragraphs.length != 0) {
                     var mmtime;
                     //'[\/_# \u4e00-\u9fa5]*'
                     var regstr = term + '[#a-zA-Z0-9\\-\/_\u4e00-\u9fa5 ]* +(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})';
                     var regex = new RegExp(regstr, 'g');
                     
-                    const regexp_local = new RegExp(regex_TagsWithTimeStamp.source, regex_TagsWithTimeStamp.flags);
-
                     let updatedContent = content;
                     let isUpdated = false;  // 用于跟踪是否进行了任何更新
-                    const retArr = lines.map(
-                        (line) => {
-                            const stripedLine = line.replace(/<.*>/gm, "").replace(/```.*```/gm, "")
-                            if (line.length != stripedLine.length) {
+                    const retArr = paragraphs.map(
+                        (paragraph) => {
+                            const stripedParagraph = paragraph.replace(/<.*>/gm, "").replace(/```.*```/gm, "")
+                            if (paragraph.length != stripedParagraph.length) {
                              //   console.log("original lenght: ", line.length)
                              //   console.log("stripped lenght: ", stripedLine.length)
                             }
                             regex.lastIndex = 0;
-                            let match = regex.exec(stripedLine);
+                            let match = regex.exec(stripedParagraph);
                             if (match) {
                                 mmtime = " Tag Time: " + match[1];
                             } else {
                                 mmtime = " Created Time: " + moment(file.stat.ctime).format('YYYY-MM-DD HH:mm:ss');
                             }
+
                             // 生成一个随机的段落链接标记
                             const tagRegEx = /\^tr-[a-z0-9]+$/;
                             let randomLinker;
-                            const tagMatch = line.trimEnd().match(tagRegEx);
+                            const tagMatch = paragraph.trimEnd().match(tagRegEx);
                             if (tagMatch) {
+
                                 randomLinker = tagMatch[0].substring(1); // 获取已有的链接标记
                             } else {
                                 randomLinker = 'tr-' + Math.random().toString(36).substr(2, 9);
                                 let updatedLine = ""
-                                if (line.trimEnd().match(/\`\`\`/)) {
-                                    updatedLine = line.trimEnd() + `\n^${randomLinker}\n`;
+                                if (paragraph.trimEnd().match(/\`\`\`/)) {
+                                    updatedLine = paragraph.trimEnd() + `\n^${randomLinker}\n`;
                                 } else {
-                                    updatedLine = line.trimEnd() + ` ^${randomLinker}\n`;
+                                    updatedLine = paragraph.trimEnd() + ` ^${randomLinker}\n`;
                                 }
-                                updatedContent = updatedContent.replace(line, updatedLine.trimEnd());
+                                updatedContent = updatedContent.replace(paragraph, updatedLine.trimEnd());
                                 isUpdated = true;  // 标记为更新
                             }
 
-                            return line.trimEnd() + "\n\n \[*From* [[" + `${file.name.split(".")[0]}#^${randomLinker}|${file.name.split(".")[0]}]], *` + mmtime + "*\]\n";
+//                            return paragraph.trimEnd() + "\n\n \[*From* [[" + `${file.name.split(".")[0]}#^${randomLinker}|${file.name.split(".")[0]}]], *` + mmtime + "*\]\n";
+                            const regexp_local = new RegExp(regex_TagsWithTimeStamp.source, regex_TagsWithTimeStamp.flags);
+                            let matched_Tags_Timestamp_Group;
+                            let contentTimeString = mmtime;
+                            let retParagraph = "";
+                            while ((matched_Tags_Timestamp_Group = regexp_local.exec(stripedParagraph)) !== null) {
+                                let matched_Tags = matched_Tags_Timestamp_Group[1];
+                                const regexB = new RegExp(`${pattern_tags_char}+`,'gm')
+                                const matches = matched_Tags.match(regexB)
+                                retParagraph = paragraph.trimEnd() + "\n\n----\n " +
+                                    "\[ *Tags:* " + matches?.join(' ') + " \]\n" +
+                                    "\[ *" + contentTimeString + "* \]\n" +
+                                    "\[ *From:* [[" + `${file.name.split(".")[0]}#^${randomLinker}|${file.name.split(".")[0]}]] \]\n`
+                            }
+                            return retParagraph;
                         }
                     );
 
@@ -181,7 +195,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
         );
         return arr;
     }
-    private async getTagContent2(term: string): Promise<Promise<string[]>[]> {
+/*     private async getTagContent2(term: string): Promise<Promise<string[]>[]> {
         const files = this.plugin.app.vault.getMarkdownFiles();
         const arr = files.map(
             async (file) => {
@@ -234,13 +248,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                                 isUpdated = true;  // 标记为更新
                             }
 
-                         //   return line.trimEnd() + "\n\n \[*From* [[" + `${file.name.split(".")[0]}#^${randomLinker}|${file.name.split(".")[0]}]], *` + mmtime + "*\]\n";
-                         const regexB = new RegExp(`${pattern_tags_char}+`,'gm')
-                         const matches = matched_Tags.match(regexB)
-                         retParagraph = paragraph.trimEnd() + "\n\n----\n " +
-                             "\[ *Tags:* " + matches?.join(' ') + " \]\n" +
-                             "\[ *" + contentTimeString + "* \]\n" +
-                             "\[ *From:* [[" + `${file.name.split(".")[0]}#^${randomLinker}|${file.name.split(".")[0]}]] \]\n`
+                            return line.trimEnd() + "\n\n \[*From* [[" + `${file.name.split(".")[0]}#^${randomLinker}|${file.name.split(".")[0]}]], *` + mmtime + "*\]\n";
                         }
                     );
 
@@ -256,7 +264,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
             }
         );
         return arr;
-    }
+    } */
     /***
      * the all tag content within a time period
      */
