@@ -347,7 +347,10 @@ export default class TagsRoutes extends Plugin {
 		} else {
 			if (loadedSettings && loadedSettings.saveSpecVer) {
 				DebugMsg(DebugLevel.INFO,`Override save spec version ${loadedSettings.saveSpecVer}.`)
-			} else if(!loadedSettings) {
+			} else if (loadedSettings && !loadedSettings.saveSpecVer) {
+				DebugMsg(DebugLevel.INFO,`Override no version spec.`)
+			}
+			else if (!loadedSettings) {
 				DebugMsg(DebugLevel.INFO,`New installation: Using default settings.`)
 			}
 		}
