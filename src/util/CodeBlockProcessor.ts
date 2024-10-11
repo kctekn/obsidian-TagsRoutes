@@ -8,7 +8,7 @@ const pattern_timeStamp = '\\d{4}-\\d{2}-\\d{2} *\\d{2}:\\d{2}:\\d{2}'
 //Links format: 'tr-' + number or English chars
 //const pattern_link = '\\^tr-[a-z0-9]+$'
 const tagRegEx = /\^tr-[a-z0-9]+$/
-const regex_TagsWithTimeStamp = new RegExp(`(?:(?<=\\s)|(?<=^))((?:${pattern_tags_char}+ +)+)(${pattern_timeStamp})?`, 'gm');
+const regex_TagsWithTimeStamp = new RegExp(`(?:(?<=\\s)|(?<=^))((?:${pattern_tags_char}+ *)+)(${pattern_timeStamp})?`, 'gm');
 interface queryKey{
     type: string;
     value: string;
