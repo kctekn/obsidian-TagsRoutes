@@ -184,7 +184,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                     // 如果有任何更新，才将所有更新的行内容写回文件
                     if (isUpdated) {
                         await this.plugin.app.vault.modify(file, updatedContent);
-                        console.log("file modified: ", file)
+                        DebugMsg(DebugLevel.DEBUG,"file modified: ", file)
                     }
                     return retArr;
                 } else {
@@ -283,7 +283,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                     // 如果有任何更新，才将所有更新的行内容写回文件
                     if (isUpdated) {
                         await this.plugin.app.vault.modify(file, updatedContent);
-                        //console.log("file modified: ", file)
+                        DebugMsg(DebugLevel.DEBUG,"file modified: ", file)
                     }
                     return retArr //.flat();
                 } else {
@@ -428,25 +428,23 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
         // get the key type, and value
         const query = this.extractQueryKey(source)
         const perf = new performanceCount()
+        this.writeMarkdownWrap(query, "<br><div class=\"container-fluid\"><div class=\"tg-alert\"><b>PROCESSING...</b></div><small><em>The first time will be slow depending on vault size.</em></small></div>", el, ctx);
         // process to get the content
         switch (query.type) {
             case 'frontmatter_tag:':
                 query.result = await this.frontmatterTagProcessor(query);
                 break;
             case 'time_duration:':
-                this.writeMarkdown(query.value, "<br><div class=\"container-fluid\"><div class=\"tg-alert\"><b>PROCESSING...</b></div><small><em>The first time will be slow depending on vault size.</em></small></div>", el, ctx);
                 query.result = (await Promise.all(await this.timeDurationProcessor(query))).flat().filter(v => v != "");
                 break;
             case 'tag:':
-                this.writeMarkdown(query.value, "<br><div class=\"container-fluid\"><div class=\"tg-alert\"><b>PROCESSING...</b></div><small><em>The first time will be slow depending on vault size.</em></small></div>", el, ctx);
                 query.result = (await Promise.all(await this.tagProcessor(query))).flat().filter(v => v != "");
                 break;
         }
         // render it
-        let executionTimeString = perf.getTimeCost();
-        //const mc = 
-        if (globalProgramControl.debugLevel == DebugLevel.DEBUG) {
-            executionTimeString = executionTimeString + "\n" + perf.getTimeCost();
+        let executionTimeString
+        if (globalProgramControl.debugLevel == DebugLevel.INFO) {
+            executionTimeString = perf.getTimeCost();
         } else {
             executionTimeString = `Report refreshed at ${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} `
         }
