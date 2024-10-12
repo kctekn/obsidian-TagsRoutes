@@ -146,7 +146,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                             }
 
                             let randomLinker=""
-                            if (globalProgramControl.generateLinker) {
+                            if (this.plugin.settings.enableParagraphLinker) {
                                 // 生成一个随机的段落链接标记
                                 const tagMatch = paragraph.trimEnd().match(tagRegEx);
                                 if (tagMatch) {
@@ -177,7 +177,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                                 retParagraph = paragraph.trimEnd() + "\n\n----\n " +
                                     "\[ *Tags:* " + matches?.join(' ') + " \]\n" +
                                     "\[ *" + contentTimeString + "* \]\n" +
-                                    (globalProgramControl.generateLinker?
+                                    (this.plugin.settings.enableParagraphLinker?
                                     "\[ *From:* [[" + `${file.name.split(".")[0]}${randomLinker}|${file.name.split(".")[0]}]] \]\n` :
                                     "\[ *From:* [[" + `${file.name.split(".")[0]}]] \]\n` )
                             }
@@ -254,7 +254,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                                 }
 
                                 let randomLinker=""
-                                if (globalProgramControl.generateLinker) {
+                                if (this.plugin.settings.enableParagraphLinker) {
                                     // 生成一个随机的段落链接标记
                                     const tagMatch = paragraph.trimEnd().match(tagRegEx);
                                     if (tagMatch) {
@@ -278,7 +278,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                                 retParagraph = paragraph.trimEnd() + "\n\n----\n " +
                                     "\[ *Tags:* " + matches?.join(' ') + " \]\n" +
                                     "\[ *" + contentTimeString + "* \]\n" +
-                                    (globalProgramControl.generateLinker?
+                                    (this.plugin.settings.enableParagraphLinker?
                                     "\[ *From:* [[" + `${file.name.split(".")[0]}${randomLinker}|${file.name.split(".")[0]}]] \]\n` :
                                     "\[ *From:* [[" + `${file.name.split(".")[0]}]] \]\n` )
                             }

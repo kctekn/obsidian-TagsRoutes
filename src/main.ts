@@ -117,6 +117,7 @@ interface Settings {
 	}
 	openInCurrentTab: boolean;
 	enableTagsReaction: boolean;
+	enableParagraphLinker: boolean;
 	snapShotFolder: string;
 	currentTheme: "dark"|"light";
 	customSlot: ThemeSlots | null ;
@@ -170,6 +171,7 @@ const DEFAULT_SETTINGS: Settings = {
 	},
 	openInCurrentTab: false,
 	enableTagsReaction: true,
+	enableParagraphLinker: true,
 	snapShotFolder: "graph-screenshot",
 	currentTheme: "dark",
 	customSlot:null,
@@ -536,6 +538,18 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				})
 				.setValue(this.plugin.settings.enableTagsReaction)
+			}
+		)
+		new Setting(containerEl)
+			.setName('Create paragraph anchor')
+			.setDesc('Adds an anchor at the end of paragraphs in your notes matching your tag query. This modification enables precise backlinking to specific paragraphs.')
+			.addToggle((toggle: ToggleComponent) => {
+				toggle
+				.onChange(async (value) => {
+					this.plugin.settings.enableParagraphLinker = value;
+					await this.plugin.saveSettings();
+				})
+				.setValue(this.plugin.settings.enableParagraphLinker)
 			}
 		)
 		new Setting(containerEl)
