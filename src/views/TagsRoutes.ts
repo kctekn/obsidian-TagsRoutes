@@ -511,8 +511,10 @@ export class TagRoutesView extends ItemView {
         let ratio = this.plugin.settings.customSlot[0].node_size;
         let nodeSize = (node.connections || 1)
         if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
-        nodeSize = Math.log2(nodeSize) * ratio
-        return nodeSize < 3 ? 3 : nodeSize;
+        nodeSize = Math.log2(nodeSize) * 5 
+        nodeSize = nodeSize < 3 ? 3 : nodeSize;
+        nodeSize = nodeSize  * ((ratio / 5 - 1) * 0.6 + 1);
+        return nodeSize // < 3 ? 3 : nodeSize;
     }
     createHighlightBox() {
         if (!this.highlightBox) {
@@ -1216,6 +1218,12 @@ export class TagRoutesView extends ItemView {
         })
         this.plugin.settings.customSlot[0].node_size = value;
         this.plugin.saveSettings();
+        //Patch highlight box size
+        if (this.highlightBox) {
+            this.removeHighlightBox();
+            this.createHighlightBox();
+            this.updateHighlight();
+        }
     }
     onNodeRepulsion(value: number) {
         if (!this.plugin.settings.customSlot) return; 
