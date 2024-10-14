@@ -219,7 +219,16 @@ If your plugin does not need CSS, delete this file.
 .tags-routes-need-save {
     border-bottom: 5px solid var(--interactive-accent-hover);
 }
-
+.monitor-screen {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgb(from var(--background-primary) r g b / 0.7);
+    border: 1px solid #ccc;
+    padding: 2px;
+    border-radius: 4px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+  }
 
 /*
 .tags-routes .graph-control-section{

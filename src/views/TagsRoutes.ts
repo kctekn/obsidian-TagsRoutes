@@ -7,8 +7,11 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import * as d3 from 'd3-force-3d';
 import { settingGroup } from "./settings"
 import TagsRoutes, { defaltColorMap, DEFAULT_DISPLAY_SETTINGS, globalDirectory, globalProgramControl, TagRoutesSettings } from '../main';
-import { Vector2 } from 'three';
+import { Vector2, Vector3 } from 'three';
 import SpriteText from 'three-spritetext';
+import threeSpritetext from 'three-spritetext';
+import { opacity } from 'html2canvas/dist/types/css/property-descriptors/opacity';
+import { rm } from 'fs';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
 interface GraphData {
     nodes: ExtendedNodeObject[];
@@ -173,6 +176,7 @@ export class TagRoutesView extends ItemView {
         this.createNodeThreeObjectLight = this.createNodeThreeObjectLight.bind(this);
         this.updateColor = this.updateColor.bind(this);
         this.getNodeColorByType = this.getNodeColorByType.bind(this);
+        this.getNodeColorByTypeTE = this.getNodeColorByTypeTE.bind(this);
         this.switchTheme = this.switchTheme.bind(this);
         this.onToggleLabelDisplay = this.onToggleLabelDisplay.bind(this);
         this.onToggleHighlightTrackMode = this.onToggleHighlightTrackMode.bind(this);
@@ -196,6 +200,9 @@ export class TagRoutesView extends ItemView {
         this.onToggleLabelDisplay = this.onToggleLabelDisplay.bind(this)
         this.getNodeSize = this.getNodeSize.bind(this)
         this.onToggleSelectionBox = this.onToggleSelectionBox.bind(this)
+        this.animate = this.animate.bind(this)
+        this.getLinkMaterialTE = this.getLinkMaterialTE.bind(this)
+        this.updateMeshSize=this.updateMeshSize.bind(this)
     }
     getViewType() {
         return VIEW_TYPE_TAGS_ROUTES;
@@ -419,6 +426,125 @@ export class TagRoutesView extends ItemView {
         return false;
     }
 
+    async animate() {
+
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 256;
+        const context = canvas.getContext('2d');
+        
+        if (context) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+          //  context.font = 'Bold 40px Arial';
+            context.fillStyle = 'rgba(0,0,0,1)';
+            context.fillText('2D Text', 20, 128);
+        
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(5, 5, 1); // 调整缩放比例
+            sprite.position.set(0, 0, 10); // 调整位置
+        
+            this.Graph.scene().add(sprite);
+            console.log("add text");
+            setInterval(() => this.Graph.renderer().render(this.Graph.scene(), this.Graph.camera()), 1000);
+        } 
+    
+/*                 function animate() {
+                requestAnimationFrame(animate);
+                if (this.Graph)
+                this.Graph.renderer().render(this.Graph.scene(), this.Graph.camera());
+            }
+            animate(); */
+       // return;
+
+
+        this.Graph.graphData({ nodes: [], links: [] })
+        const nodeCount = this.gData.nodes.length;
+        let nodeIndex = 0;
+        const { nodes, links } = this.gData;
+        let gnodes: ExtendedNodeObject[] = [];
+        let glinks: LinkObject[] = [];
+        let angle = 0;
+     //   const distance = 2400;
+        let interval2: NodeJS.Timer;
+        const ms = document.getElementById('monitor-screen')
+            if (ms) ms.style.display = 'block';
+        const promptText = document.getElementById('prompt-text');
+       // if (promptText) promptText.style.display = 'block';
+        const intval = setInterval(() => {
+            if (nodeIndex < nodeCount) {
+                const addNode = nodes[nodeIndex];
+                if (addNode.neighbors) {
+                    addNode.neighbors = addNode.neighbors.filter(n => { if (gnodes.some(g => g.id == n.id)) return true; })
+                    addNode.connections = addNode.neighbors.length;
+                }
+                if (addNode.neighbors) {
+                    addNode.neighbors.forEach(n => { 
+                        if (!n.neighbors?.some(l => l.id == n.id)) {
+                            n.neighbors?.push(addNode)
+                            if (n.connections)
+                                n.connections += 1;
+                            else
+                                n.connections = 1;
+                            
+                            this.updateMeshSize(n);
+                        }
+                    })
+                }
+                gnodes = [...gnodes, addNode];
+                glinks = links.filter(l => {
+                    if (gnodes.some(n => n.id == l.sourceId) && gnodes.some(n => n.id == l.targetId)) return true;
+                })
+/*                 const tmpP = 50;
+                if (nodeIndex - tmpP >= 0) {
+                    (nodes[nodeIndex - tmpP] as any).fx = nodes[nodeIndex - tmpP].x;
+                    (nodes[nodeIndex - tmpP] as any).fy = nodes[nodeIndex - tmpP].y;
+                    (nodes[nodeIndex - tmpP] as any).fz = nodes[nodeIndex - tmpP].z;
+                } */
+                this.clearHightlightNodes();
+                this.selectedNode = addNode; nodeIndex++;
+                this.highlightOnNodeRightClickTE(this.selectedNode);
+                this.Graph.graphData({
+                    nodes: gnodes,
+                    links: glinks
+                });
+                this.updateMeshSize(addNode)
+             //   this.Graph.refresh();
+             //   this.Graph.nodeThreeObject(this.createn)
+/*                 const tmpP = 5;
+                if ((nodeIndex - tmpP) >= 0) {
+                    if (nodes[nodeIndex-tmpP]._ThreeGroup !==undefined && nodes[nodeIndex-tmpP]._ThreeGroup?.position ) {
+                        this.Graph.camera().lookAt((nodes[nodeIndex-tmpP]._ThreeGroup.position))
+                    
+                        console.log("look at ", nodes[nodeIndex-tmpP]._ThreeGroup.position)
+                    } else {
+                        console.log("no positon found ")
+                    }
+                } */
+              //  console.log(nodeIndex, "/", nodeCount)
+              if(promptText) promptText.textContent = `${nodeIndex}/${nodeCount}`;
+            } else {
+                clearInterval(intval)
+                if(interval2)
+                    clearInterval(interval2)
+                this.clearHightlightNodes();
+                this.updateHighlightTE();
+            }
+
+        }, 100);
+        interval2 = setInterval(() => {
+            let distance = this.Graph.camera().position.distanceTo(new Vector3(0, 0, 0))
+            distance = distance < 2400 ? 2400 : distance;
+            this.Graph.cameraPosition({
+                x: distance * Math.sin(angle),
+                z: distance * Math.cos(angle)
+              });
+              angle += Math.PI / 300;
+        },10)
+
+    }
     async captureAndSaveScreenshot(insert: boolean) {
         this.Graph.renderer().render(this.Graph.scene(), this.Graph.camera());
         this.Graph.postProcessingComposer().render();// .renderer.render(this.Graph.scene(), this.Graph.camera());;
@@ -551,6 +677,40 @@ export class TagRoutesView extends ItemView {
         this.highLightBoxIntervalId = null;
 
     }
+    updateMeshSize(node: ExtendedNodeObject) {
+        let nodeSize = (node.connections || 1)
+        if (node.type === 'tag') nodeSize = (node.instanceNum || 1)
+        nodeSize = Math.log2(nodeSize) * 5;
+        const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
+        // DebugMsg(DebugLevel.DEBUG,"type of this: ", typeof(view))
+        let color = this.getNodeColorByType(node);
+        const material = new THREE.MeshBasicMaterial({ color });
+        const material0 = new THREE.MeshStandardMaterial({
+            color: color,
+            //    blending: THREE.AdditiveBlending,
+            
+            emissive: color,
+            emissiveIntensity: 0.3
+        });
+        material0.opacity = .9; //0.85;
+        material0.transparent = true;
+        const mesh = new THREE.Mesh(geometry, material0);
+
+        if (node._ThreeGroup && node._ThreeMesh) {
+            node._ThreeGroup.remove(node._ThreeMesh)
+            node._ThreeMesh = mesh;
+            node._ThreeGroup.add(node._ThreeMesh)
+        }
+        const value = this.plugin.settings.customSlot?.[0].node_size || 1;
+        let scaleValue = (value / 5 - 1) * 0.6 + 1;
+        this.Graph.graphData().nodes.forEach((node: nodeThreeObject) => {
+            const obj = node.__threeObj; // 获取节点的 Three.js 对象
+            if (obj) {
+                obj.scale.set(scaleValue, scaleValue, scaleValue)
+            }
+        })
+
+    }
     createNodeThreeObjectLight(node: ExtendedNodeObject,) {
 
         const group = new THREE.Group();
@@ -626,6 +786,8 @@ export class TagRoutesView extends ItemView {
         const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
         let color = this.getNodeColorByType(node);
         const material = new THREE.MeshBasicMaterial({ color });
+        //material.opacity = 0.9;
+      //  material.transparent = true;
         const mesh = new THREE.Mesh(geometry, material);
         group.add(mesh)
         const parts = node.id.split('/')
@@ -742,6 +904,28 @@ export class TagRoutesView extends ItemView {
         this.updateHighlight();
         // this.Graph.refresh();
     }
+    highlightOnNodeRightClickTE(node: ExtendedNodeObject | null) {
+        if (!this.plugin.settings.customSlot) return;
+        if (node) this.selectedNode = node;
+        if (this.plugin.settings.customSlot[0].toggle_highlight_track_mode && node) {
+            this.getNeighbors(node, { nodes: this.selectedNodes as any, links: this.selectedNodesLinks as any });
+        } else {
+            if (node) {
+                this.selectedNodes.add(node);
+                if (node.neighbors) {
+                    node.neighbors.forEach(neighbor => {
+                        this.selectedNodes.add(neighbor)
+                    });
+                }
+                if (node.links) {
+                    node.links.forEach(link => {
+                        this.selectedNodesLinks.add(link)
+                    });
+                }
+            }
+        }
+        this.updateHighlightTE();
+    }
     highlightOnNodeRightClick(node: ExtendedNodeObject | null) {
         if (!this.plugin.settings.customSlot) return;
         if (node) this.selectedNode = node;
@@ -849,6 +1033,29 @@ export class TagRoutesView extends ItemView {
             return true
         }
     }
+    getLinkMaterialTE(link: any) {
+/*         if(this.highlightLinks==undefined)  return new THREE.MeshLambertMaterial({
+            color: 'white',
+            opacity: 1,
+            wireframeLinewidth: 2,
+        }) */
+        if (this.highlightLinks.has(link)) {
+            return new THREE.MeshLambertMaterial({
+                color: 'white',
+                opacity: 1,
+                wireframeLinewidth: 2,
+                transparent:false,
+            })
+        } else {
+            return new THREE.MeshLambertMaterial({
+                color: 'yellow',
+                opacity: 0.05,
+                wireframeLinewidth: 1,
+                transparent:true,
+            })
+        }
+
+    }
     updateColor1() {
         //DebugMsg(DebugLevel.DEBUG,"update color")
         if (!this.plugin.settings.customSlot) return;
@@ -907,6 +1114,114 @@ export class TagRoutesView extends ItemView {
             this.highlightBox.position.set(this.hoverNode?._ThreeGroup?.position.x, this.hoverNode?._ThreeGroup?.position.y, this.hoverNode?._ThreeGroup?.position.z)
         }
         //   }
+    }
+    updateHighlightTE() {
+        
+        // trigger update of highlighted objects in scene
+        
+/*         // clear all highlighted nodes
+        this.highlightNodes.clear();
+      //  this.highlightNodes = this.highlightNodes.filter
+        // re-construct highlight nodes if have any
+        this.selectedNodes.forEach(node => this.highlightNodes.add(node));
+        this.hoveredNodes.forEach(node => this.highlightNodes.add(node)); 
+
+        // clear all highlight links
+        this.highlightLinks.clear();
+        // re-construct highlight links if have any
+        this.selectedNodesLinks.forEach(link => this.highlightLinks.add(link));
+        this.hoveredNodesLinks.forEach(link => this.highlightLinks.add(link));*/
+
+        this.highlightNodes = new Set([...this.selectedNodes, ...this.hoveredNodes]);
+        this.highlightLinks = new Set([...this.selectedNodesLinks, ...this.hoveredNodesLinks]);
+        
+        DebugMsg(DebugLevel.DEBUG, "update highlight entered")
+        
+        DebugMsg(DebugLevel.DEBUG, "selected node:", this.selectedNode)
+        DebugMsg(DebugLevel.DEBUG, "selected nodes:", this.selectedNodes)
+        DebugMsg(DebugLevel.DEBUG, "hovered node:", this.hoverNode)
+        DebugMsg(DebugLevel.DEBUG, "hovered nodes:", this.hoveredNodes)
+        DebugMsg(DebugLevel.DEBUG, "highlight nodes:", this.highlightNodes)
+        
+        /*         this.Graph.graphData().nodes.forEach((node: ExtendedNodeObject) => {
+                    if (!(node as any).__threeObj) {
+                     //   this.Graph.graphData(this.gData);
+                        DebugMsg(DebugLevel.ERROR,"no mesh found");
+                        
+                  } 
+                }) */
+        // update nodes visibility
+        this.Graph.graphData().nodes.forEach((node: ExtendedNodeObject) => {
+            const obj = node._ThreeMesh; // 获取节点的 Three.js 对象
+            if (obj) {
+                if (this.plugin.settings.customSlot) {
+                    if (this.plugin.settings.customSlot[0].toggle_global_map) {
+                        //update color
+                        (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByTypeTE(node));
+                        if (this.currentVisualString === "light") {
+                            (obj.material as THREE.MeshStandardMaterial)?.emissive?.set(this.getNodeColorByTypeTE(node));
+                        }
+                        //update visibility
+                        obj.visible = true;
+                        const opc =  this.getNodeOpaticyTE(node) || 0;
+                        if (opc != 1) {
+                            (obj.material as THREE.MeshBasicMaterial).transparent = true;
+                        } else {
+                            (obj.material as THREE.MeshBasicMaterial).transparent = true;
+                        }
+                        (obj.material as THREE.MeshBasicMaterial).opacity = opc;
+
+                     //   console.log("the opaticy: ",(obj.material as THREE.MeshBasicMaterial).opacity)
+                    } else {
+                        //update color
+                        if (this.highlightNodes.has(node)) {
+                            (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByTypeTE(node));
+                            if (this.currentVisualString === "light") {
+                                (obj.material as THREE.MeshStandardMaterial)?.emissive?.set(this.getNodeColorByTypeTE(node));
+                            }
+                        }
+                        //update visibility
+                        obj.visible = this.getNodeVisible(node);
+                    }
+                }
+            }
+            //clear node sprite visible
+            if (node._Sprite && node._Sprite.visible) {
+
+                node._Sprite.visible = false;
+                node._Sprite.textHeight = 0;
+            }
+            //apply node sprite visible
+            const showSpriteText = this.plugin.settings.customSlot?.[0].toggle_label_display || false;
+            if (this.highlightNodes.has(node) && node.type !== 'attachment' && node.type !== 'broken'
+                && node.type !== 'screenshot') {
+                if (showSpriteText && node._Sprite) {
+                    node._Sprite.visible = true;
+                    node._Sprite.textHeight = 18;
+                }/* else {
+                    DebugMsg(DebugLevel.ERROR,"node found but no sprite text found", this.highlightNodes)
+                } */
+            }
+            
+        }
+        );
+        DebugMsg(DebugLevel.DEBUG, "update highlight before exit")
+
+        if (this.hoverNode && this.hoverNode._Sprite) {
+            this.hoverNode._Sprite.visible = true;
+            this.hoverNode._Sprite.textHeight = 18;
+        }
+
+        if (this.plugin.settings.customSlot?.[0].toggle_selection_box && this.highlightBox) {
+            this.updateHightlightBox();
+        }
+        this.Graph
+      //      .linkWidth(this.Graph.linkWidth())
+      //      .linkDirectionalParticles(this.Graph.linkDirectionalParticles())
+            .linkVisibility(this.Graph.linkVisibility())
+        //    .linkMaterial(this.getLinkMaterialTE)
+        
+        
     }
     updateHighlight() {
         
@@ -1588,6 +1903,44 @@ export class TagRoutesView extends ItemView {
                 filesDataMap.set(file.path, cache);
             });
     }
+    getNodeOpaticyTE(node: Node) {
+        if (!this.plugin.settings.customSlot) return 1; 
+        if (this.plugin.settings.customSlot[0].toggle_global_map) {
+            if (this.highlightNodes.size != 0) {
+                if (this.highlightNodes.has(node)) return 1;
+                return 0.5;
+            } else {
+                return 1;
+            }
+        } 
+    }
+    getNodeColorByTypeTE(node: Node) {
+        if (!this.plugin.settings.customSlot) return "#ffffff"; 
+        let color;
+        switch (node.type) {
+            case 'markdown':
+            case 'tag':
+            case 'attachment':
+            case 'broken':
+            case 'excalidraw':
+            case 'pdf':
+            case 'frontmatter_tag':
+            case 'screenshot':
+                            color = this.plugin.settings.customSlot[0].colorMap[node.type].value;
+                break;
+            default:
+                color = '#ffffff'; // 默认颜色
+        }
+ /*       if (this.plugin.settings.customSlot[0].toggle_global_map) {
+            if (this.highlightNodes.has(node)) color = this.plugin.settings.customSlot[0].colorMap["nodeHighlightColor"].value;
+            if (node === this.selectedNode || node === this.hoverNode)
+                color = this.plugin.settings.customSlot[0].colorMap["nodeFocusColor"].value;
+        } else {
+           /* if (node === this.selectedNode || node === this.hoverNode)
+            color = this.plugin.settings.customSlot[0].colorMap["nodeFocusColor"].value;*/
+    //    }
+        return color;
+    }
     getNodeColorByType(node: Node) {
         if (!this.plugin.settings.customSlot) return "#ffffff"; 
         let color;
@@ -1899,7 +2252,7 @@ export class TagRoutesView extends ItemView {
             .linkDirectionalParticleColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot?.[0].colorMap["linkParticleHighlightColor"].value || "#ffffff":
                 this.plugin.settings.customSlot?.[0].colorMap["linkParticleColor"].value||"#ffffff")
             //   .nodeLabel((node: any) => node.type == 'tag' ? `${node.id} (${node.instanceNum})` : `${node.id} (${node.connections})`)
-            .nodeOpacity(0.9)
+         //   .nodeOpacity(0.9)
             .nodeThreeObject(this.createNodeThreeObject)
             .onNodeClick((node: ExtendedNodeObject) => {
                 const distance = this.getCameraDistance(node);
@@ -1965,6 +2318,7 @@ export class TagRoutesView extends ItemView {
             this.createHighlightBox();
             }
             
+
         //Graph.onEngineStop(()=>Graph.zoomToFit(4000))  //自动复位
 /*         const bloomPass = new (UnrealBloomPass)(({ x: container.clientWidth, y: container.clientHeight } as Vector2), 2.0, 1, 0)
         this.Graph.postProcessingComposer().addPass(bloomPass); */
@@ -2034,6 +2388,11 @@ export class TagRoutesView extends ItemView {
                         .addButton("Capture Snapshot", "graph-button", () => { this.captureAndSaveScreenshot(false) })
                         )
                     })
+                    .add({
+                        arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
+                        .addButton("Animate", "graph-button", () => { this.animate() })
+                        )
+                    })
             })
             //   .add({
             //       arg: (new settingGroup("file filter", "File filter"))
@@ -2041,7 +2400,10 @@ export class TagRoutesView extends ItemView {
             //   })
             .attachEl(graphContainer.createEl('div', { cls: 'graph-controls' }))
             .hideAll();
-        this.plugin.skipSave = false;
+            this.plugin.skipSave = false;
+
+        graphContainer.createEl('div', { cls: 'monitor-screen', attr: {id:'monitor-screen',style:'display:none'} }).createEl('div', { cls: 'prompt-text', text: '', attr: { id: 'prompt-text' } })
+
     }
     // 点击节点后的处理函数
     handleTagClick(node: ExtendedNodeObject) {
@@ -2191,7 +2553,8 @@ export class TagRoutesView extends ItemView {
                 this.plugin.settings.customSlot[this.currentSlotNum], "node_size");
         }, 2000);
 
-    }
+        
+        }
     // view 的close 事件
     async onClose() {
         // Nothing to clean up.
