@@ -934,22 +934,38 @@ export class TagRoutesView extends ItemView {
             this.Graph.cameraPosition(newPos, node as any, 3000);
             this.highlightOnNodeClick(node)
         }
-        const file = this.app.vault.getAbstractFileByPath(filePath);
-        if (!file || !(file instanceof TFile)) {
-            return;
-    }
-        // focus on the node in file explorer
-        const fileExplorerView = this.plugin.app.workspace.getLeavesOfType('file-explorer')[0];
-        //   if (node.type !== 'attachment') {
-        if (fileExplorerView) {
-            try {
-                // 刷新文件浏览器视图
-                (fileExplorerView.view as any).revealInFolder(file);
-            } catch (error) {
-                console.error("Error revealing file in folder:", error);
+        if (this.plugin.settings.enableAutoFocus) {
+            const file = this.app.vault.getAbstractFileByPath(filePath);
+            if (!file || !(file instanceof TFile)) {
+                return;
+            }
+            // 保存当前活动的叶子
+            const activeLeaf = this.app.workspace.activeLeaf;
+            // focus on the node in file explorer
+            const fileExplorerView = this.plugin.app.workspace.getLeavesOfType('file-explorer')[0];
+            //   if (node.type !== 'attachment') {
+            if (fileExplorerView) {
+                try {
+                    const fileExplorerEl = fileExplorerView.view.containerEl;
+                    if (fileExplorerEl) {
+                        fileExplorerEl.blur();
+                        // 移除选中状态
+                        const selectedItems = fileExplorerEl.querySelectorAll('.has-focus');
+                        selectedItems.forEach(item => item.classList.remove('has-focus'));
+                    }
+                    // 刷新文件浏览器视图
+                    (fileExplorerView.view as any).revealInFolder(file);
+                    // 将焦点重新设置到之前的活动叶子
+                    if (activeLeaf) {
+                        this.app.workspace.setActiveLeaf(activeLeaf, { focus: true });
+                        (fileExplorerView.view as any).tree.focusedItem = null;
+                    }
+                } catch (error) {
+                    console.error("Error revealing file in folder:", error);
+                }
             }
         }
-                 //   }
+        //   }
     }
     focusGraphTag(tag: string) {
         this.focusGraphNodeById(tag);

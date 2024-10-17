@@ -117,6 +117,7 @@ interface Settings {
 	}
 	openInCurrentTab: boolean;
 	enableTagsReaction: boolean;
+	enableAutoFocus: boolean;
 	enableParagraphLinker: boolean;
 	snapShotFolder: string;
 	currentTheme: "dark"|"light";
@@ -171,6 +172,7 @@ const DEFAULT_SETTINGS: Settings = {
 	},
 	openInCurrentTab: false,
 	enableTagsReaction: true,
+	enableAutoFocus: true,
 	enableParagraphLinker: true,
 	snapShotFolder: "graph-screenshot",
 	currentTheme: "dark",
@@ -540,6 +542,18 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.enableTagsReaction)
 			}
 		)
+		new Setting(containerEl)
+		.setName('Auto-focus file in explorer')
+		.setDesc('Automatically navigate and highlight the current file in the file explorer when opened.')
+		.addToggle((toggle: ToggleComponent) => {
+			toggle
+			.onChange(async (value) => {
+				this.plugin.settings.enableAutoFocus = value;
+				await this.plugin.saveSettings();
+			})
+			.setValue(this.plugin.settings.enableAutoFocus)
+		}
+	)
 		new Setting(containerEl)
 			.setName('Create paragraph anchor')
 			.setDesc('Adds an anchor at the end of paragraphs in your notes matching your tag query. This modification enables precise backlinking to specific paragraphs.')

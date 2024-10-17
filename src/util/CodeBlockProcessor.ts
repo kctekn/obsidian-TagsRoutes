@@ -449,7 +449,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
         }
         //Render it
         let executionTimeString
-        if (globalProgramControl.debugLevel == DebugLevel.INFO) {
+        if (globalProgramControl.debugLevel == DebugLevel.DEBUG) {
             executionTimeString = perf.getTimeCost();
         } else {
             executionTimeString = `Report refreshed at ${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} `
