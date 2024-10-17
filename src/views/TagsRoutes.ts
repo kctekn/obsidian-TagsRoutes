@@ -536,7 +536,7 @@ export class TagRoutesView extends ItemView {
         }, 100);
         interval2 = setInterval(() => {
             let distance = this.Graph.camera().position.distanceTo(new Vector3(0, 0, 0))
-            distance = distance < 2400 ? 2400 : distance;
+   //         distance = distance < 2400 ? 2400 : distance;
             this.Graph.cameraPosition({
                 x: distance * Math.sin(angle),
                 z: distance * Math.cos(angle)
@@ -694,7 +694,13 @@ export class TagRoutesView extends ItemView {
         });
         material0.opacity = .9; //0.85;
         material0.transparent = true;
-        const mesh = new THREE.Mesh(geometry, material0);
+        let mesh;
+        if (this.currentVisualString === "light") {
+            mesh = new THREE.Mesh(geometry, material0);
+        } else {
+            mesh = new THREE.Mesh(geometry, material);
+        }
+    
 
         if (node._ThreeGroup && node._ThreeMesh) {
             node._ThreeGroup.remove(node._ThreeMesh)
