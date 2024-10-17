@@ -30,6 +30,7 @@ And you can show up your beautiful vault pictures here: [Share & showcase](https
        4. You'll receive a report summarizing the content tagged within the specified time period.
    - **Direct linking to paragraphs:**  
      Instead of linking only to entire notes, the plugin now creates direct links to specific paragraphs, improving navigation accuracy.
+     At the same time you can turn off this in the main settings tab.
    - **Performance optimization:**  
      Query performance has been significantly improved for faster and more efficient results.
 
