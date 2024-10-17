@@ -25,9 +25,11 @@ And you can show up your beautiful vault pictures here: [Share & showcase](https
      You can now query content associated with time-sensitive tags like `#1day`, `#30day`, `#60day`, etc.
      - **How to use it:**
        1. Add time-based tags (e.g., `#1day`, `#30day`) anywhere in your notes.
-       2. Restart Obsidian to allow the plugin to re-index the tags.
-       3. Navigate to the plugin's interface, find the tag, and click on the corresponding node.
-       4. You'll receive a report summarizing the content tagged within the specified time period.
+       	     1. Note the time of the tags will be timestamp you added or the file's creation time.
+       	     2. Refer to [Organize Tags by Timestamp Using the Obsidian Plugin: "Tags Routes"](https://github.com/kctekn/obsidian-TagsRoutes/wiki/Organize-Tags-by-Timestamp-Using-the-Obsidian-Plugin:-%22Tags-Routes%22) for the detail.
+       3. Restart Obsidian to allow the plugin to re-index the tags.
+       4. Navigate to the plugin's interface, find the tag, and click on the corresponding node.
+       5. You'll receive a report summarizing the content tagged within the specified time period.
    - **Direct linking to paragraphs:**  
      Instead of linking only to entire notes, the plugin now creates direct links to specific paragraphs, improving navigation accuracy.
      At the same time you can turn off this in the main settings tab.
