@@ -39,7 +39,8 @@ And you can show up your beautiful vault pictures here: [Share & showcase](https
      A new option has been added to toggle the auto-focus feature in the file explorer. This was the default behavior in previous versions, but now you can turn it off if it causes issues or if you don’t always need the file explorer to focus on the current file.
    - **Enhanced Functionality:**  
      When auto-focus is enabled, deleting items in the canvas will no longer trigger unintended reactions in the file explorer.
-
+     
+For the details, please check https://github.com/kctekn/obsidian-TagsRoutes/issues/24 . Thanks to @scriptingtest for the detailed feedback!
 
 ## Version 1.1.3/1.1.4 Release Notes
  
