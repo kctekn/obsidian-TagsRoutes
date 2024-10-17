@@ -18,6 +18,28 @@ Wiki:
 
 And you can show up your beautiful vault pictures here: [Share & showcase](https://github.com/kctekn/obsidian-TagsRoutes/discussions/17)
 
+## Version 1.1.5 Release Notes:
+
+### 1. Tag Query Enhancements:
+   - **Time-based tag queries:**  
+     You can now query content associated with time-sensitive tags like `#1day`, `#30day`, `#60day`, etc.
+     - **How to use it:**
+       1. Add time-based tags (e.g., `#1day`, `#30day`) anywhere in your notes.
+       2. Restart Obsidian to allow the plugin to re-index the tags.
+       3. Navigate to the plugin's interface, find the tag, and click on the corresponding node.
+       4. You'll receive a report summarizing the content tagged within the specified time period.
+   - **Direct linking to paragraphs:**  
+     Instead of linking only to entire notes, the plugin now creates direct links to specific paragraphs, improving navigation accuracy.
+   - **Performance optimization:**  
+     Query performance has been significantly improved for faster and more efficient results.
+
+### 2. New Option: "Auto-Focus File in Explorer"
+   - **Toggle Auto-Focus:**  
+     A new option has been added to toggle the auto-focus feature in the file explorer. This was the default behavior in previous versions, but now you can turn it off if it causes issues or if you don’t always need the file explorer to focus on the current file.
+   - **Enhanced Functionality:**  
+     When auto-focus is enabled, deleting items in the canvas will no longer trigger unintended reactions in the file explorer.
+
+
 ## Version 1.1.3/1.1.4 Release Notes
  
  This release introduces major updates to screenshots, enhancements to graph display control, and provides more choice in how you interact with tags nodes.
