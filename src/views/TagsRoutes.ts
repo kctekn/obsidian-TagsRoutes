@@ -225,6 +225,7 @@ export class TagRoutesView extends ItemView {
     private highlightBox: THREE.LineSegments | null = null;
     private continuousRotation: number = 0;
     private highLightBoxIntervalId: NodeJS.Timer | null = null;
+    private isAnimating:boolean = false;
 
     getComputedColorForSelector(selector: string): string {
         // Create a temporary element
@@ -426,40 +427,27 @@ export class TagRoutesView extends ItemView {
         return false;
     }
 
+    changeAnimateButtonText(text:string) {
+        // Find the button using querySelector
+        const button = document.querySelector('button.tg-animate') as HTMLButtonElement | null;
+      
+        // Check if the button exists
+        if (button) {
+          // Change the button text
+          button.textContent = text;
+        } else {
+          console.log('Button not found');
+        }
+      }
     async animate() {
 
-
-        const canvas = document.createElement('canvas');
-        canvas.width = 256;
-        canvas.height = 256;
-        const context = canvas.getContext('2d');
-        
-        if (context) {
-            context.clearRect(0, 0, canvas.width, canvas.height);
-          //  context.font = 'Bold 40px Arial';
-            context.fillStyle = 'rgba(0,0,0,1)';
-            context.fillText('2D Text', 20, 128);
-        
-            const texture = new THREE.CanvasTexture(canvas);
-            const material = new THREE.SpriteMaterial({ map: texture });
-            const sprite = new THREE.Sprite(material);
-            sprite.scale.set(5, 5, 1); // 调整缩放比例
-            sprite.position.set(0, 0, 10); // 调整位置
-        
-            this.Graph.scene().add(sprite);
-            console.log("add text");
-            setInterval(() => this.Graph.renderer().render(this.Graph.scene(), this.Graph.camera()), 1000);
-        } 
-    
-/*                 function animate() {
-                requestAnimationFrame(animate);
-                if (this.Graph)
-                this.Graph.renderer().render(this.Graph.scene(), this.Graph.camera());
-            }
-            animate(); */
-       // return;
-
-
+      //  
+        if (this.isAnimating) {
+            this.isAnimating = !this.isAnimating
+            return;
+        }
+        this.changeAnimateButtonText("Stop Animate")
+        this.isAnimating = true;
         this.Graph.graphData({ nodes: [], links: [] })
         const nodeCount = this.gData.nodes.length;
         let nodeIndex = 0;
@@ -467,50 +455,59 @@ export class TagRoutesView extends ItemView {
         let gnodes: ExtendedNodeObject[] = [];
         let glinks: LinkObject[] = [];
         let angle = 0;
-     //   const distance = 2400;
+
         let interval2: NodeJS.Timer;
         const ms = document.getElementById('monitor-screen')
             if (ms) ms.style.display = 'block';
         const promptText = document.getElementById('prompt-text');
        // if (promptText) promptText.style.display = 'block';
         const intval = setInterval(() => {
-            if (nodeIndex < nodeCount) {
-                const addNode = nodes[nodeIndex];
-                if (addNode.neighbors) {
-                    addNode.neighbors = addNode.neighbors.filter(n => { if (gnodes.some(g => g.id == n.id)) return true; })
-                    addNode.connections = addNode.neighbors.length;
-                }
-                if (addNode.neighbors) {
-                    addNode.neighbors.forEach(n => { 
-                        if (!n.neighbors?.some(l => l.id == n.id)) {
-                            n.neighbors?.push(addNode)
-                            if (n.connections)
-                                n.connections += 1;
-                            else
-                                n.connections = 1;
+            let addNode: ExtendedNodeObject | null = null;
+            
+            if (this.isAnimating && nodeIndex < nodeCount) {
+                
+                    addNode = nodes[nodeIndex];
+                    if (addNode.neighbors) {
+                        addNode.neighbors = addNode.neighbors.filter(n => { if (gnodes.some(g => g.id == n.id)) return true; })
+                        addNode.connections = addNode.neighbors.length;
+                        this.updateMeshSize(addNode)
+                    }
+                    if (addNode.neighbors) {
+                        addNode.neighbors.forEach(n => {
+                            if (!n.neighbors?.some(l => l.id == n.id)) {
+                                if (!addNode) return;
+                                n.neighbors?.push(addNode)
+                                if (n.connections)
+                                    n.connections += 1;
+                                else
+                                    n.connections = 1;
                             
-                            this.updateMeshSize(n);
-                        }
+                                this.updateMeshSize(n);
+                            }
+                        })
+                    }
+                    gnodes = [...gnodes, addNode];
+                    glinks = links.filter(l => {
+                        if (gnodes.some(n => n.id == l.sourceId) && gnodes.some(n => n.id == l.targetId)) return true;
                     })
-                }
-                gnodes = [...gnodes, addNode];
-                glinks = links.filter(l => {
-                    if (gnodes.some(n => n.id == l.sourceId) && gnodes.some(n => n.id == l.targetId)) return true;
-                })
+                    nodeIndex++;
+                    if (!addNode) return;
+                    this.clearHightlightNodes();
+                    this.selectedNode = addNode; 
+                    this.highlightOnNodeRightClickTE(this.selectedNode);
+                    this.Graph.graphData({
+                        nodes: gnodes,
+                        links: glinks
+                    });
+                    if(promptText) promptText.textContent = `${nodeIndex}/${nodeCount}`;
+                 
 /*                 const tmpP = 50;
                 if (nodeIndex - tmpP >= 0) {
                     (nodes[nodeIndex - tmpP] as any).fx = nodes[nodeIndex - tmpP].x;
                     (nodes[nodeIndex - tmpP] as any).fy = nodes[nodeIndex - tmpP].y;
                     (nodes[nodeIndex - tmpP] as any).fz = nodes[nodeIndex - tmpP].z;
                 } */
-                this.clearHightlightNodes();
-                this.selectedNode = addNode; nodeIndex++;
-                this.highlightOnNodeRightClickTE(this.selectedNode);
-                this.Graph.graphData({
-                    nodes: gnodes,
-                    links: glinks
-                });
-                this.updateMeshSize(addNode)
+
              //   this.Graph.refresh();
              //   this.Graph.nodeThreeObject(this.createn)
 /*                 const tmpP = 5;
@@ -524,13 +521,17 @@ export class TagRoutesView extends ItemView {
                     }
                 } */
               //  console.log(nodeIndex, "/", nodeCount)
-              if(promptText) promptText.textContent = `${nodeIndex}/${nodeCount}`;
+              
             } else {
                 clearInterval(intval)
                 if(interval2)
                     clearInterval(interval2)
-                this.clearHightlightNodes();
-                this.updateHighlightTE();
+
+                this.onResetGraph();
+                this.changeAnimateButtonText("Animate")
+                if (ms) ms.style.display = 'none';
+
+
             }
 
         }, 100);
@@ -539,8 +540,9 @@ export class TagRoutesView extends ItemView {
    //         distance = distance < 2400 ? 2400 : distance;
             this.Graph.cameraPosition({
                 x: distance * Math.sin(angle),
-                z: distance * Math.cos(angle)
-              });
+                z: distance * Math.cos(angle),
+                y: 0
+            });
               angle += Math.PI / 300;
         },10)
 
@@ -1754,6 +1756,11 @@ export class TagRoutesView extends ItemView {
         this.gData = this.buildGdata();
         this.Graph.graphData(this.gData);
         this.Graph.refresh();
+        setTimeout(() => {
+            if (!this.plugin.settings.customSlot) return;
+            this.setControlValue("Node size", this._controls,
+                this.plugin.settings.customSlot[this.currentSlotNum], "node_size");
+        }, 2000);
     }
     deepEqual(obj1: any, obj2: any): boolean {
         if (obj1 === obj2) return true;
@@ -2396,7 +2403,7 @@ export class TagRoutesView extends ItemView {
                     })
                     .add({
                         arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
-                        .addButton("Animate", "graph-button", () => { this.animate() })
+                        .addButton("Animate", "graph-button tg-animate", () => { this.animate() })
                         )
                     })
             })
