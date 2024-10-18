@@ -541,9 +541,9 @@ export class TagRoutesView extends ItemView {
             this.Graph.cameraPosition({
                 x: distance * Math.sin(angle),
                 z: distance * Math.cos(angle),
-                y: 0
             });
-              angle += Math.PI / 300;
+            angle += Math.PI / 300;
+            this.Graph.camera().up.set(0, 1, 0);
         },10)
 
     }
