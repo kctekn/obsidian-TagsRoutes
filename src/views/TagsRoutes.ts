@@ -1,4 +1,4 @@
-import { moment, MarkdownView, Notice, CachedMetadata, ValueComponent, Platform, View } from 'obsidian';
+import { moment, MarkdownView, Notice, CachedMetadata, ValueComponent, Platform, View, ExtraButtonComponent } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
 import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile, DebugMsg, DebugLevel, createFolderIfNotExists } from "../util/util"
@@ -9,9 +9,7 @@ import { settingGroup } from "./settings"
 import TagsRoutes, { defaltColorMap, DEFAULT_DISPLAY_SETTINGS, globalDirectory, globalProgramControl, TagRoutesSettings } from '../main';
 import { Vector2, Vector3 } from 'three';
 import SpriteText from 'three-spritetext';
-import threeSpritetext from 'three-spritetext';
-import { opacity } from 'html2canvas/dist/types/css/property-descriptors/opacity';
-import { rm } from 'fs';
+
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
 interface GraphData {
     nodes: ExtendedNodeObject[];
@@ -203,7 +201,8 @@ export class TagRoutesView extends ItemView {
         this.onToggleSelectionBox = this.onToggleSelectionBox.bind(this)
         this.animate = this.animate.bind(this)
         this.getLinkMaterialTE = this.getLinkMaterialTE.bind(this)
-        this.updateMeshSize=this.updateMeshSize.bind(this)
+        this.updateMeshSize = this.updateMeshSize.bind(this)
+        this.onAnimatePlayButton = this.onAnimatePlayButton.bind(this);
     }
     getViewType() {
         return VIEW_TYPE_TAGS_ROUTES;
@@ -226,7 +225,12 @@ export class TagRoutesView extends ItemView {
     private highlightBox: THREE.LineSegments | null = null;
     private continuousRotation: number = 0;
     private highLightBoxIntervalId: NodeJS.Timer | null = null;
-    private isAnimating:boolean = false;
+    private isAnimating: boolean = false;
+    private animatePlayButton: ExtraButtonComponent | null = null;
+    private animatePlayButtonIcon: 'pause' | 'play' | null = null;
+    private animatePlayState: 'pause' | 'play' | null = null;
+    private interval1: NodeJS.Timer;
+    private interval2: NodeJS.Timer;
 
     getComputedColorForSelector(selector: string): string {
         // Create a temporary element
@@ -427,7 +431,18 @@ export class TagRoutesView extends ItemView {
         }
         return false;
     }
-
+    onAnimatePlayButton() {
+        //if (this.animatePlayButton?.extraSettingsEl)
+        if (this.animatePlayState === 'play') {
+            this.animatePlayButton?.setIcon('play').setTooltip('Resume')
+            this.animatePlayButtonIcon = 'play'
+            this.animatePlayState = 'pause'
+        } else {
+            this.animatePlayButton?.setIcon('pause').setTooltip('Pause')
+            this.animatePlayButtonIcon='pause'
+            this.animatePlayState = 'play'
+        }
+    }
     changeAnimateButtonText(text:string) {
         // Find the button using querySelector
         const button = document.querySelector('button.tg-animate') as HTMLButtonElement | null;
@@ -443,12 +458,17 @@ export class TagRoutesView extends ItemView {
     async animate() {
 
       //  
-        if (this.isAnimating) {
+        if (this.isAnimating) {  
             this.isAnimating = !this.isAnimating
-            return;
+            return;  //Make sure never run process again when it was running.
         }
+        if (this.interval1) clearInterval(this.interval1)
+        if (this.interval2) clearInterval(this.interval2)
+
         this.changeAnimateButtonText("Interrupt Animate")
         this.isAnimating = true;
+        this.animatePlayState = 'pause'
+        this.onAnimatePlayButton(); //change state
         this.Graph.graphData({ nodes: [], links: [] })
         const nodeCount = this.gData.nodes.length;
         let nodeIndex = 0;
@@ -457,16 +477,16 @@ export class TagRoutesView extends ItemView {
         let glinks: LinkObject[] = [];
         let angle = 0;
 
-        let interval2: NodeJS.Timer;
+      //  let interval2: NodeJS.Timer;
         const ms = document.getElementById('monitor-screen')
         if (ms) ms.style.display = 'block';
         const promptNumber = document.getElementById('prompt-number');
      //   const promptName = document.getElementById('prompt-name');
 
-        const intval = setInterval(() => {
+        this.interval1 = setInterval(() => {
             let addNode: ExtendedNodeObject | null = null;
-            
             if (this.isAnimating && nodeIndex < nodeCount) {
+                if (this.animatePlayState === 'pause') return;
                 
                     addNode = nodes[nodeIndex];
                     if (addNode.neighbors) {
@@ -526,10 +546,10 @@ export class TagRoutesView extends ItemView {
               //  console.log(nodeIndex, "/", nodeCount)
               
             } else {
-                clearInterval(intval)
+                clearInterval(this.interval1)
                 if (nodeIndex < nodeCount) { //hard reset
-                    if(interval2)
-                    clearInterval(interval2)
+                    if(this.interval2)
+                    clearInterval(this.interval2)
                     this.onResetGraph();
                     this.changeAnimateButtonText("Animate")
                     if (ms) ms.style.display = 'none';
@@ -544,9 +564,10 @@ export class TagRoutesView extends ItemView {
             }
 
         }, 100);
-        interval2 = setInterval(() => {
+        this.interval2 = setInterval(() => {
+            if (this.animatePlayState === 'pause'&& this.isAnimating == true) return;
             if (this.isAnimating == false) {
-                clearInterval(interval2)
+                clearInterval(this.interval2)
                 this.changeAnimateButtonText("Animate")
                 if (ms) ms.style.display = 'none';
                 return;
@@ -809,8 +830,8 @@ export class TagRoutesView extends ItemView {
         const geometry = new THREE.SphereGeometry(nodeSize < 3 ? 3 : nodeSize, 16, 16);
         let color = this.getNodeColorByType(node);
         const material = new THREE.MeshBasicMaterial({ color });
-        //material.opacity = 0.9;
-      //  material.transparent = true;
+        material.opacity = 0.9;
+        material.transparent = true;
         const mesh = new THREE.Mesh(geometry, material);
         group.add(mesh)
         const parts = node.id.split('/')
@@ -947,7 +968,9 @@ export class TagRoutesView extends ItemView {
                 }
             }
         }
-        this.updateHighlightTE();
+        setTimeout(() => {
+            this.updateHighlightTE();
+        }, 0);
     }
     highlightOnNodeRightClick(node: ExtendedNodeObject | null) {
         if (!this.plugin.settings.customSlot) return;
@@ -1179,22 +1202,21 @@ export class TagRoutesView extends ItemView {
             if (obj) {
                 if (this.plugin.settings.customSlot) {
                     if (this.plugin.settings.customSlot[0].toggle_global_map) {
-                        //update color
-                        (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByTypeTE(node));
-                        if (this.currentVisualString === "light") {
-                            (obj.material as THREE.MeshStandardMaterial)?.emissive?.set(this.getNodeColorByTypeTE(node));
-                        }
                         //update visibility
                         obj.visible = true;
-                        const opc =  this.getNodeOpaticyTE(node) || 0;
-                        if (opc != 1) {
-                            (obj.material as THREE.MeshBasicMaterial).transparent = true;
-                        } else {
-                            (obj.material as THREE.MeshBasicMaterial).transparent = true;
-                        }
-                        (obj.material as THREE.MeshBasicMaterial).opacity = opc;
+                        const opc = this.getNodeOpaticyTE(node) || 0;
 
-                     //   console.log("the opaticy: ",(obj.material as THREE.MeshBasicMaterial).opacity)
+                        if (this.currentVisualString === "light") {
+                            (obj.material as THREE.MeshStandardMaterial)?.emissive?.set(this.getNodeColorByTypeTE(node));
+                            (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByTypeTE(node));
+                            (obj.material as THREE.MeshBasicMaterial).opacity = opc;
+                        } else {
+                            obj.material = new THREE.MeshBasicMaterial({
+                                color: this.getNodeColorByTypeTE(node),
+                                opacity: opc,
+                                transparent:true,
+                            })
+                        }
                     } else {
                         //update color
                         if (this.highlightNodes.has(node)) {
@@ -1936,7 +1958,7 @@ export class TagRoutesView extends ItemView {
         if (this.plugin.settings.customSlot[0].toggle_global_map) {
             if (this.highlightNodes.size != 0) {
                 if (this.highlightNodes.has(node)) return 1;
-                return 0.5;
+                return (this.currentVisualString === "light")?0.5:0.5;
             } else {
                 return 1;
             }
@@ -2340,11 +2362,10 @@ export class TagRoutesView extends ItemView {
             })
             .onBackgroundClick(() => {
           
-            this.highlightOnNodeClick(null);
-            this.Graph.graphData(this.gData);
-         //   this.clearHightlightNodes();
-         //   this.updateHighlight();
-                //this.Graph.refresh();
+                this.highlightOnNodeClick(null);
+                if (!this.isAnimating) {
+                    this.Graph.graphData(this.gData);
+                }
             })
             .onNodeDragEnd((node: any) => {
                 node.fx = node.x;
@@ -2446,7 +2467,13 @@ export class TagRoutesView extends ItemView {
 
         const tmp = graphContainer.createEl('div', { cls: 'monitor-screen', attr: { id: 'monitor-screen', style: 'display:none' } })
         tmp.createEl('div', { cls: 'prompt-text', text: '', attr: { id: 'prompt-number' } })
-     //   tmp.createEl('div', { cls: 'prompt-text', text: '', attr: { id: 'prompt-name' } })
+        
+        this.animatePlayButton = new ExtraButtonComponent(tmp.createEl('div', { cls: 'graph-animate-play-button', text: '', attr: { id: 'prompt-name' } }))
+        .setIcon('pause')
+        .setTooltip('pause')
+            .onClick(this.onAnimatePlayButton)
+        this.animatePlayButtonIcon = 'pause'
+        this.animatePlayState = 'play'
 
     }
     // 点击节点后的处理函数
@@ -2602,6 +2629,8 @@ export class TagRoutesView extends ItemView {
     // view 的close 事件
     async onClose() {
         // Nothing to clean up.
+        if (this.interval1) clearInterval(this.interval1)
+        if (this.interval2) clearInterval(this.interval2)
     }
 }
 

@@ -133,7 +133,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                                     updatedContent = updatedContent.replace(paragraph, updatedLine.trimEnd());
                                     isUpdated = true;  // 标记为更新
                                 }
-                                randomLinker=`#^${randomLinker}`
+                                randomLinker = `#^${randomLinker}`
                             }
 //                            return paragraph.trimEnd() + "\n\n \[*From* [[" + `${file.name.split(".")[0]}#^${randomLinker}|${file.name.split(".")[0]}]], *` + mmtime + "*\]\n";
                             const regexp_local = new RegExp(regex_TagsWithTimeStamp.source, regex_TagsWithTimeStamp.flags);
@@ -241,7 +241,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                                         updatedContent = updatedContent.replace(paragraph, updatedLine.trimEnd());
                                         isUpdated = true;  // 标记为更新
                                     }
-                                    randomLinker=`#^${randomLinker}`
+                                    randomLinker = `#^${randomLinker}`
                                 }
                                 const regexB = new RegExp(`${pattern_tags_char}+`,'gm')
                                 const matches = matched_Tags.match(regexB)

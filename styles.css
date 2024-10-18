@@ -213,6 +213,9 @@ If your plugin does not need CSS, delete this file.
 .tags-routes .group-link-button .clickable-icon {
     /*  color: var(--interactive-accent);*/
 }
+.tags-routes .graph-animate-play-button .clickable-icon {
+  /*  color: var(--interactive-accent);*/
+}
 .tags-routes .graph-controls{
     background-color: rgb(from var(--background-primary) r g b / 0.7)
  }
@@ -224,10 +227,13 @@ If your plugin does not need CSS, delete this file.
     top: 10px;
     left: 10px;
     background-color: rgb(from var(--background-primary) r g b / 0.7);
-    border: 1px solid #ccc;
+    /*border: 1px solid #ccc;*/
+    /*border: 1px solid;*/
     padding: 2px;
     border-radius: 4px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    /*box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);*/
+    border: 1px solid var(--background-modifier-border);
+    box-shadow: var(--shadow-s)
   }
 
 /*
