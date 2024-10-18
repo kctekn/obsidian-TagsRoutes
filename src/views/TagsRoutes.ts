@@ -43,6 +43,7 @@ interface ExtendedNodeObject extends Node {
     neighbors?: ExtendedNodeObject[];
     orphan?: boolean;
     links?: LinkObject[];
+    createTime?: number|null;
     _ThreeGroup?: THREE.Group;
     _ThreeMesh?: THREE.Mesh;
     _Sprite?: SpriteText;
@@ -458,9 +459,10 @@ export class TagRoutesView extends ItemView {
 
         let interval2: NodeJS.Timer;
         const ms = document.getElementById('monitor-screen')
-            if (ms) ms.style.display = 'block';
-        const promptText = document.getElementById('prompt-text');
-       // if (promptText) promptText.style.display = 'block';
+        if (ms) ms.style.display = 'block';
+        const promptNumber = document.getElementById('prompt-number');
+     //   const promptName = document.getElementById('prompt-name');
+
         const intval = setInterval(() => {
             let addNode: ExtendedNodeObject | null = null;
             
@@ -499,7 +501,8 @@ export class TagRoutesView extends ItemView {
                         nodes: gnodes,
                         links: glinks
                     });
-                    if(promptText) promptText.textContent = `${nodeIndex}/${nodeCount}`;
+                    if(promptNumber) promptNumber.textContent = `${nodeIndex}/${nodeCount}`;
+                  //  if(promptName) promptName.textContent = `${addNode.id}`;
                  
 /*                 const tmpP = 50;
                 if (nodeIndex - tmpP >= 0) {
@@ -1981,6 +1984,13 @@ export class TagRoutesView extends ItemView {
         }
         return color;
     }
+    getFileCTime(filePath: string) {
+        const tfile = this.plugin.app.vault.getAbstractFileByPath(filePath)
+        if (tfile instanceof TFile) {
+            return tfile.stat.ctime
+        }
+        return null;
+    }
     buildGdata(): GraphData {
         const nodes: ExtendedNodeObject[] = [];
         const links: LinkObject[] = [];
@@ -2002,13 +2012,13 @@ export class TagRoutesView extends ItemView {
         // 添加resolved links来创建文件间的关系，和文件节点
         for (const sourcePath in resolvedLinks) {
             if (!nodes.some(node => node.id == sourcePath)) {
-                nodes.push({ id: sourcePath, type: getFileType(sourcePath) });
+                nodes.push({ id: sourcePath, type: getFileType(sourcePath),createTime: this.getFileCTime(sourcePath) });
             }
             const targetPaths = resolvedLinks[sourcePath];
             for (const targetPath in targetPaths) {
                 // 确保目标文件也在图中
                 if (!nodes.some(node => node.id == targetPath)) {
-                    nodes.push({ id: targetPath, type: getFileType(targetPath) });
+                    nodes.push({ id: targetPath, type: getFileType(targetPath),createTime: this.getFileCTime(targetPath) });
                 }
                 // 创建链接
                 links.push({ source: sourcePath, target: targetPath, sourceId: sourcePath, targetId: targetPath });
@@ -2032,7 +2042,7 @@ export class TagRoutesView extends ItemView {
                     Unresolved attachment is a broken file 
                 */
                 if (fileType == 'attachment') fileType = 'broken'
-                nodes.push({ id: filePath, type: fileType });
+                nodes.push({ id: filePath, type: fileType, createTime: this.getFileCTime(filePath) });
 
 
              //   nodes.push({ id: filePath, type: 'broken' });
@@ -2061,7 +2071,7 @@ export class TagRoutesView extends ItemView {
 
                     // 创建节点
                     if (!tagSet.has(currentTag)) {
-                        nodes.push({ id: currentTag, type: 'tag' });
+                        nodes.push({ id: currentTag, type: 'tag',createTime: this.getFileCTime(filePath) });
                         tagSet.add(currentTag);
                     }
 
@@ -2126,7 +2136,7 @@ export class TagRoutesView extends ItemView {
 
                     // 创建节点
                     if (!frontmatterTagSet.has(currentTag)) {
-                        nodes.push({ id: currentTag, type: 'frontmatter_tag' });
+                        nodes.push({ id: currentTag, type: 'frontmatter_tag' ,createTime: this.getFileCTime(filePath)});
                         frontmatterTagSet.add(currentTag);
                     }
 
@@ -2200,6 +2210,12 @@ export class TagRoutesView extends ItemView {
         if (this.plugin.settings.enableShow) {
             showFile(globalDirectory.logFilePath);
         }
+        nodes.sort((a, b) => { 
+            if (a.createTime && b.createTime)
+                return (a.createTime ? a.createTime : 0) - (b.createTime ? b.createTime : 0);
+            else
+                return 0;
+        })
         return { nodes: nodes, links: links };
     }
     getOrphanNodes(nodes: ExtendedNodeObject[]): Record<string, string> {
@@ -2415,7 +2431,9 @@ export class TagRoutesView extends ItemView {
             .hideAll();
             this.plugin.skipSave = false;
 
-        graphContainer.createEl('div', { cls: 'monitor-screen', attr: {id:'monitor-screen',style:'display:none'} }).createEl('div', { cls: 'prompt-text', text: '', attr: { id: 'prompt-text' } })
+        const tmp = graphContainer.createEl('div', { cls: 'monitor-screen', attr: { id: 'monitor-screen', style: 'display:none' } })
+        tmp.createEl('div', { cls: 'prompt-text', text: '', attr: { id: 'prompt-number' } })
+     //   tmp.createEl('div', { cls: 'prompt-text', text: '', attr: { id: 'prompt-name' } })
 
     }
     // 点击节点后的处理函数
