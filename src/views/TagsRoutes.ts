@@ -536,7 +536,9 @@ export class TagRoutesView extends ItemView {
                 } else {
                  //   this.isAnimating = false;
                  this.changeAnimateButtonText("Exit Animate")
-                }
+                 this.clearHightlightNodes();
+                 this.updateHighlightTE();
+                 }
 
 
             }
@@ -2401,6 +2403,11 @@ export class TagRoutesView extends ItemView {
                     .addToggle("Toggle label display", this.plugin.settings.customSlot[0].toggle_label_display, this.onToggleLabelDisplay)
                     .addToggle("Toggle selection box", this.plugin.settings.customSlot[0].toggle_selection_box, this.onToggleSelectionBox)
                     .addToggle("Highlight connection paths", this.plugin.settings.customSlot[0].toggle_highlight_track_mode, this.onToggleHighlightTrackMode)
+                    .add({
+                        arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
+                        .addButton("Animate", "graph-button tg-animate", () => { this.animate() })
+                        )
+                    })
             })
             .add({
                 arg: (new settingGroup(this.plugin, "save-load", "Save and load"))
@@ -2427,11 +2434,7 @@ export class TagRoutesView extends ItemView {
                         .addButton("Capture Snapshot", "graph-button", () => { this.captureAndSaveScreenshot(false) })
                         )
                     })
-                    .add({
-                        arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
-                        .addButton("Animate", "graph-button tg-animate", () => { this.animate() })
-                        )
-                    })
+
             })
             //   .add({
             //       arg: (new settingGroup("file filter", "File filter"))
