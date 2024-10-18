@@ -447,7 +447,7 @@ export class TagRoutesView extends ItemView {
             this.isAnimating = !this.isAnimating
             return;
         }
-        this.changeAnimateButtonText("Stop Animate")
+        this.changeAnimateButtonText("Interrupt Animate")
         this.isAnimating = true;
         this.Graph.graphData({ nodes: [], links: [] })
         const nodeCount = this.gData.nodes.length;
@@ -527,18 +527,28 @@ export class TagRoutesView extends ItemView {
               
             } else {
                 clearInterval(intval)
-                if(interval2)
+                if (nodeIndex < nodeCount) { //hard reset
+                    if(interval2)
                     clearInterval(interval2)
-
-                this.onResetGraph();
-                this.changeAnimateButtonText("Animate")
-                if (ms) ms.style.display = 'none';
+                    this.onResetGraph();
+                    this.changeAnimateButtonText("Animate")
+                    if (ms) ms.style.display = 'none';
+                } else {
+                 //   this.isAnimating = false;
+                 this.changeAnimateButtonText("Exit Animate")
+                }
 
 
             }
 
         }, 100);
         interval2 = setInterval(() => {
+            if (this.isAnimating == false) {
+                clearInterval(interval2)
+                this.changeAnimateButtonText("Animate")
+                if (ms) ms.style.display = 'none';
+                return;
+            }
             let distance = this.Graph.camera().position.distanceTo(new Vector3(0, 0, 0))
    //         distance = distance < 2400 ? 2400 : distance;
             this.Graph.cameraPosition({
