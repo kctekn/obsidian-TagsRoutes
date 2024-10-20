@@ -108,6 +108,7 @@ export interface TagRoutesSettings {
 	toggle_selection_box: boolean;
 	colorMapSource: string;
 	colorMap: colorMap;
+	cameraDistance: number;
 }
 type ThemeSlots = [TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings, TagRoutesSettings];
 interface Settings {
@@ -145,7 +146,8 @@ export const DEFAULT_DISPLAY_SETTINGS_DARK: TagRoutesSettings = {
 	toggle_highlight_track_mode: false,
 	toggle_selection_box: true,
 	colorMapSource:"Default dark",
-	colorMap:defaultolorMapDark,
+	colorMap: defaultolorMapDark,
+	cameraDistance: 0,
 }
 export const DEFAULT_DISPLAY_SETTINGS_LIGHT: TagRoutesSettings = {
 	node_size: 5,
@@ -161,7 +163,8 @@ export const DEFAULT_DISPLAY_SETTINGS_LIGHT: TagRoutesSettings = {
 	toggle_highlight_track_mode: false,
 	toggle_selection_box: true,
 	colorMapSource:"Defalt light",
-	colorMap:defaultolorMapLight,
+	colorMap: defaultolorMapLight,
+	cameraDistance:0,
 }
 export const DEFAULT_DISPLAY_SETTINGS = {
 	dark: DEFAULT_DISPLAY_SETTINGS_DARK,

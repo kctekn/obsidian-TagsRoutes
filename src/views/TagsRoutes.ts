@@ -203,6 +203,7 @@ export class TagRoutesView extends ItemView {
         this.getLinkMaterialTE = this.getLinkMaterialTE.bind(this)
         this.updateMeshSize = this.updateMeshSize.bind(this)
         this.onAnimatePlayButton = this.onAnimatePlayButton.bind(this);
+        this.onSetFocusDistance = this.onSetFocusDistance.bind(this);
     }
     getViewType() {
         return VIEW_TYPE_TAGS_ROUTES;
@@ -454,7 +455,14 @@ export class TagRoutesView extends ItemView {
         } else {
           console.log('Button not found');
         }
-      }
+    }
+    onSetFocusDistance() {
+        if (!this.selectedNode) return;
+        if (!this.plugin.settings.customSlot) return;
+        this.plugin.settings.customSlot[0].cameraDistance = this.Graph.camera().position.distanceTo(this.selectedNode._ThreeGroup?.position || new Vector3(0, 0, 0))/Math.sqrt(this.getNodeSize(this.selectedNode))
+        new Notice(`Set camera distance to ${Math.floor(this.plugin.settings.customSlot[0].cameraDistance)}`)
+        this.plugin.saveSettings();
+    }
     async animate() {
 
       //  
@@ -878,6 +886,7 @@ export class TagRoutesView extends ItemView {
         return group;
     }
     getCameraDistance(node: ExtendedNodeObject): number {
+        if (this.plugin.settings.customSlot && this.plugin.settings.customSlot[0].cameraDistance != 0) return this.plugin.settings.customSlot[0].cameraDistance * Math.sqrt(this.getNodeSize(node));
         let nodeSize = (node.connections || 1)
         const maxdistance = 640
         const minDistance = 150
@@ -2412,7 +2421,11 @@ export class TagRoutesView extends ItemView {
             .add({
                 arg: (new settingGroup(this.plugin, "control sliders", "Display control"))
                 .addToggle("Lock node positions", false, this.onToggleFreezeNodePosition)
-                .addSlider("Node size", 1, 10, 1, this.plugin.settings.customSlot[0].node_size, this.onNodeSize)
+                .add({
+                    arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
+                    .addButton("Set focus distance", "graph-button", () => { this.onSetFocusDistance() })
+                    )
+                })                .addSlider("Node size", 1, 10, 1, this.plugin.settings.customSlot[0].node_size, this.onNodeSize)
                     .addSlider("Node repulsion", 0, 10, 1, this.plugin.settings.customSlot[0].node_repulsion, this.onNodeRepulsion)
                     .addSlider("Link distance", 1, 25, 1, this.plugin.settings.customSlot[0].link_distance, this.onLinkDistance)
                     .addSlider("Link width", 1, 5, 1, this.plugin.settings.customSlot[0].link_width, this.onLinkWidth)
