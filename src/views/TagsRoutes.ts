@@ -514,13 +514,13 @@ export class TagRoutesView extends ItemView {
                     })
                     nodeIndex++;
                     if (!addNode) return;
-                    this.clearHightlightNodes();
-                    this.selectedNode = addNode; 
-                    this.highlightOnNodeRightClickTE(this.selectedNode);
                     this.Graph.graphData({
                         nodes: gnodes,
                         links: glinks
                     });
+                    this.clearHightlightNodes();
+                    this.selectedNode = addNode; 
+                    this.highlightOnNodeRightClickTE(this.selectedNode);
                     if(promptNumber) promptNumber.textContent = `${nodeIndex}/${nodeCount}`;
                   //  if(promptName) promptName.textContent = `${addNode.id}`;
                  
@@ -968,9 +968,9 @@ export class TagRoutesView extends ItemView {
                 }
             }
         }
-        setTimeout(() => {
+//        setTimeout(() => {
             this.updateHighlightTE();
-        }, 0);
+//        }, 0);
     }
     highlightOnNodeRightClick(node: ExtendedNodeObject | null) {
         if (!this.plugin.settings.customSlot) return;
@@ -1208,8 +1208,8 @@ export class TagRoutesView extends ItemView {
 
                         if (this.currentVisualString === "light") {
                             (obj.material as THREE.MeshStandardMaterial)?.emissive?.set(this.getNodeColorByTypeTE(node));
-                            (obj.material as THREE.MeshBasicMaterial).color.set(this.getNodeColorByTypeTE(node));
-                            (obj.material as THREE.MeshBasicMaterial).opacity = opc;
+                            (obj.material as THREE.MeshStandardMaterial).color.set(this.getNodeColorByTypeTE(node));
+                            (obj.material as THREE.MeshStandardMaterial).opacity = opc;
                         } else {
                             obj.material = new THREE.MeshBasicMaterial({
                                 color: this.getNodeColorByTypeTE(node),
