@@ -18,7 +18,7 @@ Wiki:
 
 And you can show up your beautiful vault pictures here: [Share & showcase](https://github.com/kctekn/obsidian-TagsRoutes/discussions/17)
 
-## Version 1.1.5 Release Notes:
+## Version 1.1.5/1.1.6 Release Notes:
 
 ### 1. Tag Query Enhancements:
    - **Time-based tag queries:**  
@@ -43,6 +43,12 @@ And you can show up your beautiful vault pictures here: [Share & showcase](https
      When auto-focus is enabled, deleting items in the canvas will no longer trigger unintended reactions in the file explorer.
      
 For the details, please check https://github.com/kctekn/obsidian-TagsRoutes/issues/24 . Thanks to @scriptingtest for the detailed feedback!
+
+### Version 1.1.6 Bug Fix Release
+
+1.  The issue when multiple notes has the same name in different directories.
+2.  The issue of identical queries to be executed multiple times unnecessarily.
+
 
 ## Version 1.1.3/1.1.4 Release Notes
  
