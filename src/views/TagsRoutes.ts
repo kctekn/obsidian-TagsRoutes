@@ -9,7 +9,6 @@ import { settingGroup } from "./settings"
 import TagsRoutes, { defaltColorMap, DEFAULT_DISPLAY_SETTINGS, globalDirectory, globalProgramControl, TagRoutesSettings } from '../main';
 import { Vector2 } from 'three';
 import SpriteText from 'three-spritetext';
-import html2canvas from 'html2canvas';
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
 interface GraphData {
     nodes: ExtendedNodeObject[];
