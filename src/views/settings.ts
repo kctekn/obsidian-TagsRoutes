@@ -196,7 +196,10 @@ export class settingGroup {
                     .setLimits(min, max, step)
                     .setValue(defaultNum)
                     .setDynamicTooltip()
-                    .onChange(async value => cb(value)))
+                    .onChange(async value => {
+                        cb(value)
+                        this.plugin.view.setSaveButton(true);
+                    }))
         slider.setClass(cls)
         if (_slider !== undefined) {
             _slider.setValue(defaultNum)
@@ -226,7 +229,10 @@ export class settingGroup {
 			//.setDesc('Enable or disable logging the number of nodes and links when the graph loads')
 			.addToggle((toggle: ToggleComponent) => {
 				toggle
-                    .onChange( async value =>cb(value)
+                    .onChange(async value => {
+                        cb(value)
+                        this.plugin.view.setSaveButton(true)
+                    }
                       /*  async (value) => {
 						if (!value) {
 							this.toggleEnableShow.setValue(value);

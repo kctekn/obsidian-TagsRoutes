@@ -462,6 +462,7 @@ export class TagRoutesView extends ItemView {
         this.plugin.settings.customSlot[0].cameraDistance = this.Graph.camera().position.distanceTo(this.selectedNode._ThreeGroup?.position || new Vector3(0, 0, 0))/Math.sqrt(this.getNodeSize(this.selectedNode))
         new Notice(`Set camera distance to ${Math.floor(this.plugin.settings.customSlot[0].cameraDistance)}`)
         this.plugin.saveSettings();
+        this.setSaveButton(true)
     }
     async animate() {
 
