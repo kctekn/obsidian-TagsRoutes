@@ -77,36 +77,6 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
         //query.result = writeContent;
         return [writeContent];
     }
-    private async checkAndGetFrontmatterTag(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
-        const tag = source.replace(/frontmatter_tag:/, '').trim();
-        const files = this.plugin.app.vault.getMarkdownFiles();
-
-        const matchingFiles = await Promise.all(files.map(async (file) => {
-            const cache = this.plugin.app.metadataCache.getCache(file.path);
-            if (cache?.frontmatter?.tags) {
-                let tags = Array.isArray(cache.frontmatter.tags)
-                    ? cache.frontmatter.tags
-                    : [cache.frontmatter.tags];
-
-                if (tags.includes("tag-report")) {
-                    return null; // Exclude tag-report files
-                }
-
-                if (tags.some(t => t.includes(tag))) {
-                    //     console.log(">>find the file have this tag: ", file.path);
-                    return file.path;
-                }
-            }
-            return null;
-        }));
-
-        const result = matchingFiles.filter(path => path !== null) as string[];
-        const writeContent = `
-# Total \`${result.length}\` notes with tag \`${tag}\` :
-${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
-`;
-        this.writeMarkdown("frontmatter_tag: " + tag, writeContent, el, ctx);
-    }
     private async tagProcessor(query: queryKey): Promise<Promise<string[]>[]>{
         const term = query.value;
         const files = this.plugin.app.vault.getMarkdownFiles();
@@ -178,8 +148,8 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                                     "\[ *Tags:* " + matches?.join(' ') + " \]\n" +
                                     "\[ *" + contentTimeString + "* \]\n" +
                                     (this.plugin.settings.enableParagraphLinker?
-                                    "\[ *From:* [[" + `${file.name.split(".")[0]}${randomLinker}|${file.name.split(".")[0]}]] \]\n` :
-                                    "\[ *From:* [[" + `${file.name.split(".")[0]}]] \]\n` )
+                                    "\[ *From:* [[" + `${file.path}${randomLinker}|${file.name.split(".")[0]}]] \]\n` :
+                                    "\[ *From:* [[" + `${file.path}|${file.name.split(".")[0]}]] \]\n` )
                             }
                             return retParagraph;
                         }
@@ -279,8 +249,8 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                                     "\[ *Tags:* " + matches?.join(' ') + " \]\n" +
                                     "\[ *" + contentTimeString + "* \]\n" +
                                     (this.plugin.settings.enableParagraphLinker?
-                                    "\[ *From:* [[" + `${file.name.split(".")[0]}${randomLinker}|${file.name.split(".")[0]}]] \]\n` :
-                                    "\[ *From:* [[" + `${file.name.split(".")[0]}]] \]\n` )
+                                    "\[ *From:* [[" + `${file.path}${randomLinker}|${file.name.split(".")[0]}]] \]\n` :
+                                    "\[ *From:* [[" + `${file.path}|${file.name.split(".")[0]}]] \]\n` )
                             }
                             return retParagraph;
                         }
@@ -426,8 +396,8 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
         return markdownText;
     }
     async codeBlockProcessor(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
-        //Bypass the first pass
-        if ((ctx.frontmatter as any).tags === undefined) {
+        //Bypass the none-first pass
+        if ((ctx.frontmatter as any).tags !== undefined) {
             return;
         }
 
