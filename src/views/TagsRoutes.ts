@@ -2341,32 +2341,34 @@ export class TagRoutesView extends ItemView {
                 this.handleNodeClick(node);
                 this.highlightOnNodeClick(node);
             })
-            .onNodeRightClick((node: ExtendedNodeObject) => {
-                //we also focus on it
-                if (node.x && node.y && node.z) {
-                    const distance = this.getCameraDistance(node);
-                    const camera = this.Graph.camera();
-                    const dir = new THREE.Vector3();
-                    dir.set(
-                        camera.position.x - node.x,
-                        camera.position.y - node.y,
-                        camera.position.z - node.z
-                    );
+            .onNodeRightClick((node: ExtendedNodeObject,e:MouseEvent) => {
+                if (!e.ctrlKey) {
+                    //we also focus on it
+                    if (node.x && node.y && node.z) {
+                        const distance = this.getCameraDistance(node);
+                        const camera = this.Graph.camera();
+                        const dir = new THREE.Vector3();
+                        dir.set(
+                            camera.position.x - node.x,
+                            camera.position.y - node.y,
+                            camera.position.z - node.z
+                        );
 
-                    dir.normalize();
+                        dir.normalize();
 
-                    const targetPoint = new THREE.Vector3();
-                    targetPoint.set(
-                        node.x + dir.x * distance,
-                        node.y + dir.y * distance,
-                        node.z + dir.z * distance
-                    );
-                    DebugMsg(DebugLevel.DEBUG,"Camera new position: ", targetPoint); // 输出目标点的坐标
-                    this.Graph.cameraPosition(
-                        targetPoint, // new position
-                        { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0 },
-                        1000  // ms transition duration
-                    );
+                        const targetPoint = new THREE.Vector3();
+                        targetPoint.set(
+                            node.x + dir.x * distance,
+                            node.y + dir.y * distance,
+                            node.z + dir.z * distance
+                        );
+                        DebugMsg(DebugLevel.DEBUG, "Camera new position: ", targetPoint); // 输出目标点的坐标
+                        this.Graph.cameraPosition(
+                            targetPoint, // new position
+                            { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0 },
+                            1000  // ms transition duration
+                        );
+                    }
                 }
                 this.highlightOnNodeRightClick(node);
             })
