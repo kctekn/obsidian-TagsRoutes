@@ -183,6 +183,7 @@ export class TagRoutesView extends ItemView {
         this.onBloomStrength = this.onBloomStrength.bind(this);
         this.setSaveButton = this.setSaveButton.bind(this);
         this.onToggleFreezeNodePosition = this.onToggleFreezeNodePosition.bind(this);
+        this.onToggleLockScene = this.onToggleLockScene.bind(this);
         this.visuals = {
             dark: new darkStyle("dark", this.plugin),
             light: new lightStyle("light", this.plugin)
@@ -227,8 +228,9 @@ export class TagRoutesView extends ItemView {
     private continuousRotation: number = 0;
     private highLightBoxIntervalId: NodeJS.Timer | null = null;
     private isAnimating: boolean = false;
+    private isLockScene: boolean = false;
     private animatePlayButton: ExtraButtonComponent | null = null;
-    private animatePlayButtonIcon: 'pause' | 'play' | null = null;
+   // private animatePlayButtonIcon: 'pause' | 'play' | null = null;
     private animatePlayState: 'pause' | 'play' | null = null;
     private interval1: NodeJS.Timer;
     private interval2: NodeJS.Timer;
@@ -1373,6 +1375,14 @@ export class TagRoutesView extends ItemView {
         
     }
     focusGraphNodeById(filePath: string) {
+        if (this.isLockScene) {
+            const node = this.gData.nodes.find((node: ExtendedNodeObject) => node.id === filePath);
+            if (this.highlightNodes.has(node) && node) {
+                this.selectedNode = node;
+                this.updateHighlight();
+            }
+            return;
+        }
         // 获取 Graph 中的相应节点，并将视图聚焦到该节点
         const node = this.gData.nodes.find((node: ExtendedNodeObject) => node.id === filePath);
         if (node && node.x && node.y && node.z) {
@@ -1472,6 +1482,9 @@ export class TagRoutesView extends ItemView {
         this.Graph.linkDirectionalParticleWidth((link: any) => this.highlightLinks.has(link) ? value * 2 : value)
         this.plugin.settings.customSlot[0].link_particle_size = value
         this.plugin.saveSettings();
+    }
+    onToggleLockScene(value: boolean) {
+        this.isLockScene = value;
     }
     onToggleFreezeNodePosition(value: boolean) {
         if (!this.plugin.settings.customSlot) return;
@@ -2328,21 +2341,23 @@ export class TagRoutesView extends ItemView {
          //   .nodeOpacity(0.9)
             .nodeThreeObject(this.createNodeThreeObject)
             .onNodeClick((node: ExtendedNodeObject) => {
-                const distance = this.getCameraDistance(node);
-                const distRatio = 1 + distance / Math.hypot(node.x ?? 0, node.y ?? 0, node.z ?? 0);
-                const newPos = node.x || node.y || node.z
-                    ? { x: (node.x ?? 0) * distRatio, y: (node.y ?? 0) * distRatio, z: (node.z ?? 0) * distRatio }
-                    : { x: 0, y: 0, z: distance }; // special case if node is in (0,0,0)
-                this.Graph.cameraPosition(
-                    newPos, // new position
-                    { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0 },
-                    3000  // ms transition duration
-                );
+                if (!this.isLockScene) {
+                    const distance = this.getCameraDistance(node);
+                    const distRatio = 1 + distance / Math.hypot(node.x ?? 0, node.y ?? 0, node.z ?? 0);
+                    const newPos = node.x || node.y || node.z
+                        ? { x: (node.x ?? 0) * distRatio, y: (node.y ?? 0) * distRatio, z: (node.z ?? 0) * distRatio }
+                        : { x: 0, y: 0, z: distance }; // special case if node is in (0,0,0)
+                    this.Graph.cameraPosition(
+                        newPos, // new position
+                        { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0 },
+                        3000  // ms transition duration
+                    );
+                }
                 this.handleNodeClick(node);
                 this.highlightOnNodeClick(node);
             })
             .onNodeRightClick((node: ExtendedNodeObject,e:MouseEvent) => {
-                if (!e.ctrlKey) {
+                if (!e.ctrlKey && !this.isLockScene) {
                     //we also focus on it
                     if (node.x && node.y && node.z) {
                         const distance = this.getCameraDistance(node);
@@ -2373,7 +2388,7 @@ export class TagRoutesView extends ItemView {
                 this.highlightOnNodeRightClick(node);
             })
             .onBackgroundClick(() => {
-          
+                if (this.isLockScene) return;
                 this.highlightOnNodeClick(null);
                 if (!this.isAnimating) {
                     this.Graph.graphData(this.gData);
@@ -2424,9 +2439,10 @@ export class TagRoutesView extends ItemView {
             .add({
                 arg: (new settingGroup(this.plugin, "control sliders", "Display control"))
                 .addToggle("Lock node positions", false, this.onToggleFreezeNodePosition)
+                .addToggle("Lock scene", false, this.onToggleLockScene)
                 .add({
                     arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
-                    .addButton("Set focus distance", "graph-button", () => { this.onSetFocusDistance() })
+                    .addButton("Set Focus Distance", "graph-button", () => { this.onSetFocusDistance() })
                     )
                 })                .addSlider("Node size", 1, 10, 1, this.plugin.settings.customSlot[0].node_size, this.onNodeSize)
                     .addSlider("Node repulsion", 0, 10, 1, this.plugin.settings.customSlot[0].node_repulsion, this.onNodeRepulsion)
