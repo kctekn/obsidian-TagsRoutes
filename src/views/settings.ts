@@ -198,7 +198,9 @@ export class settingGroup {
                     .setDynamicTooltip()
                     .onChange(async value => {
                         cb(value)
-                        this.plugin.view.setSaveButton(true);
+                   //     if (!this.plugin.skipSave) {
+                        //    this.plugin.view.setSaveButton(true);
+                    //    }
                     }))
         slider.setClass(cls)
         if (_slider !== undefined) {
@@ -223,7 +225,7 @@ export class settingGroup {
         colorpicker.setClass("setting-item-inline")
         return this;
     }
-    addToggle(name: string, defaultState: boolean, cb:(v:boolean)=>void) {
+    addToggle(name: string, defaultState: boolean, cb: (v: boolean) => void, needSave: boolean = true) {
 		const toggler = new Setting(this.holdContainer)
 			.setName(name)
 			//.setDesc('Enable or disable logging the number of nodes and links when the graph loads')
@@ -231,7 +233,9 @@ export class settingGroup {
 				toggle
                     .onChange(async value => {
                         cb(value)
-                        this.plugin.view.setSaveButton(true)
+                     //   if (needSave && !this.plugin.skipSave) {
+                        //    this.plugin.view.setSaveButton(true)
+                    //    }
                     }
                       /*  async (value) => {
 						if (!value) {

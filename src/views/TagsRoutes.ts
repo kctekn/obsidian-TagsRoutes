@@ -411,6 +411,7 @@ export class TagRoutesView extends ItemView {
         this.setSaveButton(true)
     }
     setSaveButton(needSave: boolean) {
+       // if (this.plugin.skipSave) return;
         if (this.saveButtonRef.value) {
             if (needSave) {
                 this.saveButtonRef.value.addClass("tags-routes-need-save")
@@ -438,11 +439,11 @@ export class TagRoutesView extends ItemView {
         //if (this.animatePlayButton?.extraSettingsEl)
         if (this.animatePlayState === 'play') {
             this.animatePlayButton?.setIcon('play').setTooltip('Resume')
-            this.animatePlayButtonIcon = 'play'
+          //  this.animatePlayButtonIcon = 'play'
             this.animatePlayState = 'pause'
         } else {
             this.animatePlayButton?.setIcon('pause').setTooltip('Pause')
-            this.animatePlayButtonIcon='pause'
+          //  this.animatePlayButtonIcon='pause'
             this.animatePlayState = 'play'
         }
     }
@@ -1036,6 +1037,7 @@ export class TagRoutesView extends ItemView {
      */
     highlightOnNodeHover(node: ExtendedNodeObject | null) {
         if (!this.plugin.settings.customSlot) return;
+        if (this.isLockScene && this.highlightNodes.size!=0 && !this.highlightNodes.has(node)) return;
         // no state change
         if ((!node && !this.hoveredNodes.size) || (node && this.hoverNode === node)) return;
         this.hoverNode = node;
@@ -1375,26 +1377,28 @@ export class TagRoutesView extends ItemView {
         
     }
     focusGraphNodeById(filePath: string) {
+        const node = this.gData.nodes.find((node: ExtendedNodeObject) => node.id === filePath);
         if (this.isLockScene) {
-            const node = this.gData.nodes.find((node: ExtendedNodeObject) => node.id === filePath);
+            //            const node = this.gData.nodes.find((node: ExtendedNodeObject) => node.id === filePath);
             if (this.highlightNodes.has(node) && node) {
                 this.selectedNode = node;
+                this.hoverNode = null;
                 this.updateHighlight();
             }
-            return;
-        }
-        // 获取 Graph 中的相应节点，并将视图聚焦到该节点
-        const node = this.gData.nodes.find((node: ExtendedNodeObject) => node.id === filePath);
-        if (node && node.x && node.y && node.z) {
-            const distance = this.getCameraDistance(node)
-            const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
-            const newPos = {
-                x: node.x * distRatio,
-                y: node.y * distRatio,
-                z: node.z * distRatio,
-            };
-            this.Graph.cameraPosition(newPos, node as any, 3000);
-            this.highlightOnNodeClick(node)
+            //          return;
+        } else {
+            // 获取 Graph 中的相应节点，并将视图聚焦到该节点
+            if (node && node.x && node.y && node.z) {
+                const distance = this.getCameraDistance(node)
+                const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
+                const newPos = {
+                    x: node.x * distRatio,
+                    y: node.y * distRatio,
+                    z: node.z * distRatio,
+                };
+                this.Graph.cameraPosition(newPos, node as any, 3000);
+                this.highlightOnNodeClick(node)
+            }
         }
         if (this.plugin.settings.enableAutoFocus) {
         const file = this.app.vault.getAbstractFileByPath(filePath);
@@ -2438,8 +2442,8 @@ export class TagRoutesView extends ItemView {
             })
             .add({
                 arg: (new settingGroup(this.plugin, "control sliders", "Display control"))
-                .addToggle("Lock node positions", false, this.onToggleFreezeNodePosition)
-                .addToggle("Lock scene", false, this.onToggleLockScene)
+                .addToggle("Lock node positions", false, this.onToggleFreezeNodePosition,false)
+                .addToggle("Lock scene", false, this.onToggleLockScene,false)
                 .add({
                     arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
                     .addButton("Set Focus Distance", "graph-button", () => { this.onSetFocusDistance() })
@@ -2504,7 +2508,7 @@ export class TagRoutesView extends ItemView {
         .setIcon('pause')
         .setTooltip('pause')
             .onClick(this.onAnimatePlayButton)
-        this.animatePlayButtonIcon = 'pause'
+      //  this.animatePlayButtonIcon = 'pause'
         this.animatePlayState = 'play'
 
     }
