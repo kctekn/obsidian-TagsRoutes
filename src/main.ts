@@ -600,15 +600,6 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 				})
-/* 		.addToggle((toggle: ToggleComponent) => {
-			toggle
-				.onChange(async (value) => {
-					this.plugin.settings.openInCurrentTab = value;
-					await this.plugin.saveSettings();
-				})
-				.setValue(this.plugin.settings.openInCurrentTab)
-			
-		} */
 	
 		const themeTitle = containerEl.createEl("div", {cls: 'tags-routes-settings-title'}); 
 		themeTitle.createEl("h1", { text: "Theme" });
@@ -638,6 +629,10 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 								const entry = this.plugin.view._controls.find(v => v.id === "Slot #");
 								if (entry) {
 									entry.control.setValue(this.plugin.settings.currentSlotNum)
+								}
+								const lockScene = this.plugin.view._controls.find(v => v.id === 'Lock scene');
+								if (lockScene) {
+									lockScene.control.setValue(false);
 								}
 								this.plugin.saveSettings();
 							} 
