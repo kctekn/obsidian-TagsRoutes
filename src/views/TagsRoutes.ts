@@ -1384,6 +1384,10 @@ export class TagRoutesView extends ItemView {
                 this.selectedNode = node;
                 this.hoverNode = null;
                 this.updateHighlight();
+            } else {
+                this.selectedNode = null;
+                this.hoverNode = null;
+                this.updateHighlight();
             }
             //          return;
         } else {
