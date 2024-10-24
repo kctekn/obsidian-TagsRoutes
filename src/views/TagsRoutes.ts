@@ -1037,7 +1037,13 @@ export class TagRoutesView extends ItemView {
      */
     highlightOnNodeHover(node: ExtendedNodeObject | null) {
         if (!this.plugin.settings.customSlot) return;
-        if (this.isLockScene && this.highlightNodes.size!=0 && !this.highlightNodes.has(node)) return;
+        if (this.isLockScene && this.highlightNodes.size != 0 && !this.highlightNodes.has(node)) return;
+        if (this.isLockScene) {
+            // only update hovernode
+            this.hoverNode = node
+            this.updateHighlight();
+            return;
+        }
         // no state change
         if ((!node && !this.hoveredNodes.size) || (node && this.hoverNode === node)) return;
         this.hoverNode = node;
