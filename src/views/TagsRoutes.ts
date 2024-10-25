@@ -2042,11 +2042,11 @@ export class TagRoutesView extends ItemView {
             } else {
                 const leaf = workspace.getLeaf(false);
                 await leaf.openFile(file);
-                setViewType(leaf.view, "preview");
+           //     setViewType(leaf.view, "preview");
             }
             // 切换到阅读模式
-            const view = this.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownView;
-            setViewType(view, "preview");
+          //  const view = this.app.workspace.getActiveViewOfType(MarkdownView) as MarkdownView;
+          //  setViewType(view, "preview");
 
             // focus on the node in file explorer
             const fileExplorerView = this.plugin.app.workspace.getLeavesOfType('file-explorer')[0];
