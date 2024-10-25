@@ -956,7 +956,7 @@ export class TagRoutesView extends ItemView {
                     (fileExplorerView.view as any).revealInFolder(file);
                     // 将焦点重新设置到之前的活动叶子
                     if (activeLeaf) {
-                        this.app.workspace.setActiveLeaf(activeLeaf, { focus: true });
+                    //    this.app.workspace.setActiveLeaf(activeLeaf, { focus: true });
                         (fileExplorerView.view as any).tree.focusedItem = null;
                     }
                 } catch (error) {
