@@ -9,6 +9,7 @@ const pattern_timeStamp = '\\d{4}-\\d{2}-\\d{2} *\\d{2}:\\d{2}:\\d{2}'
 //const pattern_link = '\\^tr-[a-z0-9]+$'
 const tagRegEx = /\^tr-[a-z0-9]+$/
 const regex_TagsWithTimeStamp = new RegExp(`(?:(?<=\\s)|(?<=^))((?:${pattern_tags_char}+ *)+)(${pattern_timeStamp})?`, 'gm');
+const timeDurationRegex=/#\d+day/
 interface queryKey{
     type: string;
     value: string;
@@ -102,7 +103,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                     let isUpdated = false;  // 用于跟踪是否进行了任何更新
                     const retArr = paragraphs.map(
                         (paragraph) => {
-                            const stripedParagraph = paragraph.replace(/<.*>/gm, "").replace(/```.*```/gm, "")
+                            const stripedParagraph = paragraph.replace(/<.*>/gm, "").replace(/```.*```/gm, "").replace(/#\d+day/gm,"")
                             if (paragraph.length != stripedParagraph.length) {
                              //   console.log("original lenght: ", line.length)
                              //   console.log("stripped lenght: ", stripedLine.length)
@@ -195,7 +196,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
                         //return the paragraph with information: "tags, tag/create time, from" appended.
                         (paragraph) => {
                             //    const regex_TagsWithTimeStamp = /(?:(?<=\s)|(?<=^))((?:#[0-9a-zA-Z\u4e00-\u9fa5/-]+ +)+)(\d{4}-\d{2}-\d{2} *\d{2}:\d{2}:\d{2})?/gm;
-                            const stripedParagraph = paragraph.replace(/<.*>/gm, "").replace(/```.*```/gm, "")
+                            const stripedParagraph = paragraph.replace(/<.*>/gm, "").replace(/```.*```/gm, "").replace(/#\d+day/gm,"")
                             if (paragraph.length != stripedParagraph.length) {
                             //    console.log("original lenght: ", paragraph.length)
                             //    console.log("stripped lenght: ", stripedParagraph.length)
@@ -316,7 +317,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
             const regex = new RegExp(regstr, 'g')
             const match = source.match(regex)
             const term = match?.[0] || "#empty"
-            const timeRegex = /#\d+day/
+            const timeRegex = new RegExp(timeDurationRegex.source,timeDurationRegex.flags)
             const timeMatch = term.match(timeRegex)
             if (timeMatch) {
                 queryKey.type = "time_duration:"
