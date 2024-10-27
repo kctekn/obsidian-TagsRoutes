@@ -1827,6 +1827,7 @@ export class TagRoutesView extends ItemView {
 
     onResetGraph() {
         this.clearHightlightNodes();
+        this.getCache();
         this.gData = this.buildGdata();
         this.Graph.graphData(this.gData);
         this.Graph.refresh();
@@ -1984,6 +1985,7 @@ export class TagRoutesView extends ItemView {
         this.gData.nodes = nodes;
     }
     getCache() {
+        filesDataMap.clear();
         this.app.vault.getFiles()
             .forEach(file => {
                 const cache = this.app.metadataCache.getCache(file.path);
