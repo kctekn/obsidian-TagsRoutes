@@ -2045,6 +2045,7 @@ export class TagRoutesView extends ItemView {
     }
     // 点击节点后的处理函数
     handleTagClick(node: ExtendedNodeObject) {
+        if (!this.plugin.settings.enableTagsReaction) return;
         if (node.type === 'tag') {
             const sanitizedId = node.id.replace(/\//g, '__');
             const newFileName = `TagReport_${sanitizedId}.md`; // 新文件的路径和名称
