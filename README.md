@@ -18,6 +18,16 @@ Wiki:
 
 And you can show up your beautiful vault pictures here: [Share & showcase](https://github.com/kctekn/obsidian-TagsRoutes/discussions/17)
 
+## Version 1.1.8 Release Notes:
+
+### 1. New feature:
+- **Selection Box for Enhanced Clarity:** A selection box has been added to clearly highlight the currently selected node. This visual cue makes it easier to track your position within the graph and navigate your tags effectively. (See GIF for a demonstration)
+
+<img src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.1.8-feature.gif">
+
+### 2. Bug fix:
+- **Global Preference for Tag Click Actions Now Functional:** Previously, disabling tag click actions in the global plugin preferences did not work as intended. This issue has been resolved, and you can now reliably control this behavior through the plugin settings. (See issue https://github.com/kctekn/obsidian-TagsRoutes/issues/28 for more details)
+
 ## Version 1.1.5/1.1.6 Release Notes:
 
 ### 1. Tag Query Enhancements:

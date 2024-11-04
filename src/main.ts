@@ -15,8 +15,8 @@ export const globalProgramControl = {
 	snapshotDirectory: "graph-screenshot",
 	generateLinker: true,
 }
-export const currentVersion = '1.1.7';    //Used to show in debug console
-export const currentSaveSpecVer = 10105;  //Indicate current version of saved config file: data.json 
+export const currentVersion = '1.1.8';    //Used to show in debug console
+export const currentSaveSpecVer = 10108;  //Indicate current version of saved config file: data.json 
 export const minSaveSpecVer = 10101;      //Data will be loaded if the loaded version of data.json >= minSaveSpecVer, and will be completely overrided to default if version < minSaveSpecVer
 
 const programDirectory = "TagsRoutes"
