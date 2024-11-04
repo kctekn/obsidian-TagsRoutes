@@ -119,6 +119,7 @@ interface Settings {
 		dark: number;
 		light: number;
 	}
+	excludedDirectories: string[],
 	openInCurrentTab: boolean;
 	enableTagsReaction: boolean;
 	enableAutoFocus: boolean;
@@ -198,7 +199,8 @@ const DEFAULT_SETTINGS: Settings = {
 		structuredClone(DEFAULT_DISPLAY_SETTINGS_LIGHT),
 		structuredClone(DEFAULT_DISPLAY_SETTINGS_LIGHT),
 		structuredClone(DEFAULT_DISPLAY_SETTINGS_LIGHT),
-	]
+	],
+	excludedDirectories: []
 }
 // plugin 主体
 export default class TagsRoutes extends Plugin {
@@ -364,6 +366,9 @@ export default class TagsRoutes extends Plugin {
 			else if (!loadedSettings) {
 				DebugMsg(DebugLevel.INFO,`New installation: Using default settings.`)
 			}
+		}
+		if (!this.settings.excludedDirectories) {
+			this.settings.excludedDirectories = [];
 		}
 		this.settings.customSlot = this.settings[this.settings.currentTheme];
 		this.settings.currentSlotNum = this.settings.themeSlotNum[this.settings.currentTheme];
@@ -704,5 +709,26 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Normal", "linkParticleColor"));
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Highlight", "linkParticleHighlightColor"));
 		this.plugin.skipSave = false;
+
+		containerEl.createEl('h2', { text: 'Directory Exclusions' });
+
+		new Setting(containerEl)
+			.setName('Excluded Directories')
+			.setDesc('Enter directory paths to exclude from the graph, separated by commas (e.g., "Private Notes, Archive")')
+			.addText(text => text
+				.setPlaceholder('directory1, directory2')
+				.setValue(this.plugin.settings.excludedDirectories.join(', '))
+				.onChange(async (value) => {
+					this.plugin.settings.excludedDirectories = value
+						.split(',')
+						.map(dir => dir.trim())
+						.filter(dir => dir.length > 0);
+					await this.plugin.saveSettings();
+					
+					// Refresh the graph if it's open
+					if (this.plugin.view) {
+						this.plugin.view.onResetGraph();
+					}
+				}));
 	}
 }
