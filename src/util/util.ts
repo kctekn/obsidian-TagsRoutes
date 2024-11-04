@@ -58,6 +58,25 @@ export function createFolderIfNotExists(folderPath: string) {
 	 //  DebugMsg(DebugLevel.DEBUG,`Folder already exists: ${folderPath}`);
 	}
  }
+
+ // Allow for users to exclude directories within Vault from graph indexing
+export function isPathExcluded(path: string, excludedDirs: string[]): boolean {
+	return excludedDirs.some(dir => {
+	// Normalize paths to handle different path separators | Remove trailing slashes
+	const normalizedDir = dir.replace(/\\/g, '/').toLowerCase().replace(/\/+$/, ''); 
+	const normalizedPath = path.replace(/\\/g, '/').toLowerCase();
+	
+	// Handle wildcard matching (e.g., MyNotes/*)
+	if (normalizedDir.endsWith('/*')) {
+		// Remove /* to get the base directory
+		const baseDir = normalizedDir.slice(0, -2);
+		return normalizedPath === baseDir || normalizedPath.startsWith(baseDir + '/');
+	}
+
+	// Check for exact matches | exclude subdirectories of excluded directory
+	return normalizedPath === normalizedDir || normalizedPath.startsWith(normalizedDir + '/');
+	});
+};
 // 函数：获取所有标签
 export const getTags = (cache: CachedMetadata | null): TagCache[] => {
 	if (!cache || !cache.tags) return [];

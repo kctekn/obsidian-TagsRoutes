@@ -24,3 +24,6 @@ data.json
 /package-lock.json
 /.tgitconfig
 /src/version_info.txt
+
+# exclude compiled .js in tests
+/tests/pathExclusion.js

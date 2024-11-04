@@ -1,7 +1,7 @@
 import { moment, MarkdownView, Notice, CachedMetadata, ValueComponent, Platform, View } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
-import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile, DebugMsg, DebugLevel, createFolderIfNotExists } from "../util/util"
+import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile, DebugMsg, DebugLevel, createFolderIfNotExists, isPathExcluded } from "../util/util"
 import ForceGraph3D, { ForceGraph3DInstance } from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
@@ -1634,17 +1634,37 @@ export class TagRoutesView extends ItemView {
         const tagCount: Map<string, number> = new Map(); // 初始化标签计数对象
         const frontmatterTagCount: Map<string, number> = new Map(); // 初始化标签计数对象
         // 添加resolved links来创建文件间的关系，和文件节点
+        // Set to track unique node ids
+        const nodeSet: Set<string> = new Set();
+        const nodeList: Array<{ id: string, type: string }> = [];
+        const linkList: Array<{ source: string, target: string, sourceId: string, targetId: string }> = [];
+
+        // Iterate over each source path in resolvedLink object
         for (const sourcePath in resolvedLinks) {
-            if (!nodes.some(node => node.id == sourcePath)) {
+            // check source paths against excludedDirectories
+            if (isPathExcluded(sourcePath, this.plugin.settings.excludedDirectories)) {
+                // -> skip iteration if found
+                continue;
+            }
+            // Add sourcePath to nodes if not present
+            if (!nodeSet.has(sourcePath)) {
                 nodes.push({ id: sourcePath, type: getFileType(sourcePath) });
+                nodeSet.add(sourcePath);
             }
             const targetPaths = resolvedLinks[sourcePath];
+            // Iterate over each target path to process from sourcePath
             for (const targetPath in targetPaths) {
-                // 确保目标文件也在图中
-                if (!nodes.some(node => node.id == targetPath)) {
-                    nodes.push({ id: targetPath, type: getFileType(targetPath) });
+                // Check against already indexed resolvedLinks
+                if (isPathExcluded(targetPath, this.plugin.settings.excludedDirectories)) {
+                    continue;
                 }
-                // 创建链接
+                // Add targetPath to nodes if not present
+                if (!nodeSet.has(targetPath)) {
+                    nodes.push({ id: targetPath, type: getFileType(targetPath) });
+                    nodeSet.add(targetPath);
+                }
+                
+                // link sourcePath and targetPath
                 links.push({ source: sourcePath, target: targetPath, sourceId: sourcePath, targetId: targetPath });
             }
         }
@@ -2015,7 +2035,6 @@ export class TagRoutesView extends ItemView {
                     .add({
                         arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
                         .addButton("Apply Theme Color", "graph-button", () => { this.applyThemeColor() })
-                        )
                     })
                     .add({
                         arg: (new settingGroup(this.plugin, "button-box", "button-box", "flex-box")

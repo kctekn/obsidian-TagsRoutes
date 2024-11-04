@@ -4,18 +4,16 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "module": "ESNext",
-    "target": "ES6",
+    "target": "ES2015", // Ensures support for modern string methods
     "allowJs": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
     "importHelpers": true,
     "isolatedModules": true,
-	"strictNullChecks": true,
+    "strictNullChecks": true,
     "lib": [
       "DOM",
-      "ES5",
-      "ES6",
-      "ES7"
+      "ES2015" // Includes ES6 and above features
     ]
   },
   "include": [
