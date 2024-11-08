@@ -1093,7 +1093,7 @@ export class TagRoutesView extends ItemView {
     getLinkVisible(link: any) {
         if (!this.plugin.settings.customSlot) return true;
         if (this.plugin.settings.customSlot[0].toggle_global_map) return true;
-        if (this.highlightLinks.size != 0 || this.selectedNode || this.hoverNode) {
+        if (this.highlightLinks.size != 0 || this.selectedNode || this.hoverNode||this.highlightNodes.size!=0) {
             return this.highlightLinks.has(link) ? true : false
         } else {
             return true
