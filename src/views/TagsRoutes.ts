@@ -1383,6 +1383,9 @@ export class TagRoutesView extends ItemView {
         
     }
     focusGraphNodeById(filePath: string) {
+        if (this.plugin.settings.customSlot?.[0].toggle_global_map) {
+            this.clearHightlightNodes();
+        }
         const node = this.gData.nodes.find((node: ExtendedNodeObject) => node.id === filePath);
         if (this.isLockScene) {
             //            const node = this.gData.nodes.find((node: ExtendedNodeObject) => node.id === filePath);
@@ -1391,8 +1394,17 @@ export class TagRoutesView extends ItemView {
                 this.hoverNode = null;
                 this.updateHighlight();
             } else {
-                this.selectedNode = null;
                 this.hoverNode = null;
+                if (this.plugin.settings.customSlot?.[0].toggle_global_map) {
+                    this.selectedNode = node || null;
+                    
+                    if (node) this.getHighlightOnSelectedNode(node)
+                } else {
+                    this.selectedNode = null;
+                    
+
+                }
+
                 this.updateHighlight();
             }
             //          return;
