@@ -18,6 +18,18 @@ Wiki:
 
 And you can show up your beautiful vault pictures here: [Share & showcase](https://github.com/kctekn/obsidian-TagsRoutes/discussions/17)
 
+## Version 1.2.0 Release Notes:
+
+- **Time Lapse Animation Feature:**
+  - **Vault Growth Visualization:** You can now initiate an animation that showcases how the vault has grown over time.
+  - **Display Settings:** Ensure these are adjusted appropriately before starting the animation for optimal viewing.
+  - **Interactive Controls:** 
+    - Press the **Animate** button to begin the visualization.
+    - The animation can be **paused** or **stopped** as needed.
+
+ Have fun exploring the progression of your vault with this engaging feature.
+ <img  src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v120-feature.gif">
+
 ## Version 1.1.8 Release Notes:
 
 ### 1. New feature:
