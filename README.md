@@ -18,6 +18,22 @@ Wiki:
 
 And you can show up your beautiful vault pictures here: [Share & showcase](https://github.com/kctekn/obsidian-TagsRoutes/discussions/17)
 
+## Version 1.2.1 Release Notes:
+
+### New Features:
+
+- **Lock Scene**:
+    - When enabled, nodes within the visual will no longer change or update automatically, and the view angle will remain fixed unless manually adjusted by dragging.
+    - This is useful when you want to focus on a specific sub-network within a vault without distractions.
+
+<img  src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.2.1-lockScene.gif">
+
+- **View Distance Tuning**:
+    - You can now set the current view distance relative to the focused node as a global setting. This ensures that the view distance for all other nodes is automatically adjusted based on their size.
+    - This provides an optimal way to adjust the view distance for a more comfortable and consistent viewing experience across the scene.
+
+<img  src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.2.1-setFocus.gif">
+
 ## Version 1.2.0 Release Notes:
 
 - **Time Lapse Animation Feature:**
