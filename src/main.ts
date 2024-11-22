@@ -703,6 +703,44 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		new Setting(colorSettingsGroup).setName("Particle state").setHeading().settingEl.addClass("tg-settingtab-heading")
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Normal", "linkParticleColor"));
 		this.colors.push(new colorPickerGroup(this.plugin, colorSettingsGroup, "Highlight", "linkParticleHighlightColor"));
+
+		const colorTitle1 = containerEl.createEl("div", { cls: 'tags-routes-settings-title' }); 
+		colorTitle1.createEl("h1", { text: "Filter" });
+		const desc1 = containerEl.createEl("div", { text: "You can enter path filters here." }); 
+		desc1.createEl("br")
+		desc1.appendText("It should be general regex patterns.")
+		//desc1.createEl("a", { href: "https://www.w3.org/wiki/CSS/Properties/color/keywords", text: "Css color keywords" })
+		//desc1.addClass("setting-item-description");
+        desc1.createEl("hr")
+		const textAreaDiv = containerEl.createEl("div")
+		textAreaDiv.addClass("tags-routes")
+		new Setting(textAreaDiv).addTextArea(
+			(text) => {
+				text
+					.setValue("put one filter per line")
+					.onChange((v) => { })
+
+
+
+
+			}
+		).setName("Node to show filter")
+			.setDesc("Only path of nodes matches given filter will to show")
+			.setClass("setting-item-filter")
+
+		new Setting(textAreaDiv).addTextArea(
+			(text) => {
+				text
+					.setValue("put one filter per line")
+					.onChange((v) => { })
+
+
+
+			}
+		).setName("Node to show filter")
+			.setDesc("Path of Nodes matches given filter will to hide based on show nodes")
+			.setClass("setting-item-filter")
+
 		this.plugin.skipSave = false;
 	}
 }

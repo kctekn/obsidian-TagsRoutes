@@ -194,7 +194,14 @@ If your plugin does not need CSS, delete this file.
     margin-top: 0.5em;
     padding: 0px;
 }
-
+.tags-routes .setting-item-filter {
+    display: flex;
+    align-items: flex-start ;
+}
+.tags-routes .setting-item-filter .setting-item-control textarea{
+    width: 20em;
+    height: 15em;
+}
 .notice-container {
     /*  display: none;*/
 }
