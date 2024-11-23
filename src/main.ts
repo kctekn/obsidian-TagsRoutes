@@ -1,6 +1,6 @@
-import { App, WorkspaceLeaf, Notice, Plugin, PluginSettingTab, Setting, ToggleComponent, TextComponent, ColorComponent, ExtraButtonComponent } from 'obsidian';
+import { App, WorkspaceLeaf, Notice, Plugin, PluginSettingTab, Setting, ToggleComponent, TextComponent, ColorComponent, ExtraButtonComponent, TextAreaComponent } from 'obsidian';
 import { TagRoutesView, VIEW_TYPE_TAGS_ROUTES } from "./views/TagsRoutes"
-import { createFolderIfNotExists,DebugLevel,DebugMsg,namedColor } from "./util/util"
+import { PathFilter, createFolderIfNotExists,DebugLevel,DebugMsg,namedColor } from "./util/util"
 import { codeBlockProcessor } from './util/CodeBlockProcessor';
 import * as path from 'path';
 //const versionInfo = require('./version_info.txt');
@@ -129,6 +129,8 @@ interface Settings {
 	customSlot: ThemeSlots | null ;
 	dark: ThemeSlots;
 	light: ThemeSlots;
+	showingFilter: string;
+	hidingFilter: string;
 }
 
 export const DEFAULT_DISPLAY_SETTINGS_DARK: TagRoutesSettings = {
@@ -170,6 +172,7 @@ export const DEFAULT_DISPLAY_SETTINGS = {
 	dark: DEFAULT_DISPLAY_SETTINGS_DARK,
 	light: DEFAULT_DISPLAY_SETTINGS_LIGHT
 }
+
 const DEFAULT_SETTINGS: Settings = {
 	saveSpecVer: currentSaveSpecVer,
 	enableSave: true,
@@ -185,7 +188,9 @@ const DEFAULT_SETTINGS: Settings = {
 	enableParagraphLinker: true,
 	snapShotFolder: "graph-screenshot",
 	currentTheme: "dark",
-	customSlot:null,
+	customSlot: null,
+	showingFilter: PathFilter.encode("*"),
+	hidingFilter: PathFilter.encode(""),
 	dark: [
 		structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK),
 		structuredClone(DEFAULT_DISPLAY_SETTINGS_DARK),
@@ -203,6 +208,10 @@ const DEFAULT_SETTINGS: Settings = {
 		structuredClone(DEFAULT_DISPLAY_SETTINGS_LIGHT),
 	]
 }
+
+
+
+
 // plugin 主体
 export default class TagsRoutes extends Plugin {
 	public settings: Settings;
@@ -492,6 +501,8 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 	toggleEnableShow: ToggleComponent;
 	colors: colorPickerGroup[] = [];
 	colorMapSourceElement: HTMLElement;
+	showFilter: TextAreaComponent;
+	hideFilter: TextAreaComponent;
 	constructor(app: App, plugin: TagsRoutes) {
 		super(app, plugin);
 		this.plugin = plugin;
@@ -716,11 +727,26 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		textAreaDiv.addClass("tags-routes")
 		new Setting(textAreaDiv).addTextArea(
 			(text) => {
-				text
-					.setValue("put one filter per line")
-					.onChange((v) => { })
-
-
+				text.setValue(PathFilter.decode(this.plugin.settings.showingFilter))
+				.onChange((value) => {
+						try {
+								// 处理每一行
+								const patterns = value.split('\n')
+										.map(line => line.trim())
+										.filter(line => line) // 过滤空行
+										.map(line => PathFilter.validatePattern(line));
+								
+								// 保存设置
+								this.plugin.settings.showingFilter = PathFilter.encode(value);
+								this.plugin.saveSettings();
+						} catch (e) {
+								console.error('Invalid pattern:', e);
+								// 可以添加错误提示
+								new Notice('Invalid pattern found in filters');
+						}
+				})
+				this.showFilter = text;
+console.log("the string: ",this.plugin.settings.showingFilter )
 
 
 			}
@@ -730,10 +756,26 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 
 		new Setting(textAreaDiv).addTextArea(
 			(text) => {
-				text
-					.setValue("put one filter per line")
-					.onChange((v) => { })
-
+				text.setValue(PathFilter.decode(this.plugin.settings.hidingFilter))
+				.onChange((value) => {
+						try {
+								// 处理每一行
+								const patterns = value.split('\n')
+										.map(line => line.trim())
+										.filter(line => line) // 过滤空行
+										.map(line => PathFilter.validatePattern(line));
+								
+								// 保存设置
+								this.plugin.settings.hidingFilter = PathFilter.encode(value);
+								this.plugin.saveSettings();
+						} catch (e) {
+								console.error('Invalid pattern:', e);
+								// 可以添加错误提示
+								new Notice('Invalid pattern found in filters');
+						}
+				});
+				this.hideFilter = text;
+console.log("the string: ",this.plugin.settings.showingFilter )
 
 
 			}

@@ -1,7 +1,7 @@
 import { moment, MarkdownView, Notice, CachedMetadata, ValueComponent, Platform, View, ExtraButtonComponent } from 'obsidian';
 import { ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import * as THREE from 'three';
-import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile, DebugMsg, DebugLevel, createFolderIfNotExists } from "../util/util"
+import { getFileType, getTags, parseTagHierarchy, filterStrings, shouldRemove, setViewType, showFile, DebugMsg, DebugLevel, createFolderIfNotExists, PathFilter } from "../util/util"
 import ForceGraph3D, { ForceGraph3DInstance } from "3d-force-graph";
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import * as d3 from 'd3-force-3d';
@@ -141,6 +141,12 @@ class lightStyle implements VisualStyle {
 export class TagRoutesView extends ItemView {
     plugin: TagsRoutes;
     public Graph: ForceGraph3DInstance;
+    //store a reference to the original graph data
+    private gData0: GraphData = {
+        nodes: [],
+        links: []
+    };
+    //store the filtered graph data
     private gData: GraphData = {
         nodes: [],
         links: []
@@ -562,7 +568,7 @@ export class TagRoutesView extends ItemView {
                 if (nodeIndex < nodeCount) { //hard reset
                     if(this.interval2)
                     clearInterval(this.interval2)
-                    this.onResetGraph();
+                    this.onResetGraph(false);
                     this.changeAnimateButtonText("Animate")
                     if (ms) ms.style.display = 'none';
                 } else {
@@ -1836,11 +1842,90 @@ export class TagRoutesView extends ItemView {
         this.updateHighlight();
       //  this.Graph.refresh();
     }
-
-    onResetGraph() {
+    getGdata1(data:GraphData) {
+        
+        //construct new nodes and links based on original data
+        let nodes: ExtendedNodeObject[] = [];
+        let links: LinkObject[] = [];
+        //apply filters
+        let { patterns, regexPatterns } = PathFilter.processFilters(this.plugin.settings.showingFilter);
+                // 直接移除满足条件的节点
+                for (let i = data.nodes.length - 1; i >= 0; i--) {
+                    if (shouldRemove(nodes[i].id, filterStrings)) {
+                        nodes.push(data.nodes[i])
+                    }
+                }
+        return data;
+    }
+    getGdata(data: GraphData) {
+        //construct new nodes and links based on original data
+        let nodes: ExtendedNodeObject[] = [];
+        let links: LinkObject[] = [];
+        
+        //apply filters
+        const { patterns: showPatterns, regexPatterns: showRegex } = PathFilter.processFilters(this.plugin.settings.showingFilter);
+        const { patterns: hidePatterns, regexPatterns: hideRegex } = PathFilter.processFilters(this.plugin.settings.hidingFilter);
+    
+        // 处理显示过滤器 (showing filter)
+        for (let i = data.nodes.length - 1; i >= 0; i--) {
+            const nodeId = data.nodes[i].id;
+            // 检查是否匹配任何showing pattern
+            let shouldShow = false;
+            
+            // 只需要检查正则表达式即可
+            for (const regex of showRegex) {
+                if (regex.test(nodeId)) {
+                    shouldShow = true;
+                    break;
+                }
+            }
+    
+            if (shouldShow) {
+                nodes.push(data.nodes[i]);
+            }
+        }
+    
+        // 处理隐藏过滤器 (hiding filter)
+        for (let i = nodes.length - 1; i >= 0; i--) {
+            const nodeId = nodes[i].id;
+            // 检查是否匹配任何hiding pattern
+            let shouldHide = false;
+            
+            // 只需要检查正则表达式即可
+            for (const regex of hideRegex) {
+                if (regex.test(nodeId)) {
+                    shouldHide = true;
+                    break;
+                }
+            }
+    
+            if (shouldHide) {
+                nodes.splice(i, 1);
+            }
+        }
+    
+        // 处理链接
+        const validNodeIds = new Set(nodes.map(node => node.id));
+    
+        // 只保留源节点和目标节点都存在的链接
+        for (let i = data.links.length - 1; i >= 0; i--) {
+            const link = data.links[i];
+            if(link.sourceId.contains("Other"))
+            console.log("link.sourceId: ",link.sourceId," target: ", link.targetId)
+            if (validNodeIds.has(link.sourceId) && validNodeIds.has(link.targetId)) {
+                links.push(link);
+            }
+        }
+    
+        return { nodes, links };
+    }
+    onResetGraph(refrechData:boolean) {
         this.clearHightlightNodes();
         this.getCache();
-        this.gData = this.buildGdata();
+        if (refrechData) {
+            this.gData0 = this.buildGdata();
+        }
+        this.gData = this.getGdata(this.gData0);
         this.Graph.graphData(this.gData);
         this.Graph.refresh();
         setTimeout(() => {
@@ -2460,7 +2545,7 @@ export class TagRoutesView extends ItemView {
                         .addExButton("circle-dashed", "Link orphan type as a star", () => this.onLinkButton(true))
                         .addExButton("spline", "Link orphan type as a line", () => this.onLinkButton(false))
                         .addExButton("unlink-2", "Unlink orphans", this.onUnlinkButton)
-                        .addExButton("corner-up-left", "Rescan & reload graph", this.onResetGraph)
+                        .addExButton("corner-up-left", "Rescan & reload graph", ()=>this.onResetGraph(true))
                     )
                 })
             })
@@ -2671,11 +2756,12 @@ export class TagRoutesView extends ItemView {
         //    DebugMsg(DebugLevel.DEBUG,"On open tag routes view")
         this.container.empty();
         this.getCache();
-        this.gData = this.buildGdata();
+        this.gData0 = this.buildGdata();
         this.createGraph(this.container as HTMLElement);
         setTimeout(() => {
             this.plugin.view.switchTheme(this.plugin.settings.currentTheme);
-          }, 0);
+        }, 0);
+        this.gData=this.getGdata(this.gData0)
         this.Graph.graphData(this.gData);
         //need a delay for scene creation
         setTimeout(() => {

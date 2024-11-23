@@ -142,7 +142,70 @@ export function getLineTime(line:string) {
 	} else
 			return 0
 }
+export class PathFilter {
+	static readonly DEFAULT_VALUE = "put one filter per line";
 
+	static encode(value: string): string {
+			return btoa(encodeURIComponent(value));
+	}
+
+	static decode(encoded: string | null | undefined): string {
+			if (!encoded) return this.DEFAULT_VALUE;
+			try {
+					return decodeURIComponent(atob(encoded));
+			} catch {
+					return this.DEFAULT_VALUE;
+			}
+	}
+
+	static validatePattern(pattern: string): string {
+			pattern = pattern.trim();
+			if (!pattern) return '';
+			
+			// 处理通配符
+			if (this.isGlobPattern(pattern)) {
+					return this.globToRegex(pattern);
+			}
+			
+			// 验证正则表达式
+			try {
+					new RegExp(pattern);
+					return pattern;
+			} catch {
+					throw new Error(`Invalid pattern: ${pattern}`);
+			}
+	}
+
+	static processFilters(encoded: string | null | undefined): {
+			patterns: string[];
+			regexPatterns: RegExp[];
+	} {
+			const decoded = this.decode(encoded);
+			const patterns = decoded.split('\n')
+					.map(line => line.trim())
+					.filter(line => line);
+
+			const validPatterns = patterns.map(p => this.validatePattern(p));
+			const regexPatterns = validPatterns.map(p => new RegExp(p));
+
+			return {
+					patterns: validPatterns,
+					regexPatterns: regexPatterns
+			};
+	}
+
+	private static isGlobPattern(pattern: string): boolean {
+			return pattern.includes('*') || pattern.includes('?');
+	}
+
+	private static globToRegex(glob: string): string {
+			return glob
+					.replace(/\*/g, '.*')
+			//		.replace(/\?/g, '.')
+			//		.replace(/\./g, '\\.')
+			//		.replace(/\\/g, '\\\\');
+	}
+}
 export const namedColor = new Map<string, string>([
 	["aliceblue", "#f0f8ff"],
 	["antiquewhite", "#faebd7"],
