@@ -2448,6 +2448,39 @@ export class TagRoutesView extends ItemView {
                 links.splice(i, 1);
             }
         }
+        //Hide tags, and will not change the tag instance counts
+        const { patterns: hidePatterns, regexPatterns: hideRegex } = PathFilter.processFilters(this.plugin.settings.hidingFilter);
+        const tagHideFilter = hideRegex.filter(f => f.source.startsWith('#'))
+                // 处理隐藏过滤器 (hiding filter)
+                for (let i = nodes.length - 1; i >= 0; i--) {
+                    const nodeId = nodes[i].id;
+                    // 检查是否匹配任何hiding pattern
+                    let shouldHide = false;
+                    
+                    // 只需要检查正则表达式即可
+                    for (const regex of tagHideFilter) {
+                        if (regex.test(nodeId)) {
+                            shouldHide = true;
+                            break;
+                        }
+                    }
+            
+                    if (shouldHide) {
+                        nodes.splice(i, 1);
+                    }
+                }
+                // 处理链接
+                const validNodeIds = new Set(nodes.map(node => node.id));
+    
+                // 只保留源节点和目标节点都存在的链接
+                for (let i = links.length - 1; i >= 0; i--) {
+                    const link = links[i];
+                    if(link.sourceId.contains("Other"))
+                    console.log("link.sourceId: ",link.sourceId," target: ", link.targetId)
+                    if (!(validNodeIds.has(link.sourceId) && validNodeIds.has(link.targetId))) {
+                        links.splice(i,1)
+                    } 
+                }
         this.debugLogToFileM(`|After filtered pathes=>|| filtered nodes: |${TagNodeNum + fileNodeNum + brokennum - nodes.length}|  links:| ${links.length}|`)
         // 计算每个节点的连接数
         nodes.forEach((node: ExtendedNodeObject) => {
