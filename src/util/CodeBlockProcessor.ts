@@ -48,7 +48,7 @@ export class codeBlockProcessor {
         
         //const tag = source.replace(/frontmatter_tag:/, '').trim();
         const tag = query.value;
-        const files = this.plugin.app.vault.getMarkdownFiles();
+        const files = this.plugin.app.vault.getMarkdownFiles().filter(f=>this.plugin.view.testPathFilter(f.path));
 
         const matchingFiles = await Promise.all(files.map(async (file) => {
             const cache = this.plugin.app.metadataCache.getCache(file.path);
@@ -80,7 +80,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
     }
     private async tagProcessor(query: queryKey): Promise<Promise<string[]>[]>{
         const term = query.value;
-        const files = this.plugin.app.vault.getMarkdownFiles();
+        const files = this.plugin.app.vault.getMarkdownFiles().filter(f=>this.plugin.view.testPathFilter(f.path));
         const arr = files.map(
             async (file) => {
                 const content = await this.plugin.app.vault.cachedRead(file);
@@ -175,7 +175,7 @@ ${result.map(v => "- [[" + v.replace(/.md$/, "") + "]]").join("\n")}
     private async timeDurationProcessor(query: queryKey): Promise<Promise<string[]>[]> {
         const queryDuration = Number(query.value.replace('#','').replace('day',''));
 
-        const files = this.plugin.app.vault.getMarkdownFiles();
+        const files = this.plugin.app.vault.getMarkdownFiles().filter(f=>this.plugin.view.testPathFilter(f.path));
         const arr = files.map(
             async (file) => {
                 const content = await this.plugin.app.vault.cachedRead(file);
