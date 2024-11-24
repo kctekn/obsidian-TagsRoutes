@@ -1842,8 +1842,8 @@ export class TagRoutesView extends ItemView {
         this.updateHighlight();
       //  this.Graph.refresh();
     }
-    getGdata1(data:GraphData) {
-        
+    getGdata(data:GraphData) {
+        return data;
         //construct new nodes and links based on original data
         let nodes: ExtendedNodeObject[] = [];
         let links: LinkObject[] = [];
@@ -1857,7 +1857,25 @@ export class TagRoutesView extends ItemView {
                 }
         return data;
     }
-    getGdata(data: GraphData) {
+    testPathFilter(path: string): boolean{
+        const { patterns: showPatterns, regexPatterns: showRegex } = PathFilter.processFilters(this.plugin.settings.showingFilter);
+        const { patterns: hidePatterns, regexPatterns: hideRegex } = PathFilter.processFilters(this.plugin.settings.hidingFilter);
+        let shouldShow = false;
+        for (const regex of showRegex) {
+            if (regex.test(path)) {
+                shouldShow = true;
+                break;
+            }
+        }
+        for (const regex of hideRegex) {
+            if (regex.test(path)) {
+                shouldShow = false;
+                break;
+            }
+        }
+        return shouldShow;
+    }
+    getGdataaa(data: GraphData) {
         //construct new nodes and links based on original data
         let nodes: ExtendedNodeObject[] = [];
         let links: LinkObject[] = [];
@@ -1916,7 +1934,78 @@ export class TagRoutesView extends ItemView {
                 links.push(link);
             }
         }
-    
+        // re-calculate
+        nodes.forEach((node: ExtendedNodeObject) => {
+            node.connections = links.filter(link => link.sourceId === node.id || link.targetId === node.id).length;
+            node.size = node.connections;
+        });
+        // 设置tag类型节点的instanceNum值并根据该值调整大小
+        // need to re-calculate the tagCount
+        const tagCount: Map<string, number> = new Map(); // 初始化标签计数对象
+        let filesDataMap1 = new Map([...filesDataMap].filter(([key]) => { 
+            for (const regex of showRegex) {
+                if (regex.test(key)) {
+                   return true;
+                }
+            }
+        }))
+        filesDataMap1 = new Map([...filesDataMap1].filter(([key]) => { 
+            for (const regex of hideRegex) {
+                if (!regex.test(key)) {
+                   return true;
+                }
+            }
+        }))
+        filesDataMap1.forEach((cache, filePath) => {
+            if (cache?.frontmatter && cache?.frontmatter?.tags && cache.frontmatter.tags.contains("tag-report"))
+                return;
+            /*
+            Add tags in note content
+            */
+           const fileTags = getTags(cache).map(cache => cache.tag);
+           const rootTags = new Set<string>();
+
+           fileTags.forEach(fileTag => {
+               const tagParts = fileTag.split('/');
+               let currentTag = '';
+
+               tagParts.forEach((part, index) => {
+                   currentTag += (index > 0 ? '/' : '') + part;
+
+                   // 更新标签计数
+                   tagCount.set(currentTag, (tagCount.get(currentTag) || 0) + 1);
+
+
+               });
+           });
+        })
+         nodes.forEach((node: ExtendedNodeObject) => {
+            if (node.type === 'tag') {
+                node.instanceNum = tagCount.get(node.id) || 1;
+                // 根据instanceNum调整节点大小，可以按比例调整
+                //        node.size = Math.log2(node.instanceNum + 1) * 5; // 例如，使用对数比例调整大小
+                node.size = node.instanceNum;
+            }
+        }); 
+        // cross-link node objects
+        links.forEach(link => {
+            const a = nodes.find(node => node.id === link.sourceId) as ExtendedNodeObject;
+            const b = nodes.find(node => node.id === link.targetId) as ExtendedNodeObject;
+            !a.neighbors && (a.neighbors = []);
+            !b.neighbors && (b.neighbors = []);
+            a.neighbors.push(b);
+            b.neighbors.push(a);
+            !a.links && (a.links = []);
+            !b.links && (b.links = []);
+            a.links.push(link);
+            b.links.push(link);
+        });
+        nodes.sort((a, b) => { 
+            if (a.createTime && b.createTime)
+                return (a.createTime ? a.createTime : 0) - (b.createTime ? b.createTime : 0);
+            else
+                return 0;
+        })
         return { nodes, links };
     }
     onResetGraph(refrechData:boolean) {
@@ -2161,6 +2250,7 @@ export class TagRoutesView extends ItemView {
         }
         return null;
     }
+
     buildGdata(): GraphData {
         const nodes: ExtendedNodeObject[] = [];
         const links: LinkObject[] = [];
@@ -2176,7 +2266,18 @@ export class TagRoutesView extends ItemView {
         /*
           Add nodes which are linked together
         */
-        const resolvedLinks = this.app.metadataCache.resolvedLinks;
+    //    const resolvedLinks = this.app.metadataCache.resolvedLinks;
+        const resolvedLinks = Object.fromEntries(
+            Object.entries(this.app.metadataCache.resolvedLinks)
+                .filter(([outerKey]) => this.testPathFilter(outerKey))
+                .map(([outerKey, innerRecord]) => [
+                    outerKey,
+                    Object.fromEntries(
+                        Object.entries(innerRecord)
+                            .filter(([innerKey]) => this.testPathFilter(innerKey))
+                    )
+                ])
+        )
         const tagCount: Map<string, number> = new Map(); // 初始化标签计数对象
         const frontmatterTagCount: Map<string, number> = new Map(); // 初始化标签计数对象
         // 添加resolved links来创建文件间的关系，和文件节点
@@ -2202,7 +2303,8 @@ export class TagRoutesView extends ItemView {
         /*
           Add tags
         */
-        filesDataMap.forEach((cache, filePath) => {
+        let filesDataMap1 = new Map([...filesDataMap].filter(([key]) => this.testPathFilter(key)))
+        filesDataMap1.forEach((cache, filePath) => {
             if (cache?.frontmatter && cache?.frontmatter?.tags && cache.frontmatter.tags.contains("tag-report"))
                 return;
             // 确保目标文件也在图中
