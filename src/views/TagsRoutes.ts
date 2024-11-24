@@ -1928,8 +1928,8 @@ export class TagRoutesView extends ItemView {
         // 只保留源节点和目标节点都存在的链接
         for (let i = data.links.length - 1; i >= 0; i--) {
             const link = data.links[i];
-            if(link.sourceId.contains("Other"))
-            console.log("link.sourceId: ",link.sourceId," target: ", link.targetId)
+        //    if(link.sourceId.contains("Other"))
+        //    console.log("link.sourceId: ",link.sourceId," target: ", link.targetId)
             if (validNodeIds.has(link.sourceId) && validNodeIds.has(link.targetId)) {
                 links.push(link);
             }
@@ -2475,8 +2475,8 @@ export class TagRoutesView extends ItemView {
                 // 只保留源节点和目标节点都存在的链接
                 for (let i = links.length - 1; i >= 0; i--) {
                     const link = links[i];
-                    if(link.sourceId.contains("Other"))
-                    console.log("link.sourceId: ",link.sourceId," target: ", link.targetId)
+               //     if(link.sourceId.contains("Other"))
+               //     console.log("link.sourceId: ",link.sourceId," target: ", link.targetId)
                     if (!(validNodeIds.has(link.sourceId) && validNodeIds.has(link.targetId))) {
                         links.splice(i,1)
                     } 
