@@ -2674,7 +2674,7 @@ export class TagRoutesView extends ItemView {
         new settingGroup(this.plugin, "Tags' route settings", "Tags' route settings", "root").hide()
             .add({
                 arg: (new settingGroup(this.plugin, "commands", "Node commands"))
-                .addDropdown("Select orphan", this.getOrphanNodes(this.gData.nodes)/* { broken: "broken", pdf: "pdf", excalidraw: "excalidraw" }*/, "broken", this.onDropdown)
+                .addDropdown("Select orphan", this.getOrphanNodes(this.gData0.nodes)/* { broken: "broken", pdf: "pdf", excalidraw: "excalidraw" }*/, "broken", this.onDropdown)
                 .add({
                     arg: (new settingGroup(this.plugin, "link-box", "link-box", "flex-box")
                         .addExButton("circle-dashed", "Link orphan type as a star", () => this.onLinkButton(true))

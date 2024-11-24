@@ -195,15 +195,15 @@ export class PathFilter {
 	}
 
 	private static isGlobPattern(pattern: string): boolean {
-			return pattern.includes('*') || pattern.includes('?');
+			return pattern.includes('*') || pattern.includes('?')|| pattern.includes('.');
 	}
 
 	private static globToRegex(glob: string): string {
 			return glob
 					.replace(/\*/g, '.*')
-			//		.replace(/\?/g, '.')
-			//		.replace(/\./g, '\\.')
-			//		.replace(/\\/g, '\\\\');
+					.replace(/\./g, '\\.')
+					.replace(/\?/g, '.')
+		//		.replace(/\\/g, '\\\\');
 	}
 }
 export const namedColor = new Map<string, string>([
