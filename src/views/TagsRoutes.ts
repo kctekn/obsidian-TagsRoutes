@@ -141,11 +141,6 @@ class lightStyle implements VisualStyle {
 export class TagRoutesView extends ItemView {
     plugin: TagsRoutes;
     public Graph: ForceGraph3DInstance;
-    //store a reference to the original graph data
-    private gData0: GraphData = {
-        nodes: [],
-        links: []
-    };
     //store the filtered graph data
     private gData: GraphData = {
         nodes: [],
@@ -2012,10 +2007,10 @@ export class TagRoutesView extends ItemView {
         this.clearHightlightNodes();
         this.getCache();
         if (refrechData) {
-            this.gData0 = this.buildGdata();
+            this.gData = this.buildGdata();
         }
       //  this.gData = this.getGdata(this.gData0);
-        this.Graph.graphData(this.gData0);
+        this.Graph.graphData(this.gData);
         this.Graph.refresh();
         setTimeout(() => {
             if (!this.plugin.settings.customSlot) return;
@@ -2674,7 +2669,7 @@ export class TagRoutesView extends ItemView {
         new settingGroup(this.plugin, "Tags' route settings", "Tags' route settings", "root").hide()
             .add({
                 arg: (new settingGroup(this.plugin, "commands", "Node commands"))
-                .addDropdown("Select orphan", this.getOrphanNodes(this.gData0.nodes)/* { broken: "broken", pdf: "pdf", excalidraw: "excalidraw" }*/, "broken", this.onDropdown)
+                .addDropdown("Select orphan", this.getOrphanNodes(this.gData.nodes)/* { broken: "broken", pdf: "pdf", excalidraw: "excalidraw" }*/, "broken", this.onDropdown)
                 .add({
                     arg: (new settingGroup(this.plugin, "link-box", "link-box", "flex-box")
                         .addExButton("circle-dashed", "Link orphan type as a star", () => this.onLinkButton(true))
@@ -2891,12 +2886,12 @@ export class TagRoutesView extends ItemView {
         //    DebugMsg(DebugLevel.DEBUG,"On open tag routes view")
         this.container.empty();
         this.getCache();
-        this.gData0 = this.buildGdata();
+        this.gData = this.buildGdata();
         this.createGraph(this.container as HTMLElement);
         setTimeout(() => {
             this.plugin.view.switchTheme(this.plugin.settings.currentTheme);
         }, 0);
-        this.gData=this.getGdata(this.gData0)
+    //    this.gData=this.getGdata(this.gData0)
         this.Graph.graphData(this.gData);
         //need a delay for scene creation
         setTimeout(() => {
