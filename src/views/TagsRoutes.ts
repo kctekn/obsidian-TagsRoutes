@@ -2014,8 +2014,8 @@ export class TagRoutesView extends ItemView {
         if (refrechData) {
             this.gData0 = this.buildGdata();
         }
-        this.gData = this.getGdata(this.gData0);
-        this.Graph.graphData(this.gData);
+      //  this.gData = this.getGdata(this.gData0);
+        this.Graph.graphData(this.gData0);
         this.Graph.refresh();
         setTimeout(() => {
             if (!this.plugin.settings.customSlot) return;

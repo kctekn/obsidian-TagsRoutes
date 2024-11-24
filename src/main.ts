@@ -717,15 +717,20 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 
 		const colorTitle1 = containerEl.createEl("div", { cls: 'tags-routes-settings-title' }); 
 		colorTitle1.createEl("h1", { text: "Filter" });
-		const desc1 = containerEl.createEl("div", { text: "You can enter path filters here." }); 
+		const button = colorTitle1.createEl('div').createEl('button', { text: "Apply Filter" /*, cls: buttonClass*/ });
+		button.addClass("mod-cta")
+		button.addEventListener('click', ()=>this.plugin.view.onResetGraph(true));
+
+
+		const desc1 = containerEl.createEl("div", { text: "You can enter path filters here. One filter per line." }); 
 		desc1.createEl("br")
-		desc1.appendText("It should be general regex patterns.")
+		desc1.appendText("Support glob patterns (* for wildcard).")
 		//desc1.createEl("a", { href: "https://www.w3.org/wiki/CSS/Properties/color/keywords", text: "Css color keywords" })
 		//desc1.addClass("setting-item-description");
         desc1.createEl("hr")
 		const textAreaDiv = containerEl.createEl("div")
 		textAreaDiv.addClass("tags-routes")
-		new Setting(textAreaDiv).addTextArea(
+	let textAreaTmp=	new Setting(textAreaDiv).addTextArea(
 			(text) => {
 				text.setValue(PathFilter.decode(this.plugin.settings.showingFilter))
 				.onChange((value) => {
@@ -751,10 +756,18 @@ console.log("the string: ",this.plugin.settings.showingFilter )
 
 			}
 		).setName("Node to show filter")
-			.setDesc("Only path of nodes matches given filter will to show")
-			.setClass("setting-item-filter")
-
-		new Setting(textAreaDiv).addTextArea(
+			.setDesc("Only path of nodes matches given filters will to show")
+		.setClass("setting-item-filter")
+		
+		textAreaTmp.descEl.createEl("br")
+		textAreaTmp.descEl.createEl("br")
+			textAreaTmp.descEl.appendText("For example:")
+			textAreaTmp.descEl.createEl("br")
+			textAreaTmp.descEl.appendText("1. \"*\" : The default value for showing all.")
+			textAreaTmp.descEl.createEl("br")
+		textAreaTmp.descEl.appendText("2. \"A-directory-name\" : Show content within this directory. You can enter multiple directories, one per line.")
+		
+	textAreaTmp=	new Setting(textAreaDiv).addTextArea(
 			(text) => {
 				text.setValue(PathFilter.decode(this.plugin.settings.hidingFilter))
 				.onChange((value) => {
@@ -780,9 +793,20 @@ console.log("the string: ",this.plugin.settings.showingFilter )
 
 			}
 		).setName("Node to show filter")
-			.setDesc("Path of Nodes matches given filter will to hide based on show nodes")
+			.setDesc("Path of Nodes matches given filter will be hide based on show nodes")
 			.setClass("setting-item-filter")
-
+		textAreaTmp.descEl.createEl("br")
+		textAreaTmp.descEl.createEl("br")
+		textAreaTmp.descEl.appendText("For example:")
+		textAreaTmp.descEl.createEl("br")
+		textAreaTmp.descEl.appendText("1. \"path/name-key-word\" : Hide all nodes whose path contains \"path/name-key-word\". ")
+		textAreaTmp.descEl.createEl("br")
+		textAreaTmp.descEl.appendText("2. \"#\" : Hide all tag type nodes.")
+		textAreaTmp.descEl.createEl("br")
+		textAreaTmp.descEl.appendText("3. \"#hide-tag\" : Hide tags with name: \"#hide-tag\".")
+		textAreaTmp.descEl.createEl("br")
+		textAreaTmp.descEl.appendText("4. \"#hide-tag/\" : Hide all sub-tags of the root tag: \"#hide-tag/\", but not for itself.")
+		//textAreaTmp.descEl.
 		this.plugin.skipSave = false;
 	}
 }
