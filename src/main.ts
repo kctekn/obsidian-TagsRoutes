@@ -722,9 +722,9 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		button.addEventListener('click', ()=>this.plugin.view.onResetGraph(true));
 
 
-		const desc1 = containerEl.createEl("div", { text: "You can enter path filters here. One filter per line." }); 
+		const desc1 = containerEl.createEl("div", { text: "Use the fields below to define path filters. Enter one filter per line." }); 
 		desc1.createEl("br")
-		desc1.appendText("Support glob patterns (* for wildcard).")
+		desc1.appendText("Glob patterns (e.g., * for wildcard) are supported.")
 		//desc1.createEl("a", { href: "https://www.w3.org/wiki/CSS/Properties/color/keywords", text: "Css color keywords" })
 		//desc1.addClass("setting-item-description");
         desc1.createEl("hr")
@@ -755,17 +755,19 @@ console.log("the string: ",this.plugin.settings.showingFilter )
 
 
 			}
-		).setName("Node to show filter")
-			.setDesc("Only path of nodes matches given filters will to show")
+		).setName("Positive Filter")
+			.setDesc("Only paths matching the specified filters will be shown.")
 		.setClass("setting-item-filter")
 		
 		textAreaTmp.descEl.createEl("br")
 		textAreaTmp.descEl.createEl("br")
 			textAreaTmp.descEl.appendText("For example:")
 			textAreaTmp.descEl.createEl("br")
-			textAreaTmp.descEl.appendText("1. \"*\" : The default value for showing all.")
+			textAreaTmp.descEl.appendText("1. \"*\" : Default value to display all paths.")
 			textAreaTmp.descEl.createEl("br")
-		textAreaTmp.descEl.appendText("2. \"A-directory-name\" : Show content within this directory. You can enter multiple directories, one per line.")
+		textAreaTmp.descEl.appendText("2. \"A-directory-name/\" : Displays all content within the specified directory. You can enter multiple directories, one per line.")
+		textAreaTmp.descEl.createEl("br")
+		textAreaTmp.descEl.appendText("3. \"A-name-keyword\" :Displays all content containing the specified keyword. You can enter multiple keywords, one per line.")
 		
 	textAreaTmp=	new Setting(textAreaDiv).addTextArea(
 			(text) => {
@@ -792,20 +794,20 @@ console.log("the string: ",this.plugin.settings.showingFilter )
 
 
 			}
-		).setName("Node to show filter")
-			.setDesc("Path of Nodes matches given filter will be hide based on show nodes")
+		).setName("Negative Filter")
+			.setDesc("Paths matching the specified filters will be hidden.")
 			.setClass("setting-item-filter")
 		textAreaTmp.descEl.createEl("br")
 		textAreaTmp.descEl.createEl("br")
 		textAreaTmp.descEl.appendText("For example:")
 		textAreaTmp.descEl.createEl("br")
-		textAreaTmp.descEl.appendText("1. \"path/name-key-word\" : Hide all nodes whose path contains \"path/name-key-word\". ")
+		textAreaTmp.descEl.appendText("1. \"path/name-key-word\" : Hides all nodes containing \"path/name-keyword\". ")
 		textAreaTmp.descEl.createEl("br")
-		textAreaTmp.descEl.appendText("2. \"#\" : Hide all tag type nodes.")
+		textAreaTmp.descEl.appendText("2. \"#\" : Hides all tag type nodes.")
 		textAreaTmp.descEl.createEl("br")
-		textAreaTmp.descEl.appendText("3. \"#hide-tag\" : Hide tags with name: \"#hide-tag\".")
+		textAreaTmp.descEl.appendText("3. \"#hide-tag\" : Hides tags with the name: \"#hide-tag\".")
 		textAreaTmp.descEl.createEl("br")
-		textAreaTmp.descEl.appendText("4. \"#hide-tag/\" : Hide all sub-tags of the root tag: \"#hide-tag/\", but not for itself.")
+		textAreaTmp.descEl.appendText("4. \"#hide-tag/\" : Hides all sub-tags of the root tag: \"#hide-tag/\", but not for root tag itself.")
 		//textAreaTmp.descEl.
 		this.plugin.skipSave = false;
 	}
