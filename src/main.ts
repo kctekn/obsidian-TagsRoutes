@@ -719,7 +719,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		colorTitle1.createEl("h1", { text: "Filter" });
 		const button = colorTitle1.createEl('div').createEl('button', { text: "Apply Filter" /*, cls: buttonClass*/ });
 		button.addClass("mod-cta")
-		button.addEventListener('click', ()=>this.plugin.view.onResetGraph(true));
+		button.addEventListener('click', ()=>this.plugin.view.onResetGraph(false));
 
 
 		const desc1 = containerEl.createEl("div", { text: "Use the fields below to define path filters. Enter one filter per line." }); 
@@ -755,7 +755,7 @@ console.log("the string: ",this.plugin.settings.showingFilter )
 
 
 			}
-		).setName("Positive Filter")
+		).setName("Positive filter")
 			.setDesc("Only paths matching the specified filters will be shown.")
 		.setClass("setting-item-filter")
 		
@@ -794,7 +794,7 @@ console.log("the string: ",this.plugin.settings.showingFilter )
 
 
 			}
-		).setName("Negative Filter")
+		).setName("Negative filter")
 			.setDesc("Paths matching the specified filters will be hidden.")
 			.setClass("setting-item-filter")
 		textAreaTmp.descEl.createEl("br")

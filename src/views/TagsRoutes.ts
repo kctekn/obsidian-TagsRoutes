@@ -1837,21 +1837,7 @@ export class TagRoutesView extends ItemView {
         this.updateHighlight();
       //  this.Graph.refresh();
     }
-    getGdata(data:GraphData) {
-        return data;
-        //construct new nodes and links based on original data
-        let nodes: ExtendedNodeObject[] = [];
-        let links: LinkObject[] = [];
-        //apply filters
-        let { patterns, regexPatterns } = PathFilter.processFilters(this.plugin.settings.showingFilter);
-                // 直接移除满足条件的节点
-                for (let i = data.nodes.length - 1; i >= 0; i--) {
-                    if (shouldRemove(nodes[i].id, filterStrings)) {
-                        nodes.push(data.nodes[i])
-                    }
-                }
-        return data;
-    }
+
     testPathFilter(path: string): boolean{
         const { patterns: showPatterns, regexPatterns: showRegex } = PathFilter.processFilters(this.plugin.settings.showingFilter);
         const { patterns: hidePatterns, regexPatterns: hideRegex } = PathFilter.processFilters(this.plugin.settings.hidingFilter);
@@ -1870,146 +1856,14 @@ export class TagRoutesView extends ItemView {
         }
         return shouldShow;
     }
-    getGdataaa(data: GraphData) {
-        //construct new nodes and links based on original data
-        let nodes: ExtendedNodeObject[] = [];
-        let links: LinkObject[] = [];
-        
-        //apply filters
-        const { patterns: showPatterns, regexPatterns: showRegex } = PathFilter.processFilters(this.plugin.settings.showingFilter);
-        const { patterns: hidePatterns, regexPatterns: hideRegex } = PathFilter.processFilters(this.plugin.settings.hidingFilter);
-    
-        // 处理显示过滤器 (showing filter)
-        for (let i = data.nodes.length - 1; i >= 0; i--) {
-            const nodeId = data.nodes[i].id;
-            // 检查是否匹配任何showing pattern
-            let shouldShow = false;
-            
-            // 只需要检查正则表达式即可
-            for (const regex of showRegex) {
-                if (regex.test(nodeId)) {
-                    shouldShow = true;
-                    break;
-                }
-            }
-    
-            if (shouldShow) {
-                nodes.push(data.nodes[i]);
-            }
-        }
-    
-        // 处理隐藏过滤器 (hiding filter)
-        for (let i = nodes.length - 1; i >= 0; i--) {
-            const nodeId = nodes[i].id;
-            // 检查是否匹配任何hiding pattern
-            let shouldHide = false;
-            
-            // 只需要检查正则表达式即可
-            for (const regex of hideRegex) {
-                if (regex.test(nodeId)) {
-                    shouldHide = true;
-                    break;
-                }
-            }
-    
-            if (shouldHide) {
-                nodes.splice(i, 1);
-            }
-        }
-    
-        // 处理链接
-        const validNodeIds = new Set(nodes.map(node => node.id));
-    
-        // 只保留源节点和目标节点都存在的链接
-        for (let i = data.links.length - 1; i >= 0; i--) {
-            const link = data.links[i];
-        //    if(link.sourceId.contains("Other"))
-        //    console.log("link.sourceId: ",link.sourceId," target: ", link.targetId)
-            if (validNodeIds.has(link.sourceId) && validNodeIds.has(link.targetId)) {
-                links.push(link);
-            }
-        }
-        // re-calculate
-        nodes.forEach((node: ExtendedNodeObject) => {
-            node.connections = links.filter(link => link.sourceId === node.id || link.targetId === node.id).length;
-            node.size = node.connections;
-        });
-        // 设置tag类型节点的instanceNum值并根据该值调整大小
-        // need to re-calculate the tagCount
-        const tagCount: Map<string, number> = new Map(); // 初始化标签计数对象
-        let filesDataMap1 = new Map([...filesDataMap].filter(([key]) => { 
-            for (const regex of showRegex) {
-                if (regex.test(key)) {
-                   return true;
-                }
-            }
-        }))
-        filesDataMap1 = new Map([...filesDataMap1].filter(([key]) => { 
-            for (const regex of hideRegex) {
-                if (!regex.test(key)) {
-                   return true;
-                }
-            }
-        }))
-        filesDataMap1.forEach((cache, filePath) => {
-            if (cache?.frontmatter && cache?.frontmatter?.tags && cache.frontmatter.tags.contains("tag-report"))
-                return;
-            /*
-            Add tags in note content
-            */
-           const fileTags = getTags(cache).map(cache => cache.tag);
-           const rootTags = new Set<string>();
 
-           fileTags.forEach(fileTag => {
-               const tagParts = fileTag.split('/');
-               let currentTag = '';
-
-               tagParts.forEach((part, index) => {
-                   currentTag += (index > 0 ? '/' : '') + part;
-
-                   // 更新标签计数
-                   tagCount.set(currentTag, (tagCount.get(currentTag) || 0) + 1);
-
-
-               });
-           });
-        })
-         nodes.forEach((node: ExtendedNodeObject) => {
-            if (node.type === 'tag') {
-                node.instanceNum = tagCount.get(node.id) || 1;
-                // 根据instanceNum调整节点大小，可以按比例调整
-                //        node.size = Math.log2(node.instanceNum + 1) * 5; // 例如，使用对数比例调整大小
-                node.size = node.instanceNum;
-            }
-        }); 
-        // cross-link node objects
-        links.forEach(link => {
-            const a = nodes.find(node => node.id === link.sourceId) as ExtendedNodeObject;
-            const b = nodes.find(node => node.id === link.targetId) as ExtendedNodeObject;
-            !a.neighbors && (a.neighbors = []);
-            !b.neighbors && (b.neighbors = []);
-            a.neighbors.push(b);
-            b.neighbors.push(a);
-            !a.links && (a.links = []);
-            !b.links && (b.links = []);
-            a.links.push(link);
-            b.links.push(link);
-        });
-        nodes.sort((a, b) => { 
-            if (a.createTime && b.createTime)
-                return (a.createTime ? a.createTime : 0) - (b.createTime ? b.createTime : 0);
-            else
-                return 0;
-        })
-        return { nodes, links };
-    }
     onResetGraph(refrechData:boolean) {
         this.clearHightlightNodes();
-        this.getCache();
+        
         if (refrechData) {
-            this.gData = this.buildGdata();
+            this.getCache();
         }
-      //  this.gData = this.getGdata(this.gData0);
+        this.gData = this.buildGdata();
         this.Graph.graphData(this.gData);
         this.Graph.refresh();
         setTimeout(() => {
