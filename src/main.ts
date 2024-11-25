@@ -722,7 +722,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 		button.addEventListener('click', ()=>this.plugin.view.onResetGraph(false));
 
 
-		const desc1 = containerEl.createEl("div", { text: "Use the fields below to define path filters. Enter one filter per line." }); 
+		const desc1 = containerEl.createEl("div", { text: "Use the fields below to define path filters. Enter one filter per line, case sensitive." }); 
 		desc1.createEl("br")
 		desc1.appendText("Glob patterns (e.g., * for wildcard) are supported.")
 		//desc1.createEl("a", { href: "https://www.w3.org/wiki/CSS/Properties/color/keywords", text: "Css color keywords" })
@@ -751,7 +751,7 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 						}
 				})
 				this.showFilter = text;
-console.log("the string: ",this.plugin.settings.showingFilter )
+//console.log("the string: ",this.plugin.settings.showingFilter )
 
 
 			}
@@ -790,7 +790,7 @@ console.log("the string: ",this.plugin.settings.showingFilter )
 						}
 				});
 				this.hideFilter = text;
-console.log("the string: ",this.plugin.settings.showingFilter )
+//console.log("the string: ",this.plugin.settings.showingFilter )
 
 
 			}

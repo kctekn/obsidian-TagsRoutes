@@ -202,6 +202,9 @@ If your plugin does not need CSS, delete this file.
     width: 20em;
     height: 15em;
 }
+.tags-routes .setting-item-filter .setting-item-description {
+    padding-left: 0.2em;
+}
 .notice-container {
     /*  display: none;*/
 }
