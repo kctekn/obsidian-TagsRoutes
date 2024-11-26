@@ -24,7 +24,7 @@ And you can show up your beautiful vault pictures here: [Share & showcase](https
 
 Refer to https://github.com/kctekn/obsidian-TagsRoutes/issues/34 for detail.
 
-This appears to be an issue introduced in Obsidian v1.7.x, but it has already been fixed.
+This appears to be an issue introduced in Obsidian v1.7.x, now been fixed.
 
 ## Version 1.2.1 Release Notes:
 
