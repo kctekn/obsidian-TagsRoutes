@@ -397,6 +397,7 @@ export default class TagsRoutes extends Plugin {
 				leaf = workspace.getLeaf()
 			}
 			if (leaf) {
+				await workspace.revealLeaf(leaf);
 				await leaf.setViewState({ type: VIEW_TYPE_TAGS_ROUTES, active: true });
 			}
 		}
@@ -615,7 +616,8 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 						} else {
 							this.plugin.settings.currentTheme = 'dark';
 						}
-						if (this.plugin.view.currentVisualString === this.plugin.settings.currentTheme)
+						if (!this.plugin.view) return;
+						if (this.plugin?.view?.currentVisualString !== undefined && this.plugin.view.currentVisualString === this.plugin.settings.currentTheme)
 							return;
 						// switch save slot
 						this.plugin.settings.customSlot = this.plugin.settings[this.plugin.settings.currentTheme];
