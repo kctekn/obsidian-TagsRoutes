@@ -1,7 +1,7 @@
 {
 	"id": "tags-routes",
 	"name": "Tags Routes",
-	"version": "1.2.1",
+	"version": "1.2.2",
 	"minAppVersion": "0.15.0",
 	"description": "A powerful 3D graph visualization tool offers dynamic time-lapse, intelligent orphan file management, tag-based queries, and a range of displaying customization options for a great insightful experience.",
 	"author": "Ken",

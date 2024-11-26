@@ -18,6 +18,14 @@ Wiki:
 
 And you can show up your beautiful vault pictures here: [Share & showcase](https://github.com/kctekn/obsidian-TagsRoutes/discussions/17)
 
+## Version 1.2.2 Bug Fix Release:
+
+- **Bug fix:** LMB+Drag and RMB+Drag has no effect
+
+Refer to https://github.com/kctekn/obsidian-TagsRoutes/issues/34 for detail.
+
+This appears to be an issue introduced in Obsidian v1.7.x, but it has already been fixed.
+
 ## Version 1.2.1 Release Notes:
 
 ### New Features:
