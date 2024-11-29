@@ -206,6 +206,7 @@ export class TagRoutesView extends ItemView {
         this.updateMeshSize = this.updateMeshSize.bind(this)
         this.onAnimatePlayButton = this.onAnimatePlayButton.bind(this);
         this.onSetFocusDistance = this.onSetFocusDistance.bind(this);
+        this.onOpenNavigator = this.onOpenNavigator.bind(this);
     }
     getViewType() {
         return VIEW_TYPE_TAGS_ROUTES;
@@ -458,6 +459,52 @@ export class TagRoutesView extends ItemView {
           button.textContent = text;
         } else {
           console.log('Button not found');
+        }
+    }
+    async onOpenNavigator() {
+        const { workspace } = this.app;
+        let leaf: WorkspaceLeaf | null = null;
+        let srcleaf: WorkspaceLeaf | null = null;
+        const leaves = workspace.getLeavesOfType(VIEW_TYPE_TAGS_ROUTES);
+        if (leaves.length > 0) {
+            // A leaf with our view already exists, use that
+            srcleaf = leaves[0];
+            if (srcleaf.getRoot() === workspace.rightSplit) {
+                new Notice("No action needed.")
+                return;
+            }
+        }
+
+        let serachLeaf;
+        workspace.iterateAllLeaves(l => {
+            //console.log("leaf view type: ", l.view.getViewType())
+            //console.log("leaf root: ", l.getRoot())
+            if (l.getRoot() === workspace.rightSplit) {
+                serachLeaf = l;
+              //  console.log("this is in right split")
+                return false;
+            }
+        })
+        if (serachLeaf) {
+            leaf = workspace.createLeafBySplit(serachLeaf, 'horizontal', true)
+        } else {
+            leaf = workspace.getRightLeaf(true);
+            //console.log("create new")
+        }
+
+        if (leaf) {
+            await workspace.revealLeaf(leaf)
+            if (srcleaf) {
+                await leaf.setViewState(srcleaf.getViewState());
+                await srcleaf.detach();
+            } else {
+                await leaf.setViewState({ type: VIEW_TYPE_TAGS_ROUTES, active: true });
+            }
+        }
+
+        // "Reveal" the leaf in case it is in a collapsed sidebar
+        if (leaf) {
+            workspace.revealLeaf(leaf);
         }
     }
     onSetFocusDistance() {
@@ -2535,13 +2582,19 @@ export class TagRoutesView extends ItemView {
             })
             .add({
                 arg: (new settingGroup(this.plugin, "control sliders", "Display control"))
+                .add({
+                    arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
+                    .addButton("Open As Navigator", "graph-button", () => { this.onOpenNavigator() })
+                    )
+                })
                 .addToggle("Lock node positions", false, this.onToggleFreezeNodePosition,false)
                 .addToggle("Lock scene", false, this.onToggleLockScene,false)
                 .add({
                     arg: (new settingGroup(this.plugin, "button-box", "button-box", "normal-box")
                     .addButton("Set Focus Distance", "graph-button", () => { this.onSetFocusDistance() })
                     )
-                })                .addSlider("Node size", 1, 10, 1, this.plugin.settings.customSlot[0].node_size, this.onNodeSize)
+                })
+                    .addSlider("Node size", 1, 10, 1, this.plugin.settings.customSlot[0].node_size, this.onNodeSize)
                     .addSlider("Node repulsion", 0, 10, 1, this.plugin.settings.customSlot[0].node_repulsion, this.onNodeRepulsion)
                     .addSlider("Link distance", 1, 25, 1, this.plugin.settings.customSlot[0].link_distance, this.onLinkDistance)
                     .addSlider("Link width", 1, 5, 1, this.plugin.settings.customSlot[0].link_width, this.onLinkWidth)
