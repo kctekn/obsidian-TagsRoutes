@@ -9,6 +9,7 @@ import { settingGroup } from "./settings"
 import TagsRoutes, { defaltColorMap, DEFAULT_DISPLAY_SETTINGS, globalDirectory, globalProgramControl, TagRoutesSettings } from '../main';
 import { Vector2, Vector3 } from 'three';
 import SpriteText from 'three-spritetext';
+import { NodeObject, LinkObject as LinkObjectTF, ThreeForceGraphGeneric } from 'three-forcegraph';
 
 export const VIEW_TYPE_TAGS_ROUTES = "tags-routes";
 interface GraphData {
@@ -1565,7 +1566,7 @@ export class TagRoutesView extends ItemView {
        
         if (value) {
             //      DebugMsg(DebugLevel.WARN, "Go to freeze");
-            this.Graph.graphData().nodes.forEach(node => {
+            this.Graph.graphData().nodes.forEach((node:NodeObject) => {
                 node.fx = node.x;
                 node.fy = node.y;
                 node.fz = node.z;
@@ -1573,7 +1574,7 @@ export class TagRoutesView extends ItemView {
             this.Graph.enableNodeDrag(false)
         } else {
             //     DebugMsg(DebugLevel.WARN, "Go to un-freeze");
-            this.Graph.graphData().nodes.forEach(node => {
+            this.Graph.graphData().nodes.forEach((node:NodeObject) => {
                 node.fx = undefined;
                 node.fy = undefined;
                 node.fz = undefined;
@@ -2463,7 +2464,7 @@ export class TagRoutesView extends ItemView {
             hideToolbar.innerHTML = tooltipBar.hasClass('hidden') ? '>' : '<';
         })
 
-        this.Graph = ForceGraph3D()
+        this.Graph = new ForceGraph3D(graphContainer)
             //  .width(container.clientWidth)
             //  .height(container.clientHeight)
             .backgroundColor("#000003")
@@ -2471,7 +2472,7 @@ export class TagRoutesView extends ItemView {
                 const distance = Math.max(link.source.connections, link.target.connections, link.source.instanceNum || 2, link.target.instanceNum || 2);
                 return distance < 10 ? 20 : distance * this.distanceFactor;
             }))
-            (graphContainer)
+           // (graphContainer)
             .nodeVisibility(this.getNodeVisible)
             .linkVisibility(this.getLinkVisible)
             .linkColor((link: any) => this.highlightLinks.has(link) ? this.plugin.settings.customSlot?.[0].colorMap["linkHighlightColor"].value||"#ffffff" :
