@@ -17,6 +17,25 @@ Wiki:
 [Organize Tags with Hierarchy Using the Obsidian Plugin "Tags Routes"](https://github.com/kctekn/obsidian-TagsRoutes/wiki/Organize-Tags-with-Hierarchy-Using-the-Obsidian-Plugin-%22Tags-Routes%22)
 
 And you can show up your beautiful vault pictures here: [Share & showcase](https://github.com/kctekn/obsidian-TagsRoutes/discussions/17)
+## Version 1.2.3 Release Notes:
+
+
+### New Features:
+
+1. **Path Filter**:  
+   - You can now use both positive and negative filters to customize the display of your vault content.  
+   - This allows for more precise control over what is shown, as illustrated below.  
+
+<img  src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.2.3-feature1.png">
+
+https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.2.3-feature1.mp4
+
+2. **Open Scene in Sidebar as a Navigator**:  
+   - A new button has been added to the "Display Control" section, enabling you to open a scene in the sidebar for easier navigation.
+
+<img  src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.2.3-feature2.png">
+
+https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.2.3-feature2.mp4
 
 ## Version 1.2.2 Bug Fix Release:
 
