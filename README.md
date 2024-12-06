@@ -28,14 +28,22 @@ And you can show up your beautiful vault pictures here: [Share & showcase](https
 
 <img  src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.2.3-feature1.png">
 
-https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.2.3-feature1.mp4
+
+
+https://github.com/user-attachments/assets/62c32f11-977b-4d38-b33f-835963125712
+
+
 
 2. **Open Scene in Sidebar as a Navigator**:  
    - A new button has been added to the "Display Control" section, enabling you to open a scene in the sidebar for easier navigation.
 
 <img  src="https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.2.3-feature2.png">
 
-https://github.com/kctekn/obsidian-TagsRoutes/blob/main/usage/v1.2.3-feature2.mp4
+
+
+https://github.com/user-attachments/assets/6c734a67-1325-4466-b2cb-ec66445d0e71
+
+
 
 ## Version 1.2.2 Bug Fix Release:
 
