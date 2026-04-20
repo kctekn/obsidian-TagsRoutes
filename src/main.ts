@@ -52,6 +52,7 @@ export interface colorMap {
 	linkParticleHighlightColor: colorSpec;
 	selectionBoxColor: colorSpec;
 	backgroundColor: colorSpec;
+	linkhub: colorSpec;
 }
 export const defaultolorMapDark: colorMap = {
 	markdown: {name:"default", value: "#00ff00"},
@@ -69,7 +70,8 @@ export const defaultolorMapDark: colorMap = {
 	linkParticleColor: {name:"default",  value: "#ffffff"},
 	linkParticleHighlightColor: { name: "default", value: "#ff00ff" },
 	selectionBoxColor:{name:"default", value:"#ffff00"},
-	backgroundColor:{name:"default",value:"#000003"}
+	backgroundColor:{name:"default",value:"#000003"},
+	linkhub: {name:"default", value:"#ff8800"}
 }
 export const defaultolorMapLight: colorMap = {
 	markdown: {name:"default", value: "#00ff00"},
@@ -87,7 +89,8 @@ export const defaultolorMapLight: colorMap = {
 	linkParticleColor: {name:"default",  value: "#ffffff"},
 	linkParticleHighlightColor: { name: "default", value: "#ff00ff" },
 	selectionBoxColor: {name:"default", value:"#e0ac00"},
-	backgroundColor:{name:"default",value:"#ffffff"}
+	backgroundColor:{name:"default",value:"#ffffff"},
+	linkhub: {name:"default", value:"#ff8800"}
 }
 export const defaltColorMap = {
 	dark: defaultolorMapDark,
@@ -124,6 +127,7 @@ interface Settings {
 	enableTagsReaction: boolean;
 	enableAutoFocus: boolean;
 	enableParagraphLinker: boolean;
+	enableLinkHubs: boolean;
 	snapShotFolder: string;
 	currentTheme: "dark"|"light";
 	customSlot: ThemeSlots | null ;
@@ -186,6 +190,7 @@ const DEFAULT_SETTINGS: Settings = {
 	enableTagsReaction: true,
 	enableAutoFocus: true,
 	enableParagraphLinker: true,
+	enableLinkHubs: true,
 	snapShotFolder: "graph-screenshot",
 	currentTheme: "dark",
 	customSlot: null,
@@ -597,9 +602,20 @@ class TagsroutesSettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 					.setValue(this.plugin.settings.openInCurrentTab)
-				
+
 			}
 		)
+		new Setting(containerEl)
+			.setName('Show popularity hub nodes')
+			.setDesc('Display shared hub nodes grouping files by wikilink popularity (highly linked, moderate, low).')
+			.addToggle((toggle: ToggleComponent) => {
+				toggle
+					.onChange(async (value) => {
+						this.plugin.settings.enableLinkHubs = value;
+						await this.plugin.saveSettings();
+					})
+					.setValue(this.plugin.settings.enableLinkHubs)
+			})
 		new Setting(containerEl)
 		.setName('Save location for graph snapshots')
 			.setDesc('Choose the folder where you want to save screenshots of the graph.')

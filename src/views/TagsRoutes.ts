@@ -30,7 +30,7 @@ interface LinkObject {
 interface nodeThreeObject extends ExtendedNodeObject {
     __threeObj?: THREE.Mesh
 }
-export type nodeTypes = 'markdown' | 'tag' | 'attachment' | 'broken' | 'pdf' | 'excalidraw' |'screenshot'| 'other' | 'frontmatter_tag';
+export type nodeTypes = 'markdown' | 'tag' | 'attachment' | 'broken' | 'pdf' | 'excalidraw' |'screenshot'| 'other' | 'frontmatter_tag' | 'linkhub';
 interface ExtendedNodeObject extends Node {
     type: nodeTypes;
     x?: number;
@@ -43,6 +43,7 @@ interface ExtendedNodeObject extends Node {
     orphan?: boolean;
     links?: LinkObject[];
     createTime?: number|null;
+    name?: string; // display name for hub nodes
     _ThreeGroup?: THREE.Group;
     _ThreeMesh?: THREE.Mesh;
     _Sprite?: SpriteText;
@@ -818,6 +819,33 @@ export class TagRoutesView extends ItemView {
     }
     createNodeThreeObjectLight(node: ExtendedNodeObject,) {
 
+        // Hub nodes special rendering
+        if (node.type === 'linkhub') {
+            const group = new THREE.Group();
+            const hubSize = Math.max(8, Math.log2((node.instanceNum || 1) + 1) * 6);
+            const geometry = new THREE.IcosahedronGeometry(hubSize, 1);
+            let color = this.getNodeColorByType(node);
+            const material = new THREE.MeshBasicMaterial({ color });
+            material.opacity = 0.95;
+            material.transparent = true;
+            const mesh = new THREE.Mesh(geometry, material);
+            group.add(mesh);
+
+            const sprite = new SpriteText(node.name || node.id);
+            sprite.material.depthWrite = false;
+            sprite.color = '#000000';
+            sprite.visible = this.plugin.settings.customSlot?.[0].toggle_label_display || false;
+            sprite.textHeight = 1.2;
+            sprite.position.set(0, hubSize + 2, 0);
+            group.add(sprite);
+
+            node._ThreeGroup = group;
+            node._ThreeMesh = mesh;
+            node._Sprite = sprite;
+
+            return group;
+        }
+
         const group = new THREE.Group();
 
         let nodeSize = (node.connections || 1)
@@ -883,6 +911,32 @@ export class TagRoutesView extends ItemView {
     }
     createNodeThreeObject(node: ExtendedNodeObject) {
         DebugMsg(DebugLevel.DEBUG, "createNodeThreeObject called")
+        // Hub nodes special rendering
+        if (node.type === 'linkhub') {
+            const group = new THREE.Group();
+            const hubSize = Math.max(8, Math.log2((node.instanceNum || 1) + 1) * 6);
+            const geometry = new THREE.IcosahedronGeometry(hubSize, 1);
+            let color = this.getNodeColorByType(node);
+            const material = new THREE.MeshBasicMaterial({ color });
+            material.opacity = 0.95;
+            material.transparent = true;
+            const mesh = new THREE.Mesh(geometry, material);
+            group.add(mesh);
+
+            const sprite = new SpriteText(node.name || node.id);
+            sprite.material.depthWrite = false;
+            sprite.color = '#ffffff';
+            sprite.visible = this.plugin.settings.customSlot?.[0].toggle_label_display || false;
+            sprite.textHeight = 1.2;
+            sprite.position.set(0, hubSize + 2, 0);
+            group.add(sprite);
+
+            node._ThreeGroup = group;
+            node._ThreeMesh = mesh;
+            node._Sprite = sprite;
+
+            return group;
+        }
         const group = new THREE.Group();
 
         let nodeSize = (node.connections || 1)
@@ -2098,6 +2152,7 @@ export class TagRoutesView extends ItemView {
             case 'pdf':
             case 'frontmatter_tag':
             case 'screenshot':
+            case 'linkhub':
                             color = this.plugin.settings.customSlot[0].colorMap[node.type].value;
                 break;
             default:
@@ -2125,6 +2180,7 @@ export class TagRoutesView extends ItemView {
             case 'pdf':
             case 'frontmatter_tag':
             case 'screenshot':
+            case 'linkhub':
                             color = this.plugin.settings.customSlot[0].colorMap[node.type].value;
                 break;
             default:
@@ -2194,6 +2250,86 @@ export class TagRoutesView extends ItemView {
         }
         fileNodeNum = nodes.length;
         FileLinkNum = links.length;
+
+        /*
+          Calculate link popularity tiers and create hub nodes
+         */
+        const inboundCount: Map<string, number> = new Map();
+        // Count how many times each file is linked to
+        const resolvedLinksObj = this.app.metadataCache.resolvedLinks;
+        for (const sourcePath in resolvedLinksObj) {
+            const targets = resolvedLinksObj[sourcePath] as Record<string, number>;
+            for (const targetPath in targets) {
+                if (!this.testPathFilter(targetPath)) continue;
+                inboundCount.set(targetPath, (inboundCount.get(targetPath) || 0) + 1);
+            }
+        }
+
+        // Create hub nodes and links if enabled
+        if (this.plugin.settings.enableLinkHubs && inboundCount.size > 0) {
+            // Get sorted file IDs by inbound count
+            const sortedFiles = [...inboundCount.entries()].sort((a, b) => b[1] - a[1]);
+            const totalFiles = sortedFiles.length;
+
+            // Calculate percentile boundaries
+            const highThreshold = totalFiles > 0 ? Math.ceil(totalFiles * 0.9) : 0;  // top 10%
+            const moderateThreshold = totalFiles > 0 ? Math.ceil(totalFiles * 0.6) : 0; // next 30%
+
+            // Define tiers: rank 0 = high (top 10%), rank 1-moderateThreshold = moderate, rest = low
+            const fileTier: Map<string, string> = new Map();
+            for (let i = 0; i < sortedFiles.length; i++) {
+                const [filePath] = sortedFiles[i];
+                if (i < highThreshold) {
+                    fileTier.set(filePath, '__hub_high');
+                } else if (i < moderateThreshold) {
+                    fileTier.set(filePath, '__hub_moderate');
+                } else {
+                    fileTier.set(filePath, '__hub_low');
+                }
+            }
+
+            // Count files per tier
+            const tierCounts = new Map<string, number>();
+            fileTier.forEach((tierId) => {
+                tierCounts.set(tierId, (tierCounts.get(tierId) || 0) + 1);
+            });
+
+            // Create hub node definitions
+            const hubDefs: { id: string; name: string }[] = [];
+            if (tierCounts.has('__hub_high')) {
+                hubDefs.push({ id: '__hub_high', name: '★ Highly Linked' });
+            }
+            if (tierCounts.has('__hub_moderate')) {
+                hubDefs.push({ id: '__hub_moderate', name: '◆ Moderately Linked' });
+            }
+            if (tierCounts.has('__hub_low')) {
+                hubDefs.push({ id: '__hub_low', name: '○ Low Linked' });
+            }
+
+            // Create hub nodes (with name property for display)
+            const hubNames = new Map<string, string>([
+                ['__hub_high', '★ Highly Linked'],
+                ['__hub_moderate', '◆ Moderately Linked'],
+                ['__hub_low', '○ Low Linked'],
+            ]);
+            for (const hub of hubDefs) {
+                nodes.push({
+                    id: hub.id,
+                    type: 'linkhub' as any,
+                    instanceNum: tierCounts.get(hub.id) || 0,
+                    links: [],
+                    neighbors: [] as ExtendedNodeObject[],
+                    size: tierCounts.get(hub.id) || 1,
+                    name: hubNames.get(hub.id) || hub.id,
+                } as ExtendedNodeObject);
+            }
+
+            // Link files to their hub
+            for (const [filePath, hubId] of fileTier) {
+                links.push({ source: filePath, target: hubId, sourceId: filePath, targetId: hubId });
+            }
+        }
+
         this.debugLogToFileM("", true)
         this.debugLogToFileM(`|File parse completed=>|| markdown and linked files nodes:| ${nodes.length}| total file links:| ${links.length}|`)
 
@@ -2376,7 +2512,22 @@ export class TagRoutesView extends ItemView {
                //     console.log("link.sourceId: ",link.sourceId," target: ", link.targetId)
                     if (!(validNodeIds.has(link.sourceId) && validNodeIds.has(link.targetId))) {
                         links.splice(i,1)
-                    } 
+                    }
+                }
+                // Remove hub nodes if disabled
+                if (!this.plugin.settings.enableLinkHubs) {
+                    const hubIds = ['__hub_high', '__hub_moderate', '__hub_low'];
+                    for (let i = nodes.length - 1; i >= 0; i--) {
+                        if (nodes[i].type === 'linkhub') {
+                            nodes.splice(i, 1);
+                        }
+                    }
+                    // Also remove links involving hub nodes
+                    for (let i = links.length - 1; i >= 0; i--) {
+                        if (hubIds.includes(links[i].sourceId) || hubIds.includes(links[i].targetId)) {
+                            links.splice(i, 1);
+                        }
+                    }
                 }
         this.debugLogToFileM(`|After filtered pathes=>|| filtered nodes: |${TagNodeNum + fileNodeNum + brokennum - nodes.length}|  links:| ${links.length}|`)
         // 计算每个节点的连接数
@@ -2485,7 +2636,15 @@ export class TagRoutesView extends ItemView {
             //   .nodeLabel((node: any) => node.type == 'tag' ? `${node.id} (${node.instanceNum})` : `${node.id} (${node.connections})`)
          //   .nodeOpacity(0.9)
             .nodeThreeObject(this.createNodeThreeObject)
-            .onNodeClick((node: ExtendedNodeObject) => {
+            .onNodeClick((node: ExtendedNodeObject, event: MouseEvent) => {
+                // If Shift is held, unpin the node (cast to 'any' to bypass strict typing)
+                if (event.shiftKey) {
+                    (node as any).fx = undefined;
+                    (node as any).fy = undefined;
+                    (node as any).fz = undefined;
+                    new Notice("Node unpinned!"); 
+                }
+
                 if (!this.isLockScene) {
                     const distance = this.getCameraDistance(node);
                     const distRatio = 1 + distance / Math.hypot(node.x ?? 0, node.y ?? 0, node.z ?? 0);
@@ -2539,11 +2698,14 @@ export class TagRoutesView extends ItemView {
                     this.Graph.graphData(this.gData);
                 }
             })
+            
             .onNodeDragEnd((node: any) => {
-                node.fx = node.x;
-                node.fy = node.y;
-                node.fz = node.z;
+            // Re-pin it where you drop it
+            node.fx = node.x;
+            node.fy = node.y;
+            node.fz = node.z;
             })
+
             .onNodeHover((node: ExtendedNodeObject) => this.highlightOnNodeHover(node))
             .onLinkHover((link: any) => this.onLinkHover(link))
             .cooldownTicks(10000)
